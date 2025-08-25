@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/routes/router.dart';
 
@@ -11,7 +12,11 @@ void main() {
   // - WidgetsFlutterBinding.ensureInitialized() (비동기 초기화 시)
   // - 의존성 주입 설정 (GetIt, Provider 등)
   // - 에러 핸들링 설정
-  runApp(const MyApp());
+  runApp(
+    const ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
