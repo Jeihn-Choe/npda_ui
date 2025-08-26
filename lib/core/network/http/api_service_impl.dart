@@ -23,7 +23,7 @@ class ApiServiceImpl implements ApiService {
   @override
   Future<dynamic> post(
     String path, {
-    dynamic? data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
@@ -41,7 +41,7 @@ class ApiServiceImpl implements ApiService {
   @override
   Future<Response> put(
     String path, {
-    dynamic? data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
@@ -59,7 +59,7 @@ class ApiServiceImpl implements ApiService {
   @override
   Future<Response> delete(
     String path, {
-    dynamic? data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
     try {

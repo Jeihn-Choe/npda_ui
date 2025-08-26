@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del \"D:\\Workspace\\_src\\Celltrion\\NPDA_ui_flutter\\lib\\core\\widgets\\custom_text_field.dart\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
