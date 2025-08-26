@@ -23,7 +23,7 @@ class ApiServiceImpl implements ApiService {
   @override
   Future<dynamic> post(
     String path, {
-    dynamic? data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
@@ -41,7 +41,7 @@ class ApiServiceImpl implements ApiService {
   @override
   Future<Response> put(
     String path, {
-    dynamic? data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
@@ -59,7 +59,7 @@ class ApiServiceImpl implements ApiService {
   @override
   Future<Response> delete(
     String path, {
-    dynamic? data,
+    dynamic data,
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
@@ -74,10 +74,10 @@ class ApiServiceImpl implements ApiService {
     }
   }
 
-
   dynamic _handleResponse(Response response) {
-         // 성공적인 응답 (2xx 상태 코드)일 경우, 데이터 본문만    반환합니다.
-         if (response.statusCode != null && response.statusCode== 200) {
-           return response.data;
-
+    // 성공적인 응답 (2xx 상태 코드)일 경우, 데이터 본문만    반환합니다.
+    if (response.statusCode != null && response.statusCode == 200) {
+      return response.data;
     }
+  }
+}
