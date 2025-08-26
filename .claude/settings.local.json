@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "D:\\c\\Users\\JeihnChoe"
+    ],
+    "allow": [
+      "Bash(claude mcp:*)"
+    ]
+  }
+}
