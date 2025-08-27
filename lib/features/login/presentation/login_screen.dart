@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/constants/colors.dart';
+import 'login_viewmodel.dart';
 import 'widgets/custom_text_field.dart';
 
 class LoginScreen extends ConsumerWidget {
@@ -9,9 +10,13 @@ class LoginScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 간단한 UI를 위해 컨트롤러를 build 메서드 내에서 생성합니다.
-    final idController = TextEditingController();
-    final passwordController = TextEditingController();
+    final state = ref.watch(loginViewModelProvider);
+
+    /// provider 통해 생성된 viewmodel의 인스턴스에 접근하기 위해 notifier 사용
+    final viewmodel = ref.watch(loginViewModelProvider.notifier);
+
+    /// 키보드 높이 감지해서 키보드 올라올 때도 화면이 잘 보이도록 함.
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
 
     return Scaffold(
       backgroundColor: AppColors.grey100,
@@ -20,7 +25,10 @@ class LoginScreen extends ConsumerWidget {
         child: Center(
           child: Container(
             width: double.infinity,
-            margin: const EdgeInsets.all(32.0),
+            margin: EdgeInsets.symmetric(
+              horizontal: 32,
+              vertical: isKeyboardVisible ? 0 : 32,
+            ),
             constraints: const BoxConstraints(maxWidth: 400),
             decoration: BoxDecoration(
               color: AppColors.white,
@@ -34,40 +42,58 @@ class LoginScreen extends ConsumerWidget {
               ],
             ),
             child: Padding(
-              padding: const EdgeInsets.all(40.0),
+              padding: EdgeInsets.all(isKeyboardVisible ? 20.0 : 40.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: const Text(
+                    padding: EdgeInsets.symmetric(
+                      vertical: isKeyboardVisible ? 0 : 16,
+                    ),
+                    child: Text(
                       'Celltrion NPDA',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: isKeyboardVisible ? 24 : 32,
                         fontWeight: FontWeight.bold,
                         color: AppColors.celltrionGreen,
                         letterSpacing: -0.5,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
-                  CustomTextField(controller: idController, labelText: 'ID'),
-                  const SizedBox(height: 20),
+                  SizedBox(height: isKeyboardVisible ? 2 : 30),
                   CustomTextField(
-                    controller: passwordController,
+                    controller: viewmodel.userIdController,
+                    labelText: 'ID',
+                  ),
+                  SizedBox(height: isKeyboardVisible ? 2 : 20),
+                  CustomTextField(
+                    controller: viewmodel.passwordController,
                     labelText: 'Password',
                     obscureText: true,
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: isKeyboardVisible ? 2 : 32),
+
+                  if (state.errorMessage != null) ...[
+                    Text(
+                      state.errorMessage!,
+                      style: const TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: isKeyboardVisible ? 2 : 16),
+                  ],
+
                   ElevatedButton(
                     onPressed: () {
-                      // TODO: 로그인 로직 연결
-                      final id = idController.text;
-                      final password = passwordController.text;
-                      print('ID: $id, Password: $password');
+                      final userId = viewmodel.userIdController.text;
+                      final password = viewmodel.passwordController.text;
+                      viewmodel.login(userId, password);
                     },
+
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.celltrionGreen,
                       foregroundColor: AppColors.white,
