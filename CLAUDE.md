@@ -108,3 +108,26 @@ Each feature follows Clean Architecture principles:
 3. Navigates to `/login` (LoginScreen)
 4. After login, navigates to main shell with tabs
 5. Main shell provides tab navigation between main features
+
+## Work Log
+
+### Login Feature Refactoring (2025-08-28)
+- Current state: LoginViewModel directly handles API calls and validation
+- **Next step**: Extract LoginUseCase from LoginViewModel for better separation of concerns
+- **Planned structure**:
+  ```dart
+  // lib/features/login/domain/usecases/login_usecase.dart
+  abstract class LoginUseCase {
+    Future<LoginResult> call(String userId, String password);
+  }
+  
+  // lib/features/login/domain/entities/login_result.dart
+  class LoginResult {
+    final bool isSuccess;
+    final String? userId;
+    final String? userName; 
+    final String? errorMessage;
+  }
+  ```
+- LoginUseCase will handle both validation and API calls
+- Avoided over-engineering by not separating simple validation into separate use case

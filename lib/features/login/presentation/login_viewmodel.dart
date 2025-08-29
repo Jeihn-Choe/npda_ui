@@ -1,9 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/network/http/api_provider.dart';
-import 'package:npda_ui_flutter/core/network/http/api_service.dart';
 
-import '../../../core/config/api_config.dart';
+import '../domain/usecase/login_usecase.dart';
 
 // Login 관련 Viewmodel에서 관리하는 상태들 모음
 class LoginState {
@@ -40,19 +39,17 @@ class LoginState {
       isValidForm: isValidForm ?? this.isValidForm,
     );
   }
-
-  static const initial = LoginState();
 }
 
 class LoginViewModel extends StateNotifier<LoginState> {
-  /// 주입하고 싶은 서비스들을 먼저 선언 => 이후 provider에서 생성할 때 주입할거임
-  final ApiService _apiService;
+  /// LoginUseCase 주입
+  final LoginUseCase _loginUseCase;
 
   /// controller 선언해줌.
   final TextEditingController _userIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  LoginViewModel(this._apiService) : super(LoginState.initial);
+  LoginViewModel(this._loginUseCase) : super(LoginState());
 
   /// getter 써서 접근 가능하게 해줌 => 외부에서 controller 직접 접근 가능하도록 함.
 
@@ -63,52 +60,57 @@ class LoginViewModel extends StateNotifier<LoginState> {
   void disposeControllers() {
     _userIdController.dispose();
     _passwordController.dispose();
-    super.dispose();
-  }
-
-  void validateForm(String userId, String password) {
-    final isValid = userId.trim().isNotEmpty && password.trim().isNotEmpty;
-
-    if (!isValid) {
-      state = state.copyWith(errorMessage: '아이디와 비밀번호를 모두 입력해주세요.');
-    }
-
-    state = state.copyWith(isValidForm: isValid, errorMessage: null);
   }
 
   Future<void> login(String userId, String password) async {
-    state = state.copyWith(errorMessage: null);
-
-    validateForm(userId, password);
-
-    if (!state.isValidForm) return;
-
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
-      final response = await _apiService.post(
-        ApiConfig.loginEndpoint,
-        data: {'userId': userId.trim(), 'password': password.trim()},
-      );
+      /// UseCase 호출
+      final result = await _loginUseCase(userId, password);
 
-      state = state.copyWith(
-        isLoading: false,
-        isLoggedIn: true,
-        userId: userId,
-        userName: response['userName'],
-      );
+      //LOG
+      print('Login Result: ${result.isSuccess}');
+      print('User ID: ${result.userId}');
+      print('User Name: ${result.userName}');
+      print('Error Message: ${result.message}');
+
+      if (result.isSuccess) {
+        state = state.copyWith(
+          isLoading: false,
+          isLoggedIn: true,
+          userId: result.userId,
+          userName: result.userName,
+        );
+      } else {
+        state = state.copyWith(isLoading: false, errorMessage: result.message);
+
+        //LOG
+        print('Login Result: ${result.isSuccess}');
+        print('User ID: ${result.userId}');
+        print('User Name: ${result.userName}');
+        print('Error Message: ${state.errorMessage}');
+      }
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
         errorMessage: '로그인에 실패했습니다. 아이디와 비밀번호를 확인해주세요.',
       );
+
+      //LOG
+      print('Login Error: $e');
     }
   }
 
   void logout() async {}
 }
 
+final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return LoginUseCase(apiService);
+});
+
 final loginViewModelProvider =
     StateNotifierProvider<LoginViewModel, LoginState>(
-      (ref) => LoginViewModel(ref.watch(apiServiceProvider)),
+      (ref) => LoginViewModel(ref.watch(loginUseCaseProvider)),
     );

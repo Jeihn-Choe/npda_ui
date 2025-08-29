@@ -1,8 +1,11 @@
 class ApiConfig {
-  static const String baseUrl = "https://api.example.com";
+  static const String baseUrl = "https://jsonplaceholder.typicode.com";
 
+  //test
+  static const String test = "/users";
+  
   //Authentication
-  static const String loginEndpoint = "/auth/login";
+  static const String loginEndpoint = "/login";
   static const String logoutEndpoint = "/auth/logout";
 
   //Order Management

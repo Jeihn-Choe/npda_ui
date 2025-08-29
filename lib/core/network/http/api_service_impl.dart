@@ -27,13 +27,23 @@ class ApiServiceImpl implements ApiService {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
+      print('path: $path');
+      print(data.toString());
+
       final response = await _dio.post(
         path,
         data: data,
         queryParameters: queryParameters,
       );
+
+      print('=========== 정상 전송 완료 ==========');
+      print('response: $response');
+
       return _handleResponse(response);
     } catch (e) {
+      print('=========== 에러 발생 ==========');
+      print('error: $e');
+
       throw Exception('Failed to post data: $e');
     }
   }
