@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Claude Code Guidelines
+
+**IMPORTANT**: The user prefers to write all code manually. Claude should only provide code suggestions and guidance, but NEVER directly edit, create, or modify files unless explicitly requested. Always present code as suggestions for the user to implement.
+
 ## Project Overview
 
 This is a Flutter application for Celltrion NPDA (Non-Pharmaceutical Drug Application) system. It's a warehouse management UI for handling inbound, outbound, and 1st floor outbound operations.
@@ -82,6 +86,7 @@ Each feature follows Clean Architecture principles:
 - `go_router`: Navigation and routing
 - `dio`: HTTP client for API communication
 - `flutter_lints`: Code analysis and linting
+- `mocktail`: Testing mocks (dev dependency)
 
 ### Platform Support
 - Primary target: Windows (see `windows/` folder structure)

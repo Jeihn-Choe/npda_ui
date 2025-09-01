@@ -77,7 +77,10 @@ class _PlaceholderScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: color.withAlpha(10),
       body: Center(
-        child: Text('$title 화면', style: TextStyle(fontSize: 24, color: color)),
+        child: Text(
+          '$title 테스트용화면',
+          style: TextStyle(fontSize: 12, color: color),
+        ),
       ),
     );
   }

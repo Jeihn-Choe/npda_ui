@@ -32,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _initializeApp() async {
-    //설정파일로드, 서버통신 확인 등 비동기 초기화 작업 수행
+    /// TODO : 설정파일로드, 서버통신 확인 등 비동기 초기화 작업 수행
     await Future.delayed(const Duration(seconds: 2));
 
     if (context.mounted) {
@@ -49,7 +49,6 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // TODO: 셀트리온 CI 이미지 표시
             Image.asset('assets/images/celltrion_ci.png'),
             const SizedBox(height: 40),
             Text(

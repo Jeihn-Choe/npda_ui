@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class MainShell extends StatelessWidget {
+import '../features/login/presentation/login_viewmodel.dart';
+
+class MainShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainShell({super.key, required this.navigationShell});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loginState = ref.watch(loginViewModelProvider);
+
     return DefaultTabController(
       length: (3),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Celltrion NPDA'),
+          toolbarHeight: 40,
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [Text('${loginState.userId} ${loginState.userName}님')],
+          ),
           bottom: TabBar(
             tabs: [
               Tab(text: '입고'),
