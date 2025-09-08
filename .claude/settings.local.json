@@ -3,7 +3,8 @@
     "allow": [
       "Bash(claude mcp:*)",
       "Bash(git add:*)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(tree:*)"
     ],
     "additionalDirectories": [
       "D:\\c\\Users\\JeihnChoe"

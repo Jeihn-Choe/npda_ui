@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:npda_ui_flutter/core/constants/colors.dart';
 
 import '../features/login/presentation/login_viewmodel.dart';
 
@@ -17,10 +18,27 @@ class MainShell extends ConsumerWidget {
       length: (3),
       child: Scaffold(
         appBar: AppBar(
-          toolbarHeight: 40,
+          toolbarHeight: 25,
           title: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [Text('${loginState.userId} ${loginState.userName}님')],
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                style: TextStyle(
+                  color: AppColors.celltrionGreen,
+                  fontWeight: FontWeight.normal,
+                  fontSize: 16,
+                ),
+                'RCS 연동 NPDA',
+              ),
+              Text(
+                style: TextStyle(
+                  color: AppColors.darkGrey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                '${loginState.userId} ${loginState.userName}님',
+              ),
+            ],
           ),
           bottom: TabBar(
             tabs: [

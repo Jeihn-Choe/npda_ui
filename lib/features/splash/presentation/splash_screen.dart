@@ -25,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // 위젯이 빌드된 이후에 초기화 로직을 실행
+    /// 위젯이 빌드된 이후에 초기화 로직을 실행
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeApp();
     });
