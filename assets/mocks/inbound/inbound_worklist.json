@@ -1,0 +1,83 @@
+[
+  {
+    "CmdId": "SO",
+    "SubMissionList": [
+      {
+        "MissionNo": 2001,
+        "SubMissionNo": 1,
+        "MissionType": 0,
+        "PltNo": "PU_A_1111111111111",
+        "StartTime": "2025090917:30:00",
+        "TargetRackLevel": 1,
+        "SourceBin": "A01-01-01",
+        "DestinationBin": "T01-TEMP-01",
+        "TaskOwner": 0
+      },
+      {
+        "MissionNo": 2001,
+        "SubMissionNo": 2,
+        "MissionType": 1,
+        "PltNo": "PU_A_1111111111111",
+        "StartTime": "2025090917:32:30",
+        "TargetRackLevel": 3,
+        "SourceBin": "T01-TEMP-01",
+        "DestinationBin": "C05-01-02",
+        "TaskOwner": 0
+      }
+    ]
+  },
+  {
+    "CmdId": "SO",
+    "SubMissionList": [
+      {
+        "MissionNo": 2002,
+        "SubMissionNo": 1,
+        "MissionType": 0,
+        "PltNo": "PU_B_2222222222222",
+        "StartTime": "2025090917:35:00",
+        "TargetRackLevel": 2,
+        "SourceBin": "D11-03-05",
+        "DestinationBin": "T02-TEMP-02",
+        "TaskOwner": 1
+      },
+      {
+        "MissionNo": 2002,
+        "SubMissionNo": 2,
+        "MissionType": 1,
+        "PltNo": "PU_B_2222222222222",
+        "StartTime": "2025090917:38:10",
+        "TargetRackLevel": 1,
+        "SourceBin": "T02-TEMP-02",
+        "DestinationBin": "E01-01-01",
+        "TaskOwner": 1
+      }
+    ]
+  },
+  {
+    "CmdId": "SO",
+    "SubMissionList": [
+      {
+        "MissionNo": 2003,
+        "SubMissionNo": 1,
+        "MissionType": 2,
+        "PltNo": "PU_C_3333333333333",
+        "StartTime": "2025090917:40:00",
+        "TargetRackLevel": 3,
+        "SourceBin": "F01-04-08",
+        "DestinationBin": "T03-TEMP-03",
+        "TaskOwner": 0
+      },
+      {
+        "MissionNo": 2003,
+        "SubMissionNo": 2,
+        "MissionType": 1,
+        "PltNo": "PU_C_3333333333333",
+        "StartTime": "2025090917:43:00",
+        "TargetRackLevel": 2,
+        "SourceBin": "T03-TEMP-03",
+        "DestinationBin": "H09-01-03",
+        "TaskOwner": 0
+      }
+    ]
+  }
+]

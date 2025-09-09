@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/inbound_screen.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/inbound_screen_preview.dart';
 import 'package:npda_ui_flutter/features/login/presentation/login_screen.dart';
 
 import '../../features/splash/presentation/splash_screen.dart';
@@ -29,7 +29,7 @@ final router = GoRouter(
             GoRoute(
               path: '/inbound',
               // TODO: 실제 입고 시 위젯으로 화면변경
-              builder: (context, state) => InboundScreen(),
+              builder: (context, state) => InboundScreenPreview(),
             ),
           ],
         ),
