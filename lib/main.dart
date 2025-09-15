@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/themes/app_theme.dart';
 
 import 'core/routes/router.dart';
 
@@ -25,8 +26,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'Celltrion NPDA',
-      
+      theme: AppTheme.lightTheme,
       routerConfig: router,
 
       // TODO: 라우팅 설정 추가

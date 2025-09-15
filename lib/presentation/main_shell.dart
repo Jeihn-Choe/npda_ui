@@ -18,15 +18,16 @@ class MainShell extends ConsumerWidget {
       length: (3),
       child: Scaffold(
         appBar: AppBar(
-          toolbarHeight: 25,
+          backgroundColor: AppColors.grey200,
+          toolbarHeight: 15,
           title: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 style: TextStyle(
-                  color: AppColors.celltrionGreen,
+                  color: AppColors.celltrionBlack,
                   fontWeight: FontWeight.normal,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
                 'RCS 연동 NPDA',
               ),
@@ -34,7 +35,7 @@ class MainShell extends ConsumerWidget {
                 style: TextStyle(
                   color: AppColors.darkGrey,
                   fontWeight: FontWeight.bold,
-                  fontSize: 16,
+                  fontSize: 14,
                 ),
                 '${loginState.userId} ${loginState.userName}님',
               ),

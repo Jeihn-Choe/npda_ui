@@ -36,7 +36,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2));
 
     if (context.mounted) {
-      context.go('/login'); // 초기화 완료 후 로그인 페이지로 이동
+      context.go('/inbound'); // 초기화 완료 후 로그인 페이지로 이동
       // 실제로는 ViewModel을 통해 초기화 상태를 관리하고, 성공 시 로그인
     }
   }

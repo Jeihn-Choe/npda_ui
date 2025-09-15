@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup.dart';
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 
 class _InboundItem {
@@ -26,45 +27,46 @@ class InboundScreenPreview extends StatelessWidget {
       // 첫 번째 PltNo (2단계 작업)
       _InboundItem(
         id: 1,
-        pltNo: 'PU_A_111111',
+        pltNo: 'P180047852-020001',
         source: 'A01-01-01',
         destination: 'T01-TEMP-01',
       ),
       _InboundItem(
         id: 2,
-        pltNo: 'PU_A_111111',
+        pltNo: 'P180047852-020001',
         source: 'T01-TEMP-01',
         destination: 'C05-01-02',
       ),
       // 두 번째 PltNo (2단계 작업)
       _InboundItem(
         id: 3,
-        pltNo: 'PU_B_222222',
+        pltNo: 'P280047852-020001',
         source: 'B02-03-01',
         destination: 'T02-TEMP-01',
       ),
       _InboundItem(
         id: 4,
-        pltNo: 'PU_B_222222',
+        pltNo: 'P280047852-020001',
         source: 'T02-TEMP-01',
         destination: 'D11-03-05',
       ),
       // 세 번째 PltNo (2단계 작업)
       _InboundItem(
         id: 5,
-        pltNo: 'PU_C_333333',
+        pltNo: 'P3380047852-020001',
         source: 'F01-04-08',
         destination: 'T03-TEMP-01',
       ),
       _InboundItem(
         id: 6,
-        pltNo: 'PU_C_333333',
+        pltNo: 'P380047852-020001',
         source: 'T03-TEMP-01',
         destination: 'H09-01-03',
       ),
     ];
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey.shade100,
       body: Padding(
         padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
@@ -97,7 +99,21 @@ class InboundScreenPreview extends StatelessWidget {
                     child: const Text(' 작업 시작 '),
                   ),
                   ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      // showDialog 함수를 호출하여 팝업을 띄웁니다.
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext dialogContext) {
+                          // MediaQuery를 오버라이드하여 키보드 Inset을 무시하게 만듭니다.
+                          return MediaQuery(
+                            data: MediaQuery.of(
+                              dialogContext,
+                            ).copyWith(viewInsets: EdgeInsets.zero),
+                            child: InboundRegistrationPopup(),
+                          );
+                        },
+                      );
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue.shade500,
                       foregroundColor: Colors.white,
@@ -119,7 +135,7 @@ class InboundScreenPreview extends StatelessWidget {
                   Expanded(
                     child: Column(
                       children: [
-                        _buildInfoField('No.', 'PU_A_111111'),
+                        _buildInfoField('No.', 'P180047852-020001'),
                         _buildInfoField('제품', '1단'),
                       ],
                     ),

@@ -12,14 +12,15 @@ class LoginState {
   final String? errorMessage;
   final String? userId;
   final String? userName;
+
   final bool isValidForm;
 
   const LoginState({
     this.isLoggedIn = false,
     this.isLoading = false,
     this.errorMessage,
-    this.userId,
-    this.userName,
+    this.userId = 'EC31784',
+    this.userName = '최제인',
     this.isValidForm = false,
   });
 
