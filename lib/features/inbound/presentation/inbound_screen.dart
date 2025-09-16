@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:logger/logger.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 import 'package:npda_ui_flutter/presentation/widgets/info_field_widget.dart';
@@ -9,6 +10,8 @@ class InboundScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    Logger().d('LOG_DEBUG : InboundScreen build');
+
     return Container(
       color: Colors.grey.shade100,
       child: Padding(
@@ -49,6 +52,30 @@ class InboundScreen extends ConsumerWidget {
                       foregroundColor: Colors.white,
                     ),
                     child: Text('생성'),
+                  ),
+                ],
+              ),
+            ),
+
+            /// 작업 Que 생성 시 표시, 평소에는 invisible 처리
+            FormCardLayout(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        InfoFieldWidget(filedName: '작업 Que', fieldValue: ''),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 2),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        InfoFieldWidget(filedName: '등록자', fieldValue: ''),
+                      ],
+                    ),
                   ),
                 ],
               ),

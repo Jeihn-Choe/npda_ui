@@ -2,9 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
-import 'package:npda_ui_flutter/features/login/presentation/login_viewmodel.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../../../../presentation/widgets/form_field_widget.dart';
+import 'inbound_registration_popup_viewmodel.dart';
 
 class InboundRegistrationPopup extends ConsumerStatefulWidget {
   const InboundRegistrationPopup({super.key});
@@ -16,41 +17,25 @@ class InboundRegistrationPopup extends ConsumerStatefulWidget {
 
 class _InboundRegistrationPopupState
     extends ConsumerState<InboundRegistrationPopup> {
-  late final TextEditingController _itemCodeController;
-  late final TextEditingController _itemNameController;
-  late final TextEditingController _remarksController;
-  String? _selectedRackLevel;
-
   @override
   void initState() {
     super.initState();
-    _itemCodeController = TextEditingController();
-    _itemNameController = TextEditingController();
-    _remarksController = TextEditingController();
-  }
-
-  @override
-  void dispose() {
-    _itemCodeController.dispose();
-    _itemNameController.dispose();
-    _remarksController.dispose();
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // loginViewModelProvider 구독
-    final loginState = ref.watch(loginViewModelProvider);
+    final viewModel = ref.watch(inboundRegistrationPopupViewModelProvider);
 
     return AlertDialog(
       title: const Text(
-        '신규 입고 품목 등록',
+        '입고 등록',
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        textAlign: TextAlign.center,
       ),
       content: SizedBox(
         width: MediaQuery.of(context).size.width * 0.75,
-        height: MediaQuery.of(context).size.height * 0.55,
-        child: SingleChildScrollView(child: _buildFormFields(loginState)),
+        height: MediaQuery.of(context).size.height * 0.65,
+        child: SingleChildScrollView(child: _buildFormFields(viewModel)),
       ),
       actions: [
         TextButton(
@@ -59,15 +44,17 @@ class _InboundRegistrationPopupState
         ),
         ElevatedButton(
           onPressed: () {
-            // TODO: 저장 로직 구현 (로그인 정보 사용: loginState.user)
+            logger('버튼 클릭됨');
+            viewModel.saveInboundRegistration();
+
             Navigator.of(context).pop();
           },
           child: const Text('저장', style: TextStyle(fontSize: 14)),
         ),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      titlePadding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 10.0),
-      contentPadding: const EdgeInsets.all(24.0),
+      titlePadding: const EdgeInsets.fromLTRB(12.0, 24.0, 12.0, 0.0),
+      contentPadding: const EdgeInsets.all(12.0),
       actionsPadding: const EdgeInsets.symmetric(
         horizontal: 24.0,
         vertical: 16.0,
@@ -75,19 +62,19 @@ class _InboundRegistrationPopupState
     );
   }
 
-  Widget _buildFormFields(dynamic loginState) {
+  Widget _buildFormFields(var viewModel) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         FormFieldWidget(
-          controller: _itemCodeController,
+          controller: viewModel.pltCodeController,
           label: 'PLT Number',
           hintText: '바코드를 스캔하세요.',
         ),
         const SizedBox(height: 12),
         FormFieldWidget<DateTime>(
-          controller: _itemNameController,
+          controller: viewModel.workTimeController,
           label: '작업시간',
           initialValue: DateTime.now().toUtc().add(const Duration(hours: 9)),
           keyboardType: TextInputType.datetime,
@@ -112,14 +99,14 @@ class _InboundRegistrationPopupState
               ),
               const SizedBox(height: 4),
               DropdownButtonFormField<String>(
-                value: _selectedRackLevel,
+                value: viewModel.selectedRackLevel,
                 hint: const Text(
                   '몇층으로 갈지 표시합니다.',
                   style: TextStyle(fontSize: 14, color: AppColors.grey600),
                 ),
                 onChanged: (String? newValue) {
                   setState(() {
-                    _selectedRackLevel = newValue;
+                    viewModel.setSelectedRackLevel(newValue);
                   });
                 },
                 items: <String>['1단 - 001', '2단 - 002', '3단 - 003', '기준없음']
@@ -162,10 +149,9 @@ class _InboundRegistrationPopupState
         ),
         const SizedBox(height: 12),
         FormFieldWidget(
-          controller: _remarksController,
+          controller: viewModel.userIdController,
           label: '사번',
           enabled: false,
-          initialValue: loginState.userId,
         ),
       ],
     );
@@ -189,9 +175,5 @@ class _InboundRegistrationPopupState
         ),
       ),
     );
-
-    setState(() {
-      _itemNameController.text = selectedDate.toString().substring(0, 19);
-    });
   }
 }

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 
 import 'api_service.dart';
 
@@ -27,8 +28,8 @@ class ApiServiceMockimpl implements ApiService {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      print('path: $path');
-      print(data.toString());
+      debugPrint('path: $path');
+      debugPrint(data.toString());
 
       final response = await _dio.post(
         path,
@@ -36,13 +37,13 @@ class ApiServiceMockimpl implements ApiService {
         queryParameters: queryParameters,
       );
 
-      print('=========== 정상 전송 완료 ==========');
-      print('response: $response');
+      debugPrint('=========== 정상 전송 완료 ==========');
+      debugPrint('response: $response');
 
       return _handleResponse(response);
     } catch (e) {
-      print('=========== 에러 발생 ==========');
-      print('error: $e');
+      debugPrint('=========== 에러 발생 ==========');
+      debugPrint('error: $e');
 
       throw Exception('Failed to post data: $e');
     }

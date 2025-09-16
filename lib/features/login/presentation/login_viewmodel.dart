@@ -92,10 +92,10 @@ class LoginViewModel extends StateNotifier<LoginState> {
       final result = await _loginUseCase(userId, password);
 
       //LOG
-      print('Login Result: ${result.isSuccess}');
-      print('User ID: ${result.userId}');
-      print('User Name: ${result.userName}');
-      print('Error Message: ${result.message}');
+      debugPrint('Login Result: ${result.isSuccess}');
+      debugPrint('User ID: ${result.userId}');
+      debugPrint('User Name: ${result.userName}');
+      debugPrint('Error Message: ${result.message}');
 
       if (result.isSuccess) {
         state = state.copyWith(
@@ -110,10 +110,10 @@ class LoginViewModel extends StateNotifier<LoginState> {
         state = state.copyWith(isLoading: false, errorMessage: result.message);
 
         //LOG
-        print('Login Result: ${result.isSuccess}');
-        print('User ID: ${result.userId}');
-        print('User Name: ${result.userName}');
-        print('Error Message: ${state.errorMessage}');
+        debugPrint('Login Result: ${result.isSuccess}');
+        debugPrint('User ID: ${result.userId}');
+        debugPrint('User Name: ${result.userName}');
+        debugPrint('Error Message: ${state.errorMessage}');
       }
     } catch (e) {
       state = state.copyWith(
@@ -122,7 +122,7 @@ class LoginViewModel extends StateNotifier<LoginState> {
       );
 
       //LOG
-      print('Login Error: $e');
+      debugPrint('Login Error: $e');
     }
   }
 
