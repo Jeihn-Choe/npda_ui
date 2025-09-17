@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
+import 'package:npda_ui_flutter/features/inbound/inbound_providers.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup.dart';
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 
@@ -17,12 +20,14 @@ class _InboundItem {
   });
 }
 
-class InboundScreen extends StatelessWidget {
+class InboundScreen extends ConsumerWidget {
   const InboundScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // 1. 요청하신 논리 구조에 맞춰 샘플 데이터를 재생성합니다.
+  Widget build(BuildContext context, WidgetRef ref) {
+    final registrationList = ref.watch(inboundRegistrationListProvider);
+    final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+    // 최하단 데이터그리드 샘플데이터
     final List<_InboundItem> sampleItems = [
       // 첫 번째 PltNo (2단계 작업)
       _InboundItem(
@@ -68,100 +73,184 @@ class InboundScreen extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey.shade100,
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            /// 상단 버튼 바
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      foregroundColor: Colors.white,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 4, 4, 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              /// 상단 버튼 바
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                      ),
+                      child: const Text('삭제'),
                     ),
-                    child: const Text('삭제'),
+                    ElevatedButton(
+                      onPressed: () {},
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.celltrionGreen,
+                        foregroundColor: AppColors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(' 작업 시작 '),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext dialogContext) {
+                            /// MediaQuery - 키보드 Inset을 무시
+                            return MediaQuery(
+                              data: MediaQuery.of(
+                                dialogContext,
+                              ).copyWith(viewInsets: EdgeInsets.zero),
+                              child: InboundRegistrationPopup(),
+                            );
+                          },
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue.shade500,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
+                      ),
+                      child: const Text('생성'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 4),
+
+              /// inboundRegistrationList 생성 시 해당 정보 표시 - 평소에는 존재 x
+              if (registrationList.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 8,
                   ),
-                  ElevatedButton(
-                    onPressed: () {},
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.celltrionGreen,
-                      foregroundColor: AppColors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(90),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+
+                  child: Column(
+                    children: [
+                      Text(
+                        style: TextStyle(
+                          color: AppColors.celltrionBlack,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        "입고 요청 List (${registrationList.length}건)",
+                      ),
+                      const SizedBox(height: 4),
+                      DataTable(
+                        horizontalMargin: 8,
+                        columnSpacing: 8,
+                        headingRowHeight: 28,
+                        dataRowMinHeight: 20,
+                        dataRowMaxHeight: 40,
+                        headingTextStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        dataTextStyle: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.black87,
+                        ),
+                        columns: const [
+                          DataColumn(label: Text('PLT No.')),
+                          DataColumn(label: Text('제품랙단수')),
+                          DataColumn(label: Text('요청자')),
+                          DataColumn(label: Text('요청시간')),
+                        ],
+                        rows: registrationList.map((item) {
+                          return DataRow(
+                            cells: [
+                              DataCell(Text(item.pltNo)),
+
+                              DataCell(Text(item.selectedRackLevel)),
+                              DataCell(Text(item.userId)),
+                              DataCell(
+                                Text(formatter.format(item.workStartTime)),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+
+              /// 중앙 오더 상세 표시
+              FormCardLayout(
+                contentPadding: 12,
+                verticalMargin: 4,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _buildInfoField('No.', 'P180047852-020001'),
+                          _buildInfoField('제품', '1단'),
+                        ],
                       ),
                     ),
-                    child: const Text(' 작업 시작 '),
-                  ),
-                  ElevatedButton(
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext dialogContext) {
-                          /// MediaQuery - 키보드 Inset을 무시
-                          return MediaQuery(
-                            data: MediaQuery.of(
-                              dialogContext,
-                            ).copyWith(viewInsets: EdgeInsets.zero),
-                            child: InboundRegistrationPopup(),
-                          );
-                        },
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade500,
-                      foregroundColor: Colors.white,
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          _buildInfoField('시간', '2025-09-09, 16:00:27'),
+                          _buildInfoField('담당', '최제인'),
+                        ],
+                      ),
                     ),
-                    child: const Text('생성'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 4),
-
-            /// 중앙 오더 상세 표시
-            FormCardLayout(
-              contentPadding: 12,
-              verticalMargin: 4,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _buildInfoField('No.', 'P180047852-020001'),
-                        _buildInfoField('제품', '1단'),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        _buildInfoField('시간', '2025-09-09, 16:00:27'),
-                        _buildInfoField('담당', '최제인'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            /// 하단 데이터그리드
-            Expanded(
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  ],
                 ),
-                child: SingleChildScrollView(
-                  // 세로 스크롤은 유지
+              ),
+              const SizedBox(height: 8),
+
+              /// 하단 데이터그리드
+              Container(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+
                   child: DataTable(
                     horizontalMargin: 8,
                     columnSpacing: 16,
@@ -196,8 +285,8 @@ class InboundScreen extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

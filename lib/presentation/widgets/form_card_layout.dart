@@ -7,6 +7,7 @@ class FormCardLayout extends StatelessWidget {
   final double keyboardVerticalMargin;
   final double contentPadding;
   final double keyboardContentPadding;
+  final Color? backgroundColor;
 
   const FormCardLayout({
     super.key,
@@ -15,6 +16,7 @@ class FormCardLayout extends StatelessWidget {
     this.keyboardVerticalMargin = 8,
     this.contentPadding = 4,
     this.keyboardContentPadding = 8,
+    this.backgroundColor,
   });
 
   @override
@@ -31,7 +33,7 @@ class FormCardLayout extends StatelessWidget {
 
         constraints: const BoxConstraints(maxWidth: 400),
         decoration: BoxDecoration(
-          color: AppColors.white,
+          color: backgroundColor ?? AppColors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
