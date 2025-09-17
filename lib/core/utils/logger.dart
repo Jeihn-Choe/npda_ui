@@ -10,5 +10,4 @@ final _logger = Logger(
   ),
 );
 
-void logger(String message) =>
-    _logger.d("======= LOG_DEBUG : $message =======");
+void logger(String message) => _logger.d("LOG_DEBUG : $message");

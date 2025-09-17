@@ -1,16 +1,15 @@
 class ApiConfig {
-  static const String baseUrl = "https://jsonplaceholder.typicode.com";
+  static const String baseUrl = "http://192.168.3.188:5000/api";
 
   //test
   static const String test = "/users";
-  
+
   //Authentication
-  static const String loginEndpoint = "/login";
-  static const String logoutEndpoint = "/auth/logout";
+  static const String loginEndpoint = "/user/login";
+  static const String logoutEndpoint = "/user/logout";
+  static const String sessionExpiredEndpoint = "/user/expired";
 
   //Order Management
-  static const String createOrderEndpoint = "/orders/create";
-  static const String getOrderEndpoint = "/orders/get";
-  static const String updateOrderEndpoint = "/orders/update";
-  static const String deleteOrderEndpoint = "/orders/delete";
+  static const String createOrderEndpoint = "/order/create";
+  static const String deleteOrderEndpoint = "/order/delete";
 }

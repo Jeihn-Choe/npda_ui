@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/core/network/http/api_provider.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../domain/usecase/login_usecase.dart';
 
@@ -64,22 +65,6 @@ class LoginViewModel extends StateNotifier<LoginState> {
     _passwordController.dispose();
   }
 
-  Future<void> testLogin(
-    BuildContext context,
-    String userId,
-    String password,
-  ) async {
-    state = state.copyWith(
-      isLoggedIn: true,
-      errorMessage: null,
-      isLoading: false,
-      userId: userId,
-      userName: 'admin',
-    );
-
-    context.go('/inbound'); // 로그인 성공 시 이동할 경로
-  }
-
   Future<void> login(
     BuildContext context,
     String userId,
@@ -92,10 +77,10 @@ class LoginViewModel extends StateNotifier<LoginState> {
       final result = await _loginUseCase(userId, password);
 
       //LOG
-      debugPrint('Login Result: ${result.isSuccess}');
-      debugPrint('User ID: ${result.userId}');
-      debugPrint('User Name: ${result.userName}');
-      debugPrint('Error Message: ${result.message}');
+      logger('Login Result: ${result.isSuccess}');
+      logger('User ID: ${result.userId}');
+      logger('User Name: ${result.userName}');
+      logger('Error Message: ${result.message}');
 
       if (result.isSuccess) {
         state = state.copyWith(
@@ -108,12 +93,7 @@ class LoginViewModel extends StateNotifier<LoginState> {
         context.go('/inbound'); // 로그인 성공 시 이동할 경로
       } else {
         state = state.copyWith(isLoading: false, errorMessage: result.message);
-
-        //LOG
-        debugPrint('Login Result: ${result.isSuccess}');
-        debugPrint('User ID: ${result.userId}');
-        debugPrint('User Name: ${result.userName}');
-        debugPrint('Error Message: ${state.errorMessage}');
+        logger('Error Message: ${state.errorMessage}');
       }
     } catch (e) {
       state = state.copyWith(
@@ -122,7 +102,7 @@ class LoginViewModel extends StateNotifier<LoginState> {
       );
 
       //LOG
-      debugPrint('Login Error: $e');
+      logger('Login Error: $e');
     }
   }
 

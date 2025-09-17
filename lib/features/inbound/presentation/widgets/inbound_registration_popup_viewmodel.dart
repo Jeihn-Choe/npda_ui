@@ -1,27 +1,12 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_registration_item.dart';
 
 import '../../../login/presentation/login_viewmodel.dart';
-
-/// provider 선언
-final inboundRegistrationPopupViewModelProvider = ChangeNotifierProvider((ref) {
-  final viewModel = InboundRegistrationPopupViewModel();
-  final loginState = ref.watch(loginViewModelProvider);
-
-  /// 뷰모델 초기화
-  viewModel.initialize(loginState);
-
-  return viewModel;
-});
+import '../../inbound_providers.dart';
 
 /// inbound_popup viewmodel에서 관리하는 상태 모음
 class InboundRegistrationPopupViewModel extends ChangeNotifier {
-  /// 입고작업 리스트
-  final List<InboundRegistrationItem> inboundRegistrations = [];
-
   /// 텍스트 컨트롤러
   final TextEditingController pltCodeController = TextEditingController();
   final TextEditingController workTimeController = TextEditingController();
@@ -77,40 +62,36 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   }
 
   /// 저장 로직 => 리스트에 담아서 상태 관리해야함 : inbound screen에서 상태에 접근해서 목록 드로잉
-  void saveInboundRegistration() {
+  Future<void> saveInboundRegistration(WidgetRef ref) async {
     logger('saveInboundRegistration 호출됨');
 
-    if (isFormValid()) {
-      final isDuplicate = inboundRegistrations.any(
-        (item) => item.pltNo == pltCodeController.text,
-      );
-      if (isDuplicate) {
-        logger('중복된 PLT Number: ${pltCodeController.text}');
-        return; // 중복된 항목이 있으면 저장하지 않고 종료
-      }
+    if (!isFormValid()) {
+      logger('폼이 유효하지 않음');
+      return;
+    }
 
-      // 저장 로직 구현
-      final newItem = InboundRegistrationItem(
-        pltNo: pltCodeController.text,
-        workStartTime: DateTime.parse(workTimeController.text),
-        selectedRackLevel: _selectedRackLevel!,
-        userId: userIdController.text,
-      );
+    /// 상태 관리자에 항목 추가 요청
+    try {
+      await ref
+          .read(inboundRegistrationListProvider.notifier)
+          .addInboundItem(
+            pltNo: pltCodeController.text,
+            workStartTime: DateTime.parse(workTimeController.text),
+            userId: userIdController.text,
+            selectedRackLevel: _selectedRackLevel,
+          );
+      logger('입고 등록 항목이 성공적으로 추가됨');
 
-      inboundRegistrations.add(newItem);
-
-      logger('Inbound Registration Saved Successfully!: ${newItem.toString()}');
-      Logger().d('Total Registrations: ${inboundRegistrations.length}');
-
-      // 저장 후 폼 초기화
       pltCodeController.clear();
       _selectedRackLevel = null;
       final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
       workTimeController.text = currentTime.toString().substring(0, 19);
       notifyListeners();
-    } else {
-      // 폼이 유효하지 않을 때 처리
-      // 예: 사용자에게 오류 메시지 표시
+
+      logger('폼 초기화 완료');
+    } catch (e) {
+      logger('입고 등록 항목 추가 중 오류 발생: $e');
+      // 에러 처리 (예: 사용자에게 오류 메시지 표시)
     }
   }
 

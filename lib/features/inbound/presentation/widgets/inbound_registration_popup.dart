@@ -5,7 +5,7 @@ import 'package:npda_ui_flutter/core/constants/colors.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../../../../presentation/widgets/form_field_widget.dart';
-import 'inbound_registration_popup_viewmodel.dart';
+import '../../inbound_providers.dart';
 
 class InboundRegistrationPopup extends ConsumerStatefulWidget {
   const InboundRegistrationPopup({super.key});
@@ -43,11 +43,36 @@ class _InboundRegistrationPopupState
           child: const Text('취소', style: TextStyle(fontSize: 14)),
         ),
         ElevatedButton(
-          onPressed: () {
-            logger('버튼 클릭됨');
-            viewModel.saveInboundRegistration();
+          onPressed: () async {
+            logger('저장 버튼 클릭됨');
 
-            Navigator.of(context).pop();
+            try {
+              await viewModel.saveInboundRegistration(ref);
+
+              // 저장 후 팝업 닫기
+              if (mounted) {
+                Navigator.of(context).pop();
+              }
+            } catch (e) {
+              // 에러 발생 시 다이얼로그로 알림
+              if (mounted) {
+                logger(e.toString());
+
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('오류'),
+                    content: Text(e.toString()),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('확인'),
+                      ),
+                    ],
+                  ),
+                );
+              }
+            }
           },
           child: const Text('저장', style: TextStyle(fontSize: 14)),
         ),

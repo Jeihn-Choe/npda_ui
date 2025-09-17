@@ -28,7 +28,6 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/inbound',
-              // TODO: 실제 입고 시 위젯으로 화면변경
               builder: (context, state) => InboundScreen(),
             ),
           ],
@@ -39,6 +38,7 @@ final router = GoRouter(
             GoRoute(
               path: '/outbound',
 
+              // builder: (context, state) => OutboundScreen(),
               builder: (context, state) =>
                   const _PlaceholderScreen(title: '출고 화면', color: Colors.green),
             ),
@@ -49,6 +49,7 @@ final router = GoRouter(
           routes: [
             GoRoute(
               path: '/outbound_1f',
+              // builder: (context, state) => Outbound1fScreen(),
               builder: (context, state) => const _PlaceholderScreen(
                 title: '1층 출고 화면',
                 color: Colors.red,

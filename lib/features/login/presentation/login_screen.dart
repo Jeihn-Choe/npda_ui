@@ -102,12 +102,11 @@ class LoginScreen extends ConsumerWidget {
                       final userId = viewmodel.userIdController.text;
                       final password = viewmodel.passwordController.text;
 
-                      /// TODO : 로그인 서버 테스트 가능 시
-                      /// viewmodel.login(context, userId, password);
+                      viewmodel.login(context, userId, password);
 
                       /// testLogin 사용
                       /// 아이디/비번 상관없이 로그인 처리
-                      viewmodel.testLogin(context, userId, password);
+                      /// viewmodel.testLogin(context, userId, password);
                     },
 
                     style: ElevatedButton.styleFrom(
