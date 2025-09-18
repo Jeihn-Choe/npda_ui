@@ -1,5 +1,6 @@
 import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_registration_item.dart';
 
+import '../../../../core/utils/logger.dart';
 import 'add_inbound_item_usecase.dart';
 
 class AddInboundItemUseCaseImpl implements AddInboundItemUseCase {
@@ -11,6 +12,8 @@ class AddInboundItemUseCaseImpl implements AddInboundItemUseCase {
     required String? userId,
     required String? selectedRackLevel,
   }) async {
+    logger('AddInboundItemUseCaseImpl 호출됨');
+
     // 유효성검사
     if (pltNo == null || pltNo.isEmpty) {
       throw ArgumentError('PltNo 누락');

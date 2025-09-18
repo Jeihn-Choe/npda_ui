@@ -2,8 +2,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
-import '../../../login/presentation/login_viewmodel.dart';
-import '../../inbound_providers.dart';
+import '../../../login/presentation/state/login_state.dart';
+import '../providers/inbound_providers.dart';
 
 /// inbound_popup viewmodel에서 관리하는 상태 모음
 class InboundRegistrationPopupViewModel extends ChangeNotifier {

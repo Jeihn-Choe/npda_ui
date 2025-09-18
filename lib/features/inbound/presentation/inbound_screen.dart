@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
-import 'package:npda_ui_flutter/features/inbound/inbound_providers.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup.dart';
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 
@@ -25,7 +25,19 @@ class InboundScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final registrationList = ref.watch(inboundRegistrationListProvider);
+    // inboundRegistrationList 의 상태를 구독해야함.
+    // 필요한 상태는 InboundRegistrationListState
+    // 그래서 InboundRegistrationListState를 구독해야함.
+    final inboundRegistrationList = ref.watch(inboundRegistrationListProvider);
+
+    // 근데 InboundRegistrationListState는 items라는 리스트가있음 => 이게 display 해야 할 데이터임.
+    // 그래서 items를 꺼내서 따로 정의해야 ui에서 쓸 수 있음
+    final inboundRestrationListItems = inboundRegistrationList.items;
+
+    // 그리고 ui에서 삭제할 수 있게 selectedItems도 정의해야함
+    final inboundResgistrationselectedItems =
+        inboundRegistrationList.selectedPltNos;
+
     final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
     // 최하단 데이터그리드 샘플데이터
     final List<_InboundItem> sampleItems = [
@@ -146,7 +158,7 @@ class InboundScreen extends ConsumerWidget {
               const SizedBox(height: 4),
 
               /// inboundRegistrationList 생성 시 해당 정보 표시 - 평소에는 존재 x
-              if (registrationList.isNotEmpty)
+              if (inboundRestrationListItems.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.symmetric(
                     vertical: 4,
@@ -172,7 +184,7 @@ class InboundScreen extends ConsumerWidget {
                           color: AppColors.celltrionBlack,
                           fontWeight: FontWeight.bold,
                         ),
-                        "입고 요청 List (${registrationList.length}건)",
+                        "입고 요청 List (${inboundRestrationListItems.length}건)",
                       ),
                       const SizedBox(height: 4),
                       DataTable(
@@ -193,16 +205,13 @@ class InboundScreen extends ConsumerWidget {
                         columns: const [
                           DataColumn(label: Text('PLT No.')),
                           DataColumn(label: Text('제품랙단수')),
-                          DataColumn(label: Text('요청자')),
                           DataColumn(label: Text('요청시간')),
                         ],
-                        rows: registrationList.map((item) {
+                        rows: inboundRestrationListItems.map((item) {
                           return DataRow(
                             cells: [
                               DataCell(Text(item.pltNo)),
-
                               DataCell(Text(item.selectedRackLevel)),
-                              DataCell(Text(item.userId)),
                               DataCell(
                                 Text(formatter.format(item.workStartTime)),
                               ),

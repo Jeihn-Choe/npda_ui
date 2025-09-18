@@ -37,7 +37,7 @@ class FormCardLayout extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: AppColors.darkGrey.withAlpha(20),
+              color: AppColors.black.withAlpha(90),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

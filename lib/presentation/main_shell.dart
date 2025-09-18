@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
 
-import '../features/login/presentation/login_viewmodel.dart';
+import '../features/login/presentation/providers/login_providers.dart';
 
 class MainShell extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
