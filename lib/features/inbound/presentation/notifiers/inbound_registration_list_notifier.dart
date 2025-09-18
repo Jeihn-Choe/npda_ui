@@ -1,4 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/domain/entities/response_order_entity.dart';
+import 'package:npda_ui_flutter/features/inbound/domain/usecases/request_inbound_work_usecase.dart';
 
 import '../../../../core/utils/logger.dart';
 import '../../domain/usecases/add_inbound_item_usecase.dart';
@@ -6,10 +8,16 @@ import '../state/inbound_registration_list_state.dart';
 
 class InboundRegistrationListNotifier
     extends StateNotifier<InboundRegistrationListState> {
-  final AddInboundItemUseCase addInboundItemUseCase;
+  // 새로운 작업을 저장할 때 Usecase 선언
+  final AddInboundItemUseCase _addInboundItemUseCase;
 
-  InboundRegistrationListNotifier(this.addInboundItemUseCase)
-    : super(const InboundRegistrationListState());
+  // 작업 요청 Usecase 선언
+  final RequestInboundWorkUseCase _requestInboundWorkUseCase;
+
+  InboundRegistrationListNotifier(
+    this._addInboundItemUseCase,
+    this._requestInboundWorkUseCase,
+  ) : super(const InboundRegistrationListState());
 
   /// UI의 호출을 받아 Usecase를 호출하고 상태를 업데이트
   Future<void> addInboundItem({
@@ -20,7 +28,7 @@ class InboundRegistrationListNotifier
   }) async {
     try {
       // Usecase 호출하여 새로운 아이템리스트 얻기
-      final newItemList = await addInboundItemUseCase(
+      final newItemList = await _addInboundItemUseCase(
         currentList: state.items,
         pltNo: pltNo,
         workStartTime: workStartTime,
@@ -34,6 +42,29 @@ class InboundRegistrationListNotifier
       logger('Error adding inbound item: $e');
       // 에러를 다시 던져서 UI에서 처리할 수 있도록 함
       rethrow;
+    }
+  }
+
+  Future<ResponseOrderEntity> requestInboundWork() async {
+    // 상태를 로딩으로 변경
+    state = state.copyWith(isLoading: true);
+
+    try {
+      // 현재 상태에 있는 아이템 리스트를 UseCase에 전달, 작업 요청.
+      final response = await _requestInboundWorkUseCase(items: state.items);
+
+      // 요청 성공 시
+      if (response.isSuccess) {
+        state = state.copyWith(items: [], selectedPltNos: {});
+      }
+
+      return response;
+    } catch (e) {
+      logger('Error requesting inbound work: $e');
+      return ResponseOrderEntity.failure(message: e.toString());
+    } finally {
+      // 작업 성공, 실패에 관계없이 상황이 종료되면 로딩 상태를 false 로 변경
+      state = state.copyWith(isLoading: false);
     }
   }
 }

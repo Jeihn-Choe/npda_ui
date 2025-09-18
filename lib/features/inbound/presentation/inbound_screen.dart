@@ -113,7 +113,43 @@ class InboundScreen extends ConsumerWidget {
                       child: const Text('삭제'),
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      // 리스트가 비어있거나, 로딩중일때는 버튼 비활성화
+                      onPressed:
+                          inboundRegistrationList == null ||
+                              inboundRegistrationList.isLoading
+                          ? null
+                          : () async {
+                              // Notifier에서 작업 시작 로직 호출
+                              final result = await ref
+                                  .read(
+                                    inboundRegistrationListProvider.notifier,
+                                  )
+                                  .requestInboundWork();
+
+                              // 결과에 따라 다이얼로그 표시
+                              if (!context.mounted) return;
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext dialogContext) {
+                                  return AlertDialog(
+                                    title: Text(result.isSuccess ? '성공' : '실패'),
+                                    content: Text(
+                                      result.message ??
+                                          (result.isSuccess
+                                              ? '작업이 성공적으로 요청되었습니다.'
+                                              : '작업 요청에 실패했습니다.'),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(dialogContext).pop(),
+                                        child: const Text('확인'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.celltrionGreen,
                         foregroundColor: AppColors.white,

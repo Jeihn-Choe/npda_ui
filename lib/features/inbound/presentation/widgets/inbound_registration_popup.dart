@@ -172,6 +172,7 @@ class _InboundRegistrationPopupState
             ],
           ),
         ),
+
         const SizedBox(height: 12),
         FormFieldWidget(
           controller: viewModel.userIdController,

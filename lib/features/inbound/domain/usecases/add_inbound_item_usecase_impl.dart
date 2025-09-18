@@ -38,6 +38,7 @@ class AddInboundItemUseCaseImpl implements AddInboundItemUseCase {
       workStartTime: workStartTime,
       userId: userId,
       selectedRackLevel: selectedRackLevel,
+      isWrapped: false,
     );
 
     return [...currentList, newItem];
