@@ -115,7 +115,7 @@ class InboundScreen extends ConsumerWidget {
                     ElevatedButton(
                       // 리스트가 비어있거나, 로딩중일때는 버튼 비활성화
                       onPressed:
-                          inboundRegistrationList == null ||
+                          inboundRegistrationList.items.isEmpty ||
                               inboundRegistrationList.isLoading
                           ? null
                           : () async {
