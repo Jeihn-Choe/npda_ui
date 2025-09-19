@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 
+import '../../utils/logger.dart';
 import 'api_service.dart';
 
 class ApiServiceImpl implements ApiService {
@@ -28,8 +28,8 @@ class ApiServiceImpl implements ApiService {
     Map<String, dynamic>? queryParameters,
   }) async {
     try {
-      debugPrint('path: $path');
-      debugPrint(data.toString());
+      logger('path: $path');
+      logger(data.toString());
 
       final response = await _dio.post(
         path,
@@ -37,13 +37,13 @@ class ApiServiceImpl implements ApiService {
         queryParameters: queryParameters,
       );
 
-      debugPrint('=========== 정상 전송 완료 ==========');
-      debugPrint('response: $response');
+      logger('=========== API SERVICE 정상 전송 완료 ==========');
+      logger('response: $response');
 
       return _handleResponse(response);
     } catch (e) {
-      debugPrint('=========== 에러 발생 ==========');
-      debugPrint('error: $e');
+      logger('===========  API SERVICE에러 발생 ==========');
+      logger('error: $e');
 
       throw Exception('Failed to post data: $e');
     }
@@ -87,8 +87,12 @@ class ApiServiceImpl implements ApiService {
 
   dynamic _handleResponse(Response response) {
     // 성공적인 응답 (2xx 상태 코드)일 경우, 데이터 본문만    반환합니다.
+
+    logger("===== API SERVICE : response 핸들타고 반환 ==== ");
     if (response.statusCode != null && response.statusCode == 200) {
-      return response.data;
+      logger(response.data.toString());
+
+      return response;
     }
   }
 }

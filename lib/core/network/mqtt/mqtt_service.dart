@@ -1,12 +1,12 @@
 /// 연결 상태를 나타내는 enum
-enum MqttConnectionState { connected, disconnected, connecting, error }
+enum MqttState { connected, disconnected, connecting, error }
 
 /// 수신된 메시지를 담을 클래스 (토픽과 데이터 관리)
-class MqttMessage {
+class ReceivedMqttMessage {
   final String topic;
   final String payload;
 
-  MqttMessage({required this.topic, required this.payload});
+  ReceivedMqttMessage({required this.topic, required this.payload});
 }
 
 abstract class MqttService {
@@ -27,8 +27,8 @@ abstract class MqttService {
   void publish(String topic, String message);
 
   /// 연결 상태 스트림
-  Stream<MqttConnectionState> get connectionStateStream;
+  Stream<MqttState> get connectionStateStream;
 
   /// 수신된 메시지 스트림
-  Stream<MqttMessage> get messageStream;
+  Stream<ReceivedMqttMessage> get messageStream;
 }

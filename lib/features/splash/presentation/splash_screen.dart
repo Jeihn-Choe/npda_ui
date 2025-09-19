@@ -38,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (context.mounted) {
       // TODO : ViewModel을 통해 초기화 상태 체크
 
-      context.go('/inbound'); // 초기화 완료 후 로그인 페이지로 이동
+      context.go('/login'); // 초기화 완료 후 로그인 페이지로 이동
     }
   }
 
@@ -67,7 +67,7 @@ class _SplashScreenState extends State<SplashScreen> {
               const CircularProgressIndicator(),
               const SizedBox(height: 20),
               const Text('초기화 중...'),
-
+ 
               // TODO: ViewModel 상태에 따른 조건부 위젯 렌더링
               // - 로딩 중: CircularProgressIndicator
               // - 에러 발생: 에러 메시지 + 재시도 버튼

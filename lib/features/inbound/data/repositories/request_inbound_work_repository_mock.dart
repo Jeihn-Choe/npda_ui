@@ -14,10 +14,10 @@ class RequestInboundWorkRepositoryMock implements RequestInboundWorkRepository {
       logger('강제 실패 반환');
       return ResponseOrderEntity.failure(
         cmdId: null,
-        message: 'MOCK 서버 : PLT 번호에 M이 포함되어 있어 실패 취급',
+        msg: 'MOCK 서버 : PLT 번호에 M이 포함되어 있어 실패 취급',
       );
     }
 
-    return ResponseOrderEntity.success(cmdId: dto.cmdId);
+    return ResponseOrderEntity.success();
   }
 }

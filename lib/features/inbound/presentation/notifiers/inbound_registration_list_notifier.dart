@@ -61,7 +61,7 @@ class InboundRegistrationListNotifier
       return response;
     } catch (e) {
       logger('Error requesting inbound work: $e');
-      return ResponseOrderEntity.failure(message: e.toString());
+      return ResponseOrderEntity.failure(msg: e.toString());
     } finally {
       // 작업 성공, 실패에 관계없이 상황이 종료되면 로딩 상태를 false 로 변경
       state = state.copyWith(isLoading: false);

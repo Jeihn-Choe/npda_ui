@@ -16,6 +16,7 @@ final router = GoRouter(
       path: '/login',
       builder: (context, state) => const LoginScreen(), // TODO: 실제 로그인 화면
     ),
+
     //메인 화면을 위한 셸 라우트
     StatefulShellRoute.indexedStack(
       // 셸 UI 위젯 빌더

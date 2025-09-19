@@ -15,10 +15,7 @@ class RequestInboundWorkUseCaseImpl implements RequestInboundWorkUseCase {
     required List<InboundRegistrationItem> items,
   }) async {
     if (items.isEmpty) {
-      return ResponseOrderEntity.failure(
-        cmdId: null,
-        message: '등록된 입고 항목이 없습니다.',
-      );
+      return ResponseOrderEntity.failure(cmdId: null, msg: '등록된 입고 항목이 없습니다.');
     }
 
     /// 받은거 토대로 requestOrderDto 조립
@@ -41,7 +38,7 @@ class RequestInboundWorkUseCaseImpl implements RequestInboundWorkUseCase {
     }).toList(); // .map() 으로 변환된 각 Workitem을 toList()로 다시 리스트로 변환
 
     final requestOrderDto = RequestOrderDto(
-      cmdId: 'SO', // 입고 작업
+      cmdId: 'RO', // 입고 작업
       missionList: workItems,
     ); // DTO 조립 완료
 

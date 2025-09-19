@@ -134,7 +134,7 @@ class InboundScreen extends ConsumerWidget {
                                   return AlertDialog(
                                     title: Text(result.isSuccess ? '성공' : '실패'),
                                     content: Text(
-                                      result.message ??
+                                      result.msg ??
                                           (result.isSuccess
                                               ? '작업이 성공적으로 요청되었습니다.'
                                               : '작업 요청에 실패했습니다.'),

@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/features/inbound/data/repositories/request_inbound_work_repository_mock.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/usecases/request_inbound_work_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart';
 import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 
 import '../../../../core/network/http/api_provider.dart';
+import '../../data/repositories/request_inbound_work_repository_impl.dart';
 import '../../domain/repositories/request_inbound_work_repository.dart';
 import '../../domain/usecases/add_inbound_item_usecase.dart';
 import '../../domain/usecases/add_inbound_item_usecase_impl.dart';
@@ -26,10 +26,10 @@ final requestInboundWorkRepositoryProvider =
 
       /// apiService 주입해서 레파지토리 구현체 반환 => 이타이밍에 메모리에 구현체가 올라감
       /// TODO: 실제서버 사용 시 교체
-      /// return RequestInboundWorkRepositoryImpl(apiService);
+      return RequestInboundWorkRepositoryImpl(apiService);
 
       /// Mock 서버 사용 시
-      return RequestInboundWorkRepositoryMock();
+      // return RequestInboundWorkRepositoryMock();
     });
 
 // RequestInboundWorkUseCase - 구현체 연결 Provider

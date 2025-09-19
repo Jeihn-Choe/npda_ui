@@ -11,7 +11,7 @@ class LoginUseCase {
     if (userId.trim().isEmpty || password.trim().isEmpty) {
       return LoginResult.failure('아이디와 비밀번호를 모두 입력해주세요.');
     }
-    logger('validation 완료');
+    logger('USECASE : validation 완료');
 
     return await _repository.login(userId, password);
   }

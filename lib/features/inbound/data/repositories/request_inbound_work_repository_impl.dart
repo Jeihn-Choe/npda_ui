@@ -15,26 +15,27 @@ class RequestInboundWorkRepositoryImpl implements RequestInboundWorkRepository {
   @override
   Future<ResponseOrderEntity> requestInboundWork(RequestOrderDto dto) async {
     try {
-      logger(dto.toString());
-
       final responseJson = await _apiService.post(
         ApiConfig.createOrderEndpoint,
         data: dto.toJson(),
       );
-      final responseDto = ResponseOrderDto.fromJson(responseJson);
 
-      if (responseDto.result == 'S') {
+      final responseDto = ResponseOrderDto.fromJson(responseJson.data);
+
+      logger('=======INOBOUND WORK REPOSITORY : response 응답받음====== ');
+
+      if (responseDto.result == "S") {
         return ResponseOrderEntity.success(cmdId: responseDto.cmdId);
       } else {
         return ResponseOrderEntity.failure(
           cmdId: responseDto.cmdId,
-          message: responseDto.msg,
+          msg: responseDto.msg,
         );
       }
     } catch (e) {
       return ResponseOrderEntity.failure(
         cmdId: null,
-        message: '작업 요청 실패: 네트워크 오류',
+        msg: 'REPOSITORY_IMPL : 작업 요청 실패: 네트워크 오류',
       );
     }
   }

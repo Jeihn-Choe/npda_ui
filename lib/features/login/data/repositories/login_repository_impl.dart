@@ -1,3 +1,4 @@
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/login/domain/repositories/login_repository.dart';
 
 import '../../../../core/config/api_config.dart';
@@ -15,21 +16,30 @@ class LoginRepositoryImpl implements LoginRepository {
   Future<LoginResult> login(String userId, String password) async {
     try {
       // 1. ApiService를 사용하여 실제 로그인 API 호출
+
+      logger(
+        '======================= LoginRepositoryImpl 호출됨 =======================',
+      );
       final responseJson = await _apiService.post(
         ApiConfig.loginEndpoint,
         data: {'userId': userId.trim(), 'password': password.trim()},
       );
 
-      // 2. API 응답을 기반으로 LoginResult 생성 및 반환
-      final reponseDTO = LoginResponseDTO.fromJson(responseJson);
+      logger("======================== 로그인 API 응답 =======================");
 
-      if (reponseDTO.result == 'S' && reponseDTO.status == '200') {
+      // 2. API 응답을 기반으로 LoginResult 생성 및 반환
+      final responseDTO = LoginResponseDTO.fromJson(responseJson.data);
+
+      logger("======================== 변환완료 =======================");
+      logger(responseDTO.toString());
+
+      if (responseDTO.result == "S" && responseDTO.status == "200") {
         return LoginResult.success(
           userId: userId,
-          userName: reponseDTO.userName,
+          userName: responseDTO.userName,
         );
       } else {
-        return LoginResult.failure(reponseDTO.msg);
+        return LoginResult.failure(responseDTO.msg);
       }
     } catch (e) {
       // 3. 오류 발생 시 실패 결과 반환

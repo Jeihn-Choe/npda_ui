@@ -1,3 +1,5 @@
+import 'package:npda_ui_flutter/core/utils/logger.dart';
+
 class LoginResponseDTO {
   final String status;
   final String userId;
@@ -14,6 +16,8 @@ class LoginResponseDTO {
   });
 
   factory LoginResponseDTO.fromJson(Map<String, dynamic> json) {
+    logger("============== login Json 변환중==============");
+
     return LoginResponseDTO(
       status: json['status'] as String,
       userId: json['userId'] as String,

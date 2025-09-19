@@ -1,27 +1,23 @@
 class ResponseOrderEntity {
   final String? cmdId;
   final bool isSuccess;
-  final String? message;
+  final String? msg;
 
   const ResponseOrderEntity({
     required this.cmdId,
     required this.isSuccess,
-    required this.message,
+    required this.msg,
   });
 
-  factory ResponseOrderEntity.success({String? cmdId}) {
-    return ResponseOrderEntity(
-      cmdId: cmdId ?? '',
-      isSuccess: true,
-      message: 'Success',
-    );
+  factory ResponseOrderEntity.success({String? cmdId, String? msg}) {
+    return ResponseOrderEntity(cmdId: cmdId, isSuccess: true, msg: msg);
   }
 
-  factory ResponseOrderEntity.failure({String? cmdId, String? message}) {
+  factory ResponseOrderEntity.failure({String? cmdId, String? msg}) {
     return ResponseOrderEntity(
-      cmdId: cmdId ?? '',
+      cmdId: cmdId,
       isSuccess: false,
-      message: message ?? 'Failure',
+      msg: msg ?? 'Failure',
     );
   }
 }
