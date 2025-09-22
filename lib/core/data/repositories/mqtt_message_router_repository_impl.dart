@@ -54,6 +54,16 @@ class MqttMessageRouterRepositoryImpl {
             final subMissionList = rawDto.payload as List<dynamic>;
             inboundRepo.updateInboundMissionList(subMissionList);
 
+            /// SM 메시지 수신 성공 응답 메시지 발행
+
+            final response = {
+              "cmdId": "SM",
+              "result": "S",
+              "msg": "Message received successfully",
+            };
+
+            _mqttService.publish("NPDA.MW", jsonEncode(response));
+
             break;
 
           case "SB":

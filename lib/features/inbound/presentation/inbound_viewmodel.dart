@@ -11,6 +11,7 @@ class CurrentInboundMissionState {
   final String? errorMessage;
   final Set<int> selectedMissionNos;
   final CurrentInboundMissionEntity? selectedMission;
+  final bool isSelectionModeActive;
 
   const CurrentInboundMissionState({
     this.currentInboundMissions = const [],
@@ -18,6 +19,7 @@ class CurrentInboundMissionState {
     this.errorMessage,
     this.selectedMissionNos = const {},
     this.selectedMission,
+    this.isSelectionModeActive = false,
   });
 
   CurrentInboundMissionState copyWith({
@@ -26,6 +28,7 @@ class CurrentInboundMissionState {
     String? errorMessage,
     Set<int>? selectedMissionNos,
     CurrentInboundMissionEntity? selectedMission,
+    bool? isSelectionModeActive,
   }) {
     return CurrentInboundMissionState(
       currentInboundMissions:
@@ -34,6 +37,8 @@ class CurrentInboundMissionState {
       errorMessage: errorMessage ?? this.errorMessage,
       selectedMissionNos: selectedMissionNos ?? this.selectedMissionNos,
       selectedMission: selectedMission ?? this.selectedMission,
+      isSelectionModeActive:
+          isSelectionModeActive ?? this.isSelectionModeActive,
     );
   }
 }
@@ -69,8 +74,42 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
     );
   }
 
+  /// 사용자가 미션을 터치했을 때 :
+  /// isSelectionModeActive false 변경
+  /// 상세보기 내용 띄워줌.
   void selectMission(CurrentInboundMissionEntity mission) {
-    state = state.copyWith(selectedMission: mission);
+    state = state.copyWith(
+      selectedMission: mission,
+      isSelectionModeActive: false,
+      selectedMissionNos: {},
+    );
+  }
+
+  /// 사용자가 미션을 길게 터치했을 때 :
+  /// isSelectionModeActive true 변경
+  /// 해당 미션을 selectedMissionNos에 추가
+  void enableSelectionMode(int missionNo) {
+    state = state.copyWith(
+      isSelectionModeActive: true,
+      selectedMissionNos: {missionNo},
+    );
+  }
+
+  void disableSelectionMode() {
+    state = state.copyWith(
+      isSelectionModeActive: false,
+      selectedMissionNos: {},
+    );
+  }
+
+  void toggleMissionForDeletion(int missionNo) {
+    final Set<int> currentSelection = Set.from(state.selectedMissionNos);
+    if (currentSelection.contains(missionNo)) {
+      currentSelection.remove(missionNo);
+    } else {
+      currentSelection.add(missionNo);
+    }
+    state = state.copyWith(selectedMissionNos: currentSelection);
   }
 
   //StateNotifier를 dispose할 때 스트림 구독 취소

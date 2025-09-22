@@ -149,5 +149,16 @@ class MqttServiceImpl implements MqttService {
   void unsubscribe(String topic) {}
 
   @override
-  void publish(String topic, String message) {}
+  void publish(String topic, String message) {
+    if (_client.connectionStatus!.state == MqttConnectionState.connected) {
+      final builder = MqttClientPayloadBuilder();
+      builder.addString(message);
+
+      logger("MQTT::메시지 퍼블리싱 [topic : $topic] [Msg : $message]");
+
+      _client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
+    } else {
+      logger("MQTT:: 발행 실패");
+    }
+  }
 }
