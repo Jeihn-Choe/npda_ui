@@ -46,50 +46,9 @@ class InboundScreen extends ConsumerWidget {
     final getCurrentMissionsIsLoading = inboundState.isLoading;
     final getCurrentMissionsErrorMessage = inboundState.errorMessage;
     final selectedMissionNos = inboundState.selectedMissionNos;
+    final selectedMisssion = inboundState.selectedMission;
 
     final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-    // 최하단 데이터그리드 샘플데이터
-    final List<_InboundItem> sampleItems = [
-      // 첫 번째 PltNo (2단계 작업)
-      _InboundItem(
-        id: 1,
-        pltNo: 'P180047852-020001',
-        source: 'A01-01-01',
-        destination: 'T01-TEMP-01',
-      ),
-      _InboundItem(
-        id: 2,
-        pltNo: 'P180047852-020001',
-        source: 'T01-TEMP-01',
-        destination: 'C05-01-02',
-      ),
-      // 두 번째 PltNo (2단계 작업)
-      _InboundItem(
-        id: 3,
-        pltNo: 'P280047852-020001',
-        source: 'B02-03-01',
-        destination: 'T02-TEMP-01',
-      ),
-      _InboundItem(
-        id: 4,
-        pltNo: 'P280047852-020001',
-        source: 'T02-TEMP-01',
-        destination: 'D11-03-05',
-      ),
-      // 세 번째 PltNo (2단계 작업)
-      _InboundItem(
-        id: 5,
-        pltNo: 'P3380047852-020001',
-        source: 'F01-04-08',
-        destination: 'T03-TEMP-01',
-      ),
-      _InboundItem(
-        id: 6,
-        pltNo: 'P380047852-020001',
-        source: 'T03-TEMP-01',
-        destination: 'H09-01-03',
-      ),
-    ];
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -275,11 +234,18 @@ class InboundScreen extends ConsumerWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    /// 하단의 리스트에서 선택된 행 표시, null 이면 빈칸
                     Expanded(
                       child: Column(
                         children: [
-                          _buildInfoField('No.', 'P180047852-020001'),
-                          _buildInfoField('제품', '1단'),
+                          _buildInfoField(
+                            'No.',
+                            selectedMisssion?.pltNo.toString(),
+                          ),
+                          _buildInfoField(
+                            '제품',
+                            "${selectedMisssion?.targetRackLevel.toString()}단 - 00${selectedMisssion?.targetRackLevel.toString()}",
+                          ),
                         ],
                       ),
                     ),
@@ -287,8 +253,14 @@ class InboundScreen extends ConsumerWidget {
                     Expanded(
                       child: Column(
                         children: [
-                          _buildInfoField('시간', '2025-09-09, 16:00:27'),
-                          _buildInfoField('담당', '최제인'),
+                          _buildInfoField(
+                            '시간',
+                            selectedMisssion?.startTime.toString(),
+                          ),
+                          _buildInfoField(
+                            '랩핑',
+                            selectedMisssion?.isWrapped.toString(),
+                          ),
                         ],
                       ),
                     ),
@@ -337,7 +309,11 @@ class InboundScreen extends ConsumerWidget {
                           ),
 
                           onSelectChanged: (isSelected) {
-                            // TODO : 선택 이벤트 처리
+                            /// 행 선택시 상세 정보 상단에 표시
+                            /// notifier에서 행 선택 메서드 호출.
+                            ref
+                                .read(inboundViewModelProvider.notifier)
+                                .selectMission(missions);
                           },
 
                           cells: [
@@ -401,7 +377,7 @@ class InboundScreen extends ConsumerWidget {
   }
 
   // 정보 필드 UI 헬퍼 메서드
-  Widget _buildInfoField(String fieldName, [String? fieldValue]) {
+  Widget _buildInfoField(String fieldName, [dynamic? fieldValue]) {
     return Padding(
       padding: const EdgeInsets.all(4),
       child: Column(

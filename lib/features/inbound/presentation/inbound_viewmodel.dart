@@ -10,12 +10,14 @@ class CurrentInboundMissionState {
   final bool isLoading;
   final String? errorMessage;
   final Set<int> selectedMissionNos;
+  final CurrentInboundMissionEntity? selectedMission;
 
   const CurrentInboundMissionState({
     this.currentInboundMissions = const [],
     this.isLoading = false,
     this.errorMessage,
     this.selectedMissionNos = const {},
+    this.selectedMission,
   });
 
   CurrentInboundMissionState copyWith({
@@ -23,6 +25,7 @@ class CurrentInboundMissionState {
     bool? isLoading,
     String? errorMessage,
     Set<int>? selectedMissionNos,
+    CurrentInboundMissionEntity? selectedMission,
   }) {
     return CurrentInboundMissionState(
       currentInboundMissions:
@@ -30,6 +33,7 @@ class CurrentInboundMissionState {
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
       selectedMissionNos: selectedMissionNos ?? this.selectedMissionNos,
+      selectedMission: selectedMission ?? this.selectedMission,
     );
   }
 }
@@ -63,6 +67,10 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
         );
       },
     );
+  }
+
+  void selectMission(CurrentInboundMissionEntity mission) {
+    state = state.copyWith(selectedMission: mission);
   }
 
   //StateNotifier를 dispose할 때 스트림 구독 취소
