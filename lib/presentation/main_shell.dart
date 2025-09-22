@@ -16,43 +16,81 @@ class MainShell extends ConsumerWidget {
 
     return DefaultTabController(
       length: (3),
-      child: Scaffold(
-        appBar: AppBar(
-          backgroundColor: AppColors.grey200,
-          toolbarHeight: 15,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                style: TextStyle(
-                  color: AppColors.celltrionBlack,
-                  fontWeight: FontWeight.normal,
-                  fontSize: 14,
-                ),
-                'RCS 연동 NPDA',
+      child: Stack(
+        children: [
+          Scaffold(
+            appBar: AppBar(
+              backgroundColor: AppColors.grey200,
+              toolbarHeight: 15,
+              title: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    style: TextStyle(
+                      color: AppColors.celltrionBlack,
+                      fontWeight: FontWeight.normal,
+                      fontSize: 14,
+                    ),
+                    'RCS 연동 NPDA',
+                  ),
+                  Text(
+                    style: TextStyle(
+                      color: AppColors.darkGrey,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    '${loginState.userId} ${loginState.userName}님',
+                  ),
+                ],
               ),
-              Text(
-                style: TextStyle(
-                  color: AppColors.darkGrey,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14,
+              bottom: PreferredSize(
+                preferredSize: const Size.fromHeight(kToolbarHeight),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TabBar(
+                        labelColor: AppColors.celltrionGreen,
+                        unselectedLabelColor: AppColors.lightGrey,
+                        labelStyle: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                        unselectedLabelStyle: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 14,
+                        ),
+                        indicatorSize: TabBarIndicatorSize.tab,
+                        indicator: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: AppColors.celltrionGreen.withOpacity(0.2),
+                        ),
+
+                        tabs: [
+                          Tab(text: '입고'),
+                          Tab(text: '출고'),
+                          Tab(text: '1층출고'),
+                        ],
+                        //탭이 선택될 때 GoRouter의 브랜치 변경
+                        onTap: (index) => _onTap(context, index),
+                      ),
+                    ),
+
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0, left: 32.0),
+                      child: IconButton(
+                        icon: Icon(Icons.barcode_reader),
+                        color: Colors.grey,
+                        onPressed: () {},
+                      ),
+                    ),
+                  ],
                 ),
-                '${loginState.userId} ${loginState.userName}님',
               ),
-            ],
+            ),
+            // 탭에 따라 다른 화면을 보여주는 Shell
+            body: navigationShell,
           ),
-          bottom: TabBar(
-            tabs: [
-              Tab(text: '입고'),
-              Tab(text: '출고'),
-              Tab(text: '1층출고'),
-            ],
-            //탭이 선택될 때 GoRouter의 브랜치 변경
-            onTap: (index) => _onTap(context, index),
-          ),
-        ),
-        // 탭에 따라 다른 화면을 보여주는 Shell
-        body: navigationShell,
+        ],
       ),
     );
   }

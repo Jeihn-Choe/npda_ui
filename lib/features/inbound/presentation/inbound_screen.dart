@@ -49,6 +49,7 @@ class InboundScreen extends ConsumerWidget {
     final selectedMissionNos = inboundState.selectedMissionNos;
     final selectedMisssion = inboundState.selectedMission;
     final isSelectionModeActive = inboundState.isSelectionModeActive;
+    final isScannerModeActive = inboundState.isScannerModeActive;
 
     final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 

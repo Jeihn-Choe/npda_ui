@@ -12,6 +12,7 @@ class CurrentInboundMissionState {
   final Set<int> selectedMissionNos;
   final CurrentInboundMissionEntity? selectedMission;
   final bool isSelectionModeActive;
+  final bool isScannerModeActive;
 
   const CurrentInboundMissionState({
     this.currentInboundMissions = const [],
@@ -20,6 +21,7 @@ class CurrentInboundMissionState {
     this.selectedMissionNos = const {},
     this.selectedMission,
     this.isSelectionModeActive = false,
+    this.isScannerModeActive = true,
   });
 
   CurrentInboundMissionState copyWith({
@@ -29,6 +31,7 @@ class CurrentInboundMissionState {
     Set<int>? selectedMissionNos,
     CurrentInboundMissionEntity? selectedMission,
     bool? isSelectionModeActive,
+    bool? isScannerModeActive,
   }) {
     return CurrentInboundMissionState(
       currentInboundMissions:
@@ -39,6 +42,7 @@ class CurrentInboundMissionState {
       selectedMission: selectedMission ?? this.selectedMission,
       isSelectionModeActive:
           isSelectionModeActive ?? this.isSelectionModeActive,
+      isScannerModeActive: isScannerModeActive ?? this.isScannerModeActive,
     );
   }
 }
