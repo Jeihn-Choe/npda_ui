@@ -11,11 +11,12 @@ import 'mqtt_service.dart';
 class MqttServiceImpl implements MqttService {
   late MqttServerClient _client;
   final _connectionStateController = StreamController<MqttState>.broadcast();
-
   final _messageController = StreamController<ReceivedMqttMessage>.broadcast();
 
+  final List<String> _topics = [MqttConfig.mwTopic];
+
   MqttServiceImpl() {
-    //TODO : config 파일에서 호스트와 포트 가져오도록 수정해야함. 일단 그냥 하드코딩
+    // MQTT 클라이언트 초기화
     _client = MqttServerClient(MqttConfig.broker, MqttConfig.clientId);
     _client.port = MqttConfig.port;
 
@@ -24,7 +25,7 @@ class MqttServiceImpl implements MqttService {
     _client.clientIdentifier = clientId;
 
     // 연결 상태 관련 콜백 함수 설정.
-    _client.onConnected = _onConnected;
+    // _client.onConnected = _onConnected;
     _client.onDisconnected = _onDisconnected;
     _client.onSubscribed = _onSubscribed;
     _client.onUnsubscribed = _onUnsubscribed;
@@ -37,10 +38,12 @@ class MqttServiceImpl implements MqttService {
     _client.updates?.listen(_onMessageReceived);
   }
 
-  void _onConnected() {
-    logger('MQTT::Client Connection Success');
-    _connectionStateController.add(MqttState.connected);
-  }
+  // void _onConnected() {
+  //   logger('MQTT::Client Connection Success');
+  //   _connectionStateController.add(MqttState.connected);
+  //
+  //   _client.updates!.listen(_onMessageReceived);
+  // }
 
   void _onDisconnected() {
     logger('MQTT::Client Disconnected');
@@ -64,13 +67,22 @@ class MqttServiceImpl implements MqttService {
   }
 
   void _onMessageReceived(List<MqttReceivedMessage<MqttMessage?>>? c) {
-    final MqttPublishMessage message = c![0].payload as MqttPublishMessage;
-    final String topic = c[0].topic;
-    final String payload = MqttPublishPayload.bytesToStringAsString(
-      message.payload.message,
+    logger("_onMessageReceived called");
+
+    final recMess = c![0];
+    final pubMess = recMess.payload as MqttPublishMessage;
+    final payload = MqttPublishPayload.bytesToStringAsString(
+      pubMess.payload.message,
     );
 
-    _messageController.add(ReceivedMqttMessage(topic: topic, payload: payload));
+    logger("MQTT::New message received on topic ${recMess.topic}: $payload");
+
+    _messageController.add(
+      ReceivedMqttMessage(topic: recMess.topic, payload: payload),
+    );
+    logger(
+      "_messageController.add ==============================================",
+    );
   }
 
   @override
@@ -104,6 +116,12 @@ class MqttServiceImpl implements MqttService {
     if (_client.connectionStatus!.state == MqttConnectionState.connected) {
       logger("MQTT::Connected to MQTT broker");
       _connectionStateController.add(MqttState.connected);
+
+      // 연결 성공 후 message stream 리스너 설정 및 토픽 구독
+      _client.updates!.listen(_onMessageReceived);
+      for (final topic in _topics) {
+        subscribe(topic);
+      }
     } else {
       logger(
         "MQTT::ERROR: MQTT client connection failed - disconnecting, status is ${_client.connectionStatus}",
@@ -117,7 +135,15 @@ class MqttServiceImpl implements MqttService {
   void disconnect() {}
 
   @override
-  void subscribe(String topic) {}
+  void subscribe(String topic) {
+    logger("MQTT::Subscribing to topic $topic");
+
+    if (_client.connectionStatus!.state == MqttConnectionState.connected) {
+      _client.subscribe(topic, MqttQos.atMostOnce);
+    } else {
+      logger("MQTT::Cannot subscribe, client not connected");
+    }
+  }
 
   @override
   void unsubscribe(String topic) {}

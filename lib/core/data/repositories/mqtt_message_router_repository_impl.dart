@@ -12,36 +12,57 @@ class MqttMessageRouterRepositoryImpl {
   final MqttService _mqttService;
   final Ref _ref; // Ref 주입
 
-  late final StreamSubscription _mqttSubscription;
+  StreamSubscription? _connectionStateStreamSubscription;
+  StreamSubscription? _mqttSubscription;
 
   MqttMessageRouterRepositoryImpl(this._mqttService, this._ref) {
     logger("[MqttMessageRouterRepositoryImpl] MQTT 메시지 라우터 초기화");
 
-    _listenToMqttMessages();
+    if (_mqttService.connectionStateStream == MqttState.connected) {
+      _listenToMqttMessages();
+    }
+
+    _connectionStateStreamSubscription = _mqttService.connectionStateStream
+        .listen((state) {
+          if (state == MqttState.connected) {
+            _listenToMqttMessages();
+          } else if (state == MqttState.disconnected) {
+            _mqttSubscription?.cancel();
+            _mqttSubscription = null;
+          }
+        });
   }
 
   void _listenToMqttMessages() {
-    logger("===== MQTT 메시지 수신 리스너 ==== ");
+    if (_mqttSubscription != null) {
+      // 이미 구독 중인 경우 중복 구독 방지
+      return;
+    }
+
+    logger(
+      "_listenToMqttMessage==============================================",
+    );
 
     _mqttSubscription = _mqttService.messageStream.listen((message) {
       try {
         final decodedJson = jsonDecode(message.payload) as Map<String, dynamic>;
         final rawDto = MqttReceiveRawDto.fromJson(decodedJson);
 
-        logger("===== 케이스문 분기 전 ==== ");
         // switch 문으로 cmdId에 따라 각 리포지토리에 메시지 전달
         switch (rawDto.cmdId) {
           case "SM":
-            logger("===== SM케이스문분기 ==== ");
-
-            //ref 를 사용하여 inbound provier 접근
+            logger("SM==============================================");
+            //ref 를 사용하여 inbound provider 접근
             final inboundRepo = _ref.read(
               currentInboundMissionRepositoryProvider,
             );
-
-            logger("===== 미션 업데이트 요청 ==== ");
+            logger("INBOUNDREPO==============================================");
+            // payload는 List<dynamic> 타입이어야 함
+            // 따라서 rawDto.payload가 List<dynamic>로 변환해줘야함
+            final missionList = rawDto.payload['payload'] as List<dynamic>;
+            logger("MISSIONLIST==============================================");
             // 해당 리포지토리의 updateInboundMissionList 메서드 호출
-            inboundRepo.updateInboundMissionList(rawDto.payload);
+            inboundRepo.updateInboundMissionList(missionList);
 
             break;
 
@@ -52,7 +73,8 @@ class MqttMessageRouterRepositoryImpl {
     });
   }
 
-  void dispose() {
-    _mqttSubscription.cancel();
-  }
+  //
+  // void dispose() {
+  //   _mqttSubscription.cancel();
+  // }
 }

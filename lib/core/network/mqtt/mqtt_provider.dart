@@ -4,7 +4,7 @@ import 'mqtt_service.dart';
 import 'mqtt_service_impl.dart';
 
 final mqttServiceProvider = Provider<MqttService>((ref) {
-  final mqttService = MqttServiceImpl();
+  final mqttService = MqttServiceImpl()..connect();
 
   //앱이 종료될 때 MQTT 연결 해제
   ref.onDispose(() {

@@ -1,13 +1,15 @@
+
+
 class MqttReceiveRawDto {
   final String cmdId;
-  final List<dynamic> payload;
+  final Map<String, dynamic> payload;
 
   MqttReceiveRawDto({required this.cmdId, required this.payload});
 
   factory MqttReceiveRawDto.fromJson(Map<String, dynamic> json) {
     return MqttReceiveRawDto(
       cmdId: json['cmdId'] as String,
-      payload: json['payload'] as List<dynamic>,
+      payload: json['payload'] as Map<String, dynamic>,
     );
   }
 }

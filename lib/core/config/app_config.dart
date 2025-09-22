@@ -18,7 +18,7 @@ class ApiConfig {
 }
 
 class MqttConfig {
-  static const String broker = "http://192.168.3.110";
+  static const String broker = "192.168.3.110";
   static const int port = 1883;
   static const String clientId = "npda_client_flutter";
 

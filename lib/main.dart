@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/themes/app_theme.dart';
 
+import 'core/providers/mqtt_message_router_provider.dart';
 import 'core/routes/router.dart';
 
 // TODO: SplashScreen import 추가
@@ -10,18 +11,21 @@ import 'core/routes/router.dart';
 
 void main() {
   // TODO: 필요한 초기 설정 추가
-  // - WidgetsFlutterBinding.ensureInitialized() (비동기 초기화 시)
+  WidgetsFlutterBinding.ensureInitialized();
+
   // - 의존성 주입 설정 (GetIt, Provider 등)
   // - 에러 핸들링 설정
 
   runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(mqttMessageRouterRepositoryProvider);
+
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Celltrion NPDA',

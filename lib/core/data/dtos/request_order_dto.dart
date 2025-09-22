@@ -5,7 +5,7 @@ class RequestOrderDto {
   RequestOrderDto({required this.cmdId, required this.missionList});
 
   factory RequestOrderDto.fromJson(Map<String, dynamic> json) {
-    var list = json['missionList'] as List;
+    var list = json['payload'] as List;
 
     // Map(i) 로부터 WorkItem 객체 생성해야 하므로 fromJson 사용
     List<WorkItem> missionList = list.map((i) => WorkItem.fromJson(i)).toList();
