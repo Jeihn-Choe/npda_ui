@@ -6,5 +6,6 @@ abstract class CurrentInboundMissionRepository {
 
   /// 현재 입고 미션 정보를 업데이트하는 기능
   /// 외부(Data 계층의 router) 에서 호출하여 실시간 업데이터 반영
+
   void updateInboundMissionList(List<dynamic> payload);
 }

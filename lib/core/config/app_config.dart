@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = "http://192.168.0.8:5000/api";
+  static const String baseUrl = "http://192.168.3.110:5000/api";
 
   // test
   static const String test = "/users";
@@ -15,4 +15,13 @@ class ApiConfig {
 
   // Robot Management
   // pause & resume 필요
+}
+
+class MqttConfig {
+  static const String broker = "http://192.168.3.110";
+  static const int port = 1883;
+  static const String clientId = "npda_client_flutter";
+
+  //
+  static const String mwTopic = "MW.NPDA";
 }

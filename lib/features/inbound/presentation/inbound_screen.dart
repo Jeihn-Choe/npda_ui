@@ -32,11 +32,20 @@ class InboundScreen extends ConsumerWidget {
 
     // 근데 InboundRegistrationListState는 items라는 리스트가있음 => 이게 display 해야 할 데이터임.
     // 그래서 items를 꺼내서 따로 정의해야 ui에서 쓸 수 있음
-    final inboundRestrationListItems = inboundRegistrationList.items;
+    final inboundRegistrationListItems = inboundRegistrationList.items;
 
     // 그리고 ui에서 삭제할 수 있게 selectedItems도 정의해야함
-    final inboundResgistrationselectedItems =
+    final inboundResgistrationSelectedItems =
         inboundRegistrationList.selectedPltNos;
+
+    /// viewmodel 상태 구독
+    final inboundState = ref.watch(inboundViewModelProvider);
+
+    /// Viwemodel에서 정의한 상태에서 필요한 값 추출
+    final currentInboundMissions = inboundState.currentInboundMissions;
+    final getCurrentMissionsIsLoading = inboundState.isLoading;
+    final getCurrentMissionsErrorMessage = inboundState.errorMessage;
+    final selectedMissionNos = inboundState.selectedMissionNos;
 
     final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
     // 최하단 데이터그리드 샘플데이터
@@ -194,7 +203,7 @@ class InboundScreen extends ConsumerWidget {
               const SizedBox(height: 4),
 
               /// inboundRegistrationList 생성 시 해당 정보 표시 - 평소에는 존재 x
-              if (inboundRestrationListItems.isNotEmpty)
+              if (inboundRegistrationListItems.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.symmetric(
                     vertical: 4,
@@ -220,7 +229,7 @@ class InboundScreen extends ConsumerWidget {
                           color: AppColors.celltrionBlack,
                           fontWeight: FontWeight.bold,
                         ),
-                        "입고 요청 List (${inboundRestrationListItems.length}건)",
+                        "입고 요청 List (${inboundRegistrationListItems.length}건)",
                       ),
                       const SizedBox(height: 4),
                       DataTable(
@@ -243,7 +252,7 @@ class InboundScreen extends ConsumerWidget {
                           DataColumn(label: Text('제품랙단수')),
                           DataColumn(label: Text('요청시간')),
                         ],
-                        rows: inboundRestrationListItems.map((item) {
+                        rows: inboundRegistrationListItems.map((item) {
                           return DataRow(
                             cells: [
                               DataCell(Text(item.pltNo)),
@@ -289,47 +298,101 @@ class InboundScreen extends ConsumerWidget {
               const SizedBox(height: 8),
 
               /// 하단 데이터그리드
-              Container(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              if (getCurrentMissionsIsLoading)
+                const Center(child: CircularProgressIndicator())
+              else
+                Container(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: DataTable(
+                      horizontalMargin: 8,
+                      columnSpacing: 16,
+                      headingRowHeight: 36,
+                      dataRowMinHeight: 36,
+                      dataRowMaxHeight: 36,
+                      headingTextStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      dataTextStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black87,
+                      ),
+                      columns: const [
+                        DataColumn(label: Text('No.')),
+                        DataColumn(label: Text('PltNo.')),
+                        DataColumn(label: Text('출발지')),
+                        DataColumn(label: Text('목적지')),
+                      ],
 
-                  child: DataTable(
-                    horizontalMargin: 8,
-                    columnSpacing: 16,
-                    headingRowHeight: 36,
-                    dataRowMinHeight: 36,
-                    dataRowMaxHeight: 36,
-                    headingTextStyle: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
+                      rows: currentInboundMissions.map((missions) {
+                        return DataRow(
+                          //선택 상태 반영
+                          selected: selectedMissionNos.contains(
+                            missions.missionNo,
+                          ),
+
+                          onSelectChanged: (isSelected) {
+                            // TODO : 선택 이벤트 처리
+                          },
+
+                          cells: [
+                            DataCell(Text(missions.missionNo.toString())),
+                            DataCell(Text(missions.pltNo)),
+                            DataCell(Text(missions.sourceBin)),
+                            DataCell(Text(missions.destinationBin)),
+                          ],
+                        );
+                      }).toList(),
                     ),
-                    dataTextStyle: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.black87,
-                    ),
-                    columns: const [
-                      DataColumn(label: Text('No.')),
-                      DataColumn(label: Text('PltNo.')),
-                      DataColumn(label: Text('출발지')),
-                      DataColumn(label: Text('목적지')),
-                    ],
-                    rows: sampleItems.map((item) {
-                      return DataRow(
-                        cells: [
-                          DataCell(Text(item.id.toString())),
-                          DataCell(Text(item.pltNo)),
-                          DataCell(Text(item.source)),
-                          DataCell(Text(item.destination)),
-                        ],
-                      );
-                    }).toList(),
                   ),
                 ),
-              ),
+
+              // Container(
+              //   child: Container(
+              //     decoration: BoxDecoration(
+              //       color: Colors.white,
+              //       borderRadius: BorderRadius.circular(12),
+              //     ),
+              //
+              //     child: DataTable(
+              //       horizontalMargin: 8,
+              //       columnSpacing: 16,
+              //       headingRowHeight: 36,
+              //       dataRowMinHeight: 36,
+              //       dataRowMaxHeight: 36,
+              //       headingTextStyle: const TextStyle(
+              //         fontSize: 13,
+              //         fontWeight: FontWeight.bold,
+              //         color: Colors.black,
+              //       ),
+              //       dataTextStyle: const TextStyle(
+              //         fontSize: 12,
+              //         color: Colors.black87,
+              //       ),
+              //       columns: const [
+              //         DataColumn(label: Text('No.')),
+              //         DataColumn(label: Text('PltNo.')),
+              //         DataColumn(label: Text('출발지')),
+              //         DataColumn(label: Text('목적지')),
+              //       ],
+              //       rows: sampleItems.map((item) {
+              //         return DataRow(
+              //           cells: [
+              //             DataCell(Text(item.id.toString())),
+              //             DataCell(Text(item.pltNo)),
+              //             DataCell(Text(item.source)),
+              //             DataCell(Text(item.destination)),
+              //           ],
+              //         );
+              //       }).toList(),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),
@@ -337,7 +400,7 @@ class InboundScreen extends ConsumerWidget {
     );
   }
 
-  // 정보 필드 UI 헬퍼 메서드 (변경 없음)
+  // 정보 필드 UI 헬퍼 메서드
   Widget _buildInfoField(String fieldName, [String? fieldValue]) {
     return Padding(
       padding: const EdgeInsets.all(4),

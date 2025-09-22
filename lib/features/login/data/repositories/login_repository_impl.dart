@@ -1,7 +1,7 @@
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/login/domain/repositories/login_repository.dart';
 
-import '../../../../core/config/api_config.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/network/http/api_service.dart';
 import '../../domain/entities/login_result.dart';
 import '../dtos/login_response.dart';

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
+import 'package:npda_ui_flutter/core/config/app_config.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import 'mqtt_service.dart';
@@ -15,11 +16,11 @@ class MqttServiceImpl implements MqttService {
 
   MqttServiceImpl() {
     //TODO : config 파일에서 호스트와 포트 가져오도록 수정해야함. 일단 그냥 하드코딩
-    _client = MqttServerClient('http://192.168.3.115', '');
-    _client.port = 1883;
+    _client = MqttServerClient(MqttConfig.broker, MqttConfig.clientId);
+    _client.port = MqttConfig.port;
 
     // 클라이언트 ID 설정
-    final clientId = 'npda_client_${DateTime.now().millisecondsSinceEpoch}';
+    final clientId = MqttConfig.clientId;
     _client.clientIdentifier = clientId;
 
     // 연결 상태 관련 콜백 함수 설정.

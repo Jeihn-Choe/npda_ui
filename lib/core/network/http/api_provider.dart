@@ -3,7 +3,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../config/api_config.dart';
+import '../../config/app_config.dart';
 import 'api_service.dart';
 import 'api_service_impl.dart';
 

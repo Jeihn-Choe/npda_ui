@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:npda_ui_flutter/core/data/dtos/mqtt_receive_raw_dto.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/repositories/current_inbound_mission_repository.dart';
 
+import '../../../../core/utils/logger.dart';
 import '../../domain/entities/current_inbound_mission_entity.dart';
 
 class CurrentInboundMissionRepositoryImpl
@@ -16,6 +17,8 @@ class CurrentInboundMissionRepositoryImpl
 
   @override
   void updateInboundMissionList(List<dynamic> payload) {
+    logger("===== 업데이트인바운드미션리스트 호출완료됨 ==== ");
+
     // payload를 CurrentInboundMissionEntity 리스트로 변환
     final subMissions = payload
         .map((item) => SubMissionDto.fromJson(item))

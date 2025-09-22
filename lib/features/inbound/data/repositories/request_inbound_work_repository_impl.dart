@@ -2,7 +2,7 @@ import 'package:npda_ui_flutter/core/data/dtos/response_order_dto.dart';
 import 'package:npda_ui_flutter/core/domain/entities/response_order_entity.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
-import '../../../../core/config/api_config.dart';
+import '../../../../core/config/app_config.dart';
 import '../../../../core/data/dtos/request_order_dto.dart';
 import '../../../../core/network/http/api_service.dart';
 import '../../domain/repositories/request_inbound_work_repository.dart';
