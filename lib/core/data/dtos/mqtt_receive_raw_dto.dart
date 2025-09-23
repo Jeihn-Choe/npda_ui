@@ -22,7 +22,7 @@ class SubMissionDto {
   final String sourceBin;
   final String destinationBin;
   final bool isWrapped;
-  final int subMissionStatus;
+  final int? subMissionStatus;
 
   SubMissionDto({
     required this.missionNo,

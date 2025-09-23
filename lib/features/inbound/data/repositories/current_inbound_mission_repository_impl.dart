@@ -41,7 +41,7 @@ class CurrentInboundMissionRepositoryImpl
         sourceBin: dto.sourceBin,
         destinationBin: dto.destinationBin,
         isWrapped: dto.isWrapped,
-        subMissionStatus: dto.subMissionStatus,
+        subMissionStatus: dto.subMissionStatus ?? 0,
       );
     }).toList();
 

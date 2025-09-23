@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/config/app_config.dart';
 import 'package:npda_ui_flutter/core/data/dtos/mqtt_receive_raw_dto.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
@@ -62,7 +63,7 @@ class MqttMessageRouterRepositoryImpl {
               "msg": "Message received successfully",
             };
 
-            _mqttService.publish("NPDA.MW", jsonEncode(response));
+            _mqttService.publish(MqttConfig.npdaTopic, jsonEncode(response));
 
             break;
 

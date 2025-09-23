@@ -33,13 +33,23 @@ class MainShell extends ConsumerWidget {
                     ),
                     'RCS 연동 NPDA',
                   ),
-                  Text(
-                    style: TextStyle(
-                      color: AppColors.darkGrey,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
-                    '${loginState.userId} ${loginState.userName}님',
+                  Row(
+                    children: [
+                      Text(
+                        style: TextStyle(
+                          color: AppColors.grey900,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        '${loginState.userId} ${loginState.userName}님',
+                      ),
+                      IconButton(
+                        onPressed: () {},
+                        icon: Icon(Icons.logout),
+                        color: AppColors.grey900,
+                        iconSize: 20,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -57,12 +67,12 @@ class MainShell extends ConsumerWidget {
                         ),
                         unselectedLabelStyle: TextStyle(
                           fontWeight: FontWeight.normal,
-                          fontSize: 14,
+                          fontSize: 12,
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
                         indicator: BoxDecoration(
                           borderRadius: BorderRadius.circular(10),
-                          color: AppColors.celltrionGreen.withOpacity(0.2),
+                          color: AppColors.celltrionGreen.withAlpha(20),
                         ),
 
                         tabs: [
@@ -75,12 +85,15 @@ class MainShell extends ConsumerWidget {
                       ),
                     ),
 
+                    /// 우측 바코드 아이콘 버튼
                     Padding(
                       padding: const EdgeInsets.only(right: 16.0, left: 32.0),
                       child: IconButton(
                         icon: Icon(Icons.barcode_reader),
                         color: Colors.grey,
-                        onPressed: () {},
+                        onPressed: () {
+                          // 바코드 아이콘 버튼 클릭 시 동작할 코드 작성
+                        },
                       ),
                     ),
                   ],
