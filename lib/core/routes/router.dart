@@ -12,10 +12,7 @@ final router = GoRouter(
     // 스플래시 화면
     GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
     // 로그인 화면
-    GoRoute(
-      path: '/login',
-      builder: (context, state) => const LoginScreen(), // TODO: 실제 로그인 화면
-    ),
+    GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
 
     //메인 화면을 위한 셸 라우트
     StatefulShellRoute.indexedStack(

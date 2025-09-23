@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/inbound_viewmodel.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup.dart';
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
+
+import '../../../core/state/scanner_viewmodel.dart';
 
 class _InboundItem {
   final int id;
@@ -21,11 +24,48 @@ class _InboundItem {
   });
 }
 
-class InboundScreen extends ConsumerWidget {
+class InboundScreen extends ConsumerStatefulWidget {
   const InboundScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<InboundScreen> createState() => _InboundScreenState();
+}
+
+class _InboundScreenState extends ConsumerState<InboundScreen> {
+  late FocusNode _scannerFocusNode; // 스캐너 입력용 FocusNode
+  late TextEditingController _scannerTextController; // 스캐너 입력용 컨트롤러
+
+  @override
+  void initState() {
+    super.initState();
+    _scannerFocusNode = FocusNode();
+    _scannerTextController = TextEditingController();
+
+    // 포커스 변경 감지 리스너 추가 => 포커스를 invisible에서 잃으면 다시 갖다놔야함.
+    _scannerFocusNode.addListener(_onFocusChange);
+  }
+
+  @override
+  void dispose() {
+    _scannerFocusNode.removeListener(_onFocusChange);
+    _scannerFocusNode.dispose();
+    _scannerTextController.dispose();
+    super.dispose();
+  }
+
+  void _onFocusChange() {
+    // isScannerModeActive == true 일때만 포커스 유지
+    // ref 는 ConsumerState에서 직접 접근 가능.
+
+    final isScannerModeActive = ref.read(scannerViewModelProvider);
+    if (isScannerModeActive && !_scannerFocusNode.hasFocus) {
+      FocusScope.of(context).requestFocus(_scannerFocusNode);
+      logger("포커스 다시 가져옴");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // inboundRegistrationList 의 상태를 구독해야함.
     // 필요한 상태는 InboundRegistrationListState
     // 그래서 InboundRegistrationListState를 구독해야함.
@@ -47,10 +87,37 @@ class InboundScreen extends ConsumerWidget {
     final getCurrentMissionsIsLoading = inboundState.isLoading;
     final getCurrentMissionsErrorMessage = inboundState.errorMessage;
     final selectedMissionNos = inboundState.selectedMissionNos;
-    final selectedMisssion = inboundState.selectedMission;
+    final selectedMission = inboundState.selectedMission;
     final isSelectionModeActive = inboundState.isSelectionModeActive;
-
     final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+
+    /// inboundViewModel의 팝업 상태(scanned 여부가 들어옴) 변화 감지 후 팝업 띄움
+    ref.listen<CurrentInboundMissionState>(inboundViewModelProvider, (
+      previous,
+      next,
+    ) {
+      if (next.showInboundPopup && !previous!.showInboundPopup) {
+        // 팝업 띄우기
+        showDialog(
+          context: context,
+          builder: (BuildContext dialogContext) {
+            return MediaQuery(
+              data: MediaQuery.of(
+                dialogContext,
+              ).copyWith(viewInsets: EdgeInsets.zero),
+              child: InboundRegistrationPopup(
+                scannedData: next.scannedDataForPopup, // 스캔데이터 팝업에 전달
+              ),
+            );
+          },
+        ).then((_) {
+          // 팝업 닫힌 후 상태 초기화
+          if (mounted) {
+            ref.read(inboundViewModelProvider.notifier).clearInboundPopup();
+          }
+        });
+      }
+    });
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -61,6 +128,30 @@ class InboundScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              /// 보이지 않는 스캐너 입력용 TextField
+              Opacity(
+                opacity: 0.0,
+                child: SizedBox(
+                  width: 0.0,
+                  height: 0.0,
+                  child: TextField(
+                    focusNode: _scannerFocusNode,
+                    controller: _scannerTextController,
+                    autofocus: true,
+                    keyboardType: TextInputType.none,
+                    onSubmitted: (value) {
+                      logger("인바운드 화면 스캐너 입력 감지 : $value");
+                      // viewmodel에 스캔된 데이터 전달
+                      ref
+                          .read(inboundViewModelProvider.notifier)
+                          .handleScannedData(value);
+                      // 텍스트필드 초기화
+                      _scannerTextController.clear();
+                    },
+                  ),
+                ),
+              ),
+
               /// 상단 버튼 바
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -195,7 +286,9 @@ class InboundScreen extends ConsumerWidget {
                                     data: MediaQuery.of(
                                       dialogContext,
                                     ).copyWith(viewInsets: EdgeInsets.zero),
-                                    child: InboundRegistrationPopup(),
+                                    child: InboundRegistrationPopup(
+                                      scannedData: null,
+                                    ),
                                   );
                                 },
                               );
@@ -213,6 +306,7 @@ class InboundScreen extends ConsumerWidget {
                         ],
                       ),
               ),
+
               const SizedBox(height: 4),
 
               /// inboundRegistrationList 생성 시 해당 정보 표시 - 평소에는 존재 x
@@ -294,12 +388,12 @@ class InboundScreen extends ConsumerWidget {
                         children: [
                           _buildInfoField(
                             'No.',
-                            selectedMisssion?.pltNo.toString(),
+                            selectedMission?.pltNo.toString(),
                           ),
                           _buildInfoField(
                             '제품',
-                            selectedMisssion != null
-                                ? "${selectedMisssion?.targetRackLevel.toString()}단 - 00${selectedMisssion?.targetRackLevel.toString()}"
+                            selectedMission != null
+                                ? "${selectedMission?.targetRackLevel.toString()}단 - 00${selectedMission?.targetRackLevel.toString()}"
                                 : "-",
                           ),
                         ],
@@ -311,11 +405,11 @@ class InboundScreen extends ConsumerWidget {
                         children: [
                           _buildInfoField(
                             '시간',
-                            selectedMisssion?.startTime.toString(),
+                            selectedMission?.startTime.toString(),
                           ),
                           _buildInfoField(
                             '랩핑',
-                            selectedMisssion?.isWrapped.toString(),
+                            selectedMission?.isWrapped.toString(),
                           ),
                         ],
                       ),
@@ -431,48 +525,6 @@ class InboundScreen extends ConsumerWidget {
                     ),
                   ),
                 ),
-
-              // Container(
-              //   child: Container(
-              //     decoration: BoxDecoration(
-              //       color: Colors.white,
-              //       borderRadius: BorderRadius.circular(12),
-              //     ),
-              //
-              //     child: DataTable(
-              //       horizontalMargin: 8,
-              //       columnSpacing: 16,
-              //       headingRowHeight: 36,
-              //       dataRowMinHeight: 36,
-              //       dataRowMaxHeight: 36,
-              //       headingTextStyle: const TextStyle(
-              //         fontSize: 13,
-              //         fontWeight: FontWeight.bold,
-              //         color: Colors.black,
-              //       ),
-              //       dataTextStyle: const TextStyle(
-              //         fontSize: 12,
-              //         color: Colors.black87,
-              //       ),
-              //       columns: const [
-              //         DataColumn(label: Text('No.')),
-              //         DataColumn(label: Text('PltNo.')),
-              //         DataColumn(label: Text('출발지')),
-              //         DataColumn(label: Text('목적지')),
-              //       ],
-              //       rows: sampleItems.map((item) {
-              //         return DataRow(
-              //           cells: [
-              //             DataCell(Text(item.id.toString())),
-              //             DataCell(Text(item.pltNo)),
-              //             DataCell(Text(item.source)),
-              //             DataCell(Text(item.destination)),
-              //           ],
-              //         );
-              //       }).toList(),
-              //     ),
-              //   ),
-              // ),
             ],
           ),
         ),

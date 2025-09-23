@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart';
 
 import '../../../../presentation/widgets/form_field_widget.dart';
 import '../providers/inbound_providers.dart';
 
 class InboundRegistrationPopup extends ConsumerStatefulWidget {
-  const InboundRegistrationPopup({super.key});
+  final String? scannedData;
+
+  const InboundRegistrationPopup({super.key, this.scannedData});
 
   @override
   ConsumerState<InboundRegistrationPopup> createState() =>
@@ -23,8 +26,24 @@ class _InboundRegistrationPopupState
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final viewModel = ref.watch(inboundRegistrationPopupViewModelProvider);
+
+    // widget.scannedData 가 null이 아니면 viewModel에 세팅
+    // ref.listen을 사용하여 상태 변화 감지
+    ref.listen<InboundRegistrationPopupViewModel>(
+      inboundRegistrationPopupViewModelProvider,
+      (previous, next) {
+        if (widget.scannedData != null && widget.scannedData!.isNotEmpty) {
+          next.setPltCode(widget.scannedData);
+        }
+      },
+    );
 
     return AlertDialog(
       title: const Text(

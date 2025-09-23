@@ -53,6 +53,12 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
     return DateTime.now().toUtc().add(const Duration(hours: 9));
   }
 
+  /// UI에서 pltCode 직접 세팅
+  void setPltCode(String? pltCode) {
+    if (pltCode != null) pltCodeController.text = pltCode;
+    notifyListeners();
+  }
+
   /// 폼 유효성 검사
   bool isFormValid() {
     return pltCodeController.text.isNotEmpty &&
