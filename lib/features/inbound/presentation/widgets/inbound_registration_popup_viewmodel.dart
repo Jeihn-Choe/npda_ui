@@ -29,8 +29,8 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
     /// userId 로 사번 업데이트
     userIdController.text = loginState.userId ?? '';
 
-    /// 이하 더미 데이터들. 테스트용, 삭제예정
-    pltCodeController.text = 'P180047852-020001';
+    /// 초기화 필요 시 추가
+    // pltCodeController.text = 'P180047852-020001';
     _selectedRackLevel = rackLevels[0];
 
     notifyListeners();

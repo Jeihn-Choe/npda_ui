@@ -48,12 +48,6 @@ class MqttMessageRouterRepositoryImpl {
         // switch 문으로 cmdId에 따라 각 리포지토리에 메시지 전달
         switch (rawDto.cmdId) {
           case "SM":
-            final inboundRepo = _ref.read(
-              currentInboundMissionRepositoryProvider,
-            );
-
-            final subMissionList = rawDto.payload as List<dynamic>;
-            inboundRepo.updateInboundMissionList(subMissionList);
 
             /// SM 메시지 수신 성공 응답 메시지 발행
 
@@ -65,9 +59,26 @@ class MqttMessageRouterRepositoryImpl {
 
             _mqttService.publish(MqttConfig.npdaTopic, jsonEncode(response));
 
+            final inboundRepo = _ref.read(
+              currentInboundMissionRepositoryProvider,
+            );
+
+            final subMissionList = rawDto.payload as List<dynamic>;
+            inboundRepo.updateInboundMissionList(subMissionList);
+
             break;
 
           case "SB":
+
+            /// SB 메시지 수신 성공 응답 메시지 발행
+            final response = {
+              "cmdId": "SB",
+              "result": "S",
+              "msg": "Message received successfully",
+            };
+
+            _mqttService.publish(MqttConfig.npdaTopic, jsonEncode(response));
+
             break;
         }
       } catch (e) {

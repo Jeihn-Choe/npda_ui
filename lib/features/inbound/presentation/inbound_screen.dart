@@ -49,7 +49,6 @@ class InboundScreen extends ConsumerWidget {
     final selectedMissionNos = inboundState.selectedMissionNos;
     final selectedMisssion = inboundState.selectedMission;
     final isSelectionModeActive = inboundState.isSelectionModeActive;
-    final isScannerModeActive = inboundState.isScannerModeActive;
 
     final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
@@ -328,7 +327,12 @@ class InboundScreen extends ConsumerWidget {
 
               /// 하단 데이터그리드
               if (getCurrentMissionsIsLoading)
-                const Center(child: CircularProgressIndicator())
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(100),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
               else
                 Container(
                   child: Container(

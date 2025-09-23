@@ -23,6 +23,7 @@ final router = GoRouter(
       builder: (context, state, navigationShell) {
         return MainShell(navigationShell: navigationShell);
       },
+
       branches: [
         // 입고 화면
         StatefulShellBranch(

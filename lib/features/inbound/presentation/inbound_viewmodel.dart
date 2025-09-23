@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../domain/entities/current_inbound_mission_entity.dart';
 import '../domain/usecases/get_current_inbound_missions_usecase.dart';
@@ -12,7 +13,8 @@ class CurrentInboundMissionState {
   final Set<int> selectedMissionNos;
   final CurrentInboundMissionEntity? selectedMission;
   final bool isSelectionModeActive;
-  final bool isScannerModeActive;
+  final String? scannedDataForPopup;
+  final bool showInboundPopup;
 
   const CurrentInboundMissionState({
     this.currentInboundMissions = const [],
@@ -21,7 +23,8 @@ class CurrentInboundMissionState {
     this.selectedMissionNos = const {},
     this.selectedMission,
     this.isSelectionModeActive = false,
-    this.isScannerModeActive = true,
+    this.scannedDataForPopup,
+    this.showInboundPopup = false,
   });
 
   CurrentInboundMissionState copyWith({
@@ -31,7 +34,8 @@ class CurrentInboundMissionState {
     Set<int>? selectedMissionNos,
     CurrentInboundMissionEntity? selectedMission,
     bool? isSelectionModeActive,
-    bool? isScannerModeActive,
+    String? scannedDataForPopup,
+    bool? showInboundPopup,
   }) {
     return CurrentInboundMissionState(
       currentInboundMissions:
@@ -42,7 +46,8 @@ class CurrentInboundMissionState {
       selectedMission: selectedMission ?? this.selectedMission,
       isSelectionModeActive:
           isSelectionModeActive ?? this.isSelectionModeActive,
-      isScannerModeActive: isScannerModeActive ?? this.isScannerModeActive,
+      scannedDataForPopup: scannedDataForPopup ?? this.scannedDataForPopup,
+      showInboundPopup: showInboundPopup ?? this.showInboundPopup,
     );
   }
 }
@@ -56,6 +61,22 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
   }) : _getCurrentInboundMissionsUseCase = getCurrentInboundMissionsUseCase,
        super(const CurrentInboundMissionState()) {
     _listenToInboundMissions(); // Viewmodel 생성 시 스트림 구독 시작
+  }
+
+  // 스캔된 데이터 처리/ 팝업 띄우는 메서드
+  void handleScannedData(String scannedData) {
+    logger("인바운드 viewmodel handleScannedData 호출");
+    logger("- 스캔된 데이터: $scannedData");
+
+    state = state.copyWith(
+      scannedDataForPopup: scannedData,
+      showInboundPopup: true,
+    );
+  }
+
+  // 팝업 표시 상태 초기화 메서드
+  void clearInboundPopup() {
+    state = state.copyWith(scannedDataForPopup: null, showInboundPopup: false);
   }
 
   void _listenToInboundMissions() {
