@@ -58,7 +58,9 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
     // ref 는 ConsumerState에서 직접 접근 가능.
 
     final isScannerModeActive = ref.read(scannerViewModelProvider);
-    if (isScannerModeActive && !_scannerFocusNode.hasFocus) {
+    final inboundState = ref.read(inboundViewModelProvider);
+
+    if (!inboundState.showInboundPopup && !_scannerFocusNode.hasFocus) {
       FocusScope.of(context).requestFocus(_scannerFocusNode);
       logger("포커스 다시 가져옴");
     }
@@ -97,6 +99,9 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
       next,
     ) {
       if (next.showInboundPopup && !previous!.showInboundPopup) {
+        // 팝업이 뜬다면 포커스를 없애줘야 popup의 텍스트필드에 포커스가 갈수있음.
+        _scannerFocusNode.unfocus();
+
         // 팝업 띄우기
         showDialog(
           context: context,
@@ -113,7 +118,16 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
         ).then((_) {
           // 팝업 닫힌 후 상태 초기화
           if (mounted) {
+            ref
+                .read(inboundViewModelProvider.notifier)
+                .setInboundPopupState(false);
+
+            ref.read(inboundRegistrationPopupViewModelProvider).resetForm();
+
             ref.read(inboundViewModelProvider.notifier).clearInboundPopup();
+            ref.invalidate(inboundRegistrationPopupViewModelProvider);
+            FocusScope.of(context).requestFocus(_scannerFocusNode);
+            logger("팝업 닫힘 - 포커스 다시 가져옴");
           }
         });
       }
@@ -139,7 +153,14 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                     controller: _scannerTextController,
                     autofocus: true,
                     keyboardType: TextInputType.none,
+                    enabled: !inboundState.showInboundPopup,
                     onSubmitted: (value) {
+                      final inboundState = ref.read(inboundViewModelProvider);
+                      if (inboundState.showInboundPopup) {
+                        logger("팝업이 떠있는 상태에서 스캔 입력이 들어왔습니다. 무시합니다.");
+                        _scannerTextController.clear();
+                        return;
+                      }
                       logger("인바운드 화면 스캐너 입력 감지 : $value");
                       // viewmodel에 스캔된 데이터 전달
                       ref
@@ -147,6 +168,17 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                           .handleScannedData(value);
                       // 텍스트필드 초기화
                       _scannerTextController.clear();
+                      logger("텍스트필드 초기화");
+
+                      /// 스캔 모드가 활성화되어있지 않고, 팝업이 떠 있지 않다면 포커스를 다시 요청해서 스캐너 입력을 받을 수 있도록 해야함.
+                      // final isScannerModeActive = ref.read(
+                      //   scannerViewModelProvider,
+                      // );
+
+                      if (!inboundState.showInboundPopup) {
+                        FocusScope.of(context).requestFocus(_scannerFocusNode);
+                        logger("포커스 다시 가져옴");
+                      }
                     },
                   ),
                 ),
@@ -278,20 +310,10 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (BuildContext dialogContext) {
-                                  /// MediaQuery - 키보드 Inset을 무시
-                                  return MediaQuery(
-                                    data: MediaQuery.of(
-                                      dialogContext,
-                                    ).copyWith(viewInsets: EdgeInsets.zero),
-                                    child: InboundRegistrationPopup(
-                                      scannedData: null,
-                                    ),
-                                  );
-                                },
-                              );
+                              _scannerFocusNode.unfocus();
+                              ref
+                                  .read(inboundViewModelProvider.notifier)
+                                  .setInboundPopupState(true);
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade500,
@@ -302,6 +324,10 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                               ),
                             ),
                             child: const Text('생성'),
+
+                            //   .then((_){
+                            // ref.read(inboundViewModelProvider.notifier).setInboundPopupState(false);
+                            // ref.read(inboundRegistrationPopupViewModelProvider).resetForm();
                           ),
                         ],
                       ),

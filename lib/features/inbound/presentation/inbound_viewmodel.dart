@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
+import '../../../core/state/scanner_viewmodel.dart';
 import '../domain/entities/current_inbound_mission_entity.dart';
 import '../domain/usecases/get_current_inbound_missions_usecase.dart';
 
@@ -54,11 +55,15 @@ class CurrentInboundMissionState {
 
 class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
   final GetCurrentInboundMissionsUseCase _getCurrentInboundMissionsUseCase;
+
+  final Ref _ref;
   StreamSubscription? _missionSubscription;
 
   InboundViewModel({
     required GetCurrentInboundMissionsUseCase getCurrentInboundMissionsUseCase,
+    required Ref ref,
   }) : _getCurrentInboundMissionsUseCase = getCurrentInboundMissionsUseCase,
+       _ref = ref,
        super(const CurrentInboundMissionState()) {
     _listenToInboundMissions(); // Viewmodel 생성 시 스트림 구독 시작
   }
@@ -68,15 +73,26 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
     logger("인바운드 viewmodel handleScannedData 호출");
     logger("- 스캔된 데이터: $scannedData");
 
-    state = state.copyWith(
-      scannedDataForPopup: scannedData,
-      showInboundPopup: true,
-    );
+    final isScannerModeActive = _ref.read(scannerViewModelProvider);
+
+    if (isScannerModeActive) {
+      state = state.copyWith(
+        scannedDataForPopup: scannedData,
+        showInboundPopup: true,
+      );
+    } else {
+      logger("스캐너모드가 비활성화되어 팝업이 표시되지 않습니다.");
+    }
   }
 
   // 팝업 표시 상태 초기화 메서드
   void clearInboundPopup() {
     state = state.copyWith(scannedDataForPopup: null, showInboundPopup: false);
+  }
+
+  //팝업 상태를 직접 설정하는 메서드 필요
+  void setInboundPopupState(bool isShowing) {
+    state = state.copyWith(showInboundPopup: isShowing);
   }
 
   void _listenToInboundMissions() {

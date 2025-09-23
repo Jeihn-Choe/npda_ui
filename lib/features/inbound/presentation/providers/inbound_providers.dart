@@ -103,7 +103,11 @@ final getCurrentInboundMissionsUseCaseProvider =
 
 /// ViewModel - 구현체 연결 Provider
 final inboundViewModelProvider =
-    StateNotifierProvider<InboundViewModel, CurrentInboundMissionState>((ref) {
-      final useCase = ref.watch(getCurrentInboundMissionsUseCaseProvider);
-      return InboundViewModel(getCurrentInboundMissionsUseCase: useCase);
-    });
+    StateNotifierProvider<InboundViewModel, CurrentInboundMissionState>(
+      (ref) => InboundViewModel(
+        getCurrentInboundMissionsUseCase: ref.read(
+          getCurrentInboundMissionsUseCaseProvider,
+        ),
+        ref: ref, // 기능 추가: Ref 전달
+      ),
+    );
