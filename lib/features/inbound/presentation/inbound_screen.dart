@@ -197,15 +197,42 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
-                            onPressed: selectedMissionNos.isEmpty
+                            onPressed: selectedMissionNos.isEmpty ||
+                                    inboundState.isDeleting // modified
                                 ? null
-                                : () {
-                                    // TODO : 삭제 로직 구현 필요.
-                                    logger("삭제 완료");
-                                    // 삭제 후 선택 모드 종료 및 선택된 항목 초기화
-                                    ref
+                                : () async {
+                                    final success = await ref // modified
                                         .read(inboundViewModelProvider.notifier)
-                                        .disableSelectionMode();
+                                        .deleteSelectedInboundMissions();
+
+                                    if (!context.mounted) return; // modified
+
+                                    showDialog( // modified
+                                      context: context,
+                                      builder: (BuildContext dialogContext) {
+                                        return AlertDialog(
+                                          title: Text(success ? '성공' : '실패'),
+                                          content: Text(success
+                                              ? '선택된 미션이 삭제되었습니다.'
+                                              : '미션 삭제에 실패했습니다.'),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.of(
+                                                dialogContext,
+                                              ).pop(),
+                                              child: const Text('확인'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+
+                                    if (success) { // modified
+                                      ref
+                                          .read(
+                                              inboundViewModelProvider.notifier)
+                                          .disableSelectionMode();
+                                    }
                                   },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
@@ -215,9 +242,14 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                                 vertical: 10,
                               ),
                             ),
-                            child: Text(
-                              '선택 항목 삭제 (${selectedMissionNos.length})',
-                            ),
+                            child: inboundState.isDeleting // modified
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  )
+                                : Text(
+                                    '선택 항목 삭제 (${selectedMissionNos.length})',
+                                  ),
                           ),
                           ElevatedButton(
                             onPressed: () {

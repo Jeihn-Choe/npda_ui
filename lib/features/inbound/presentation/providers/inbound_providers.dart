@@ -11,6 +11,7 @@ import '../../domain/repositories/current_inbound_mission_repository.dart';
 import '../../domain/repositories/request_inbound_work_repository.dart';
 import '../../domain/usecases/add_inbound_item_usecase.dart';
 import '../../domain/usecases/add_inbound_item_usecase_impl.dart';
+import '../../domain/usecases/delete_missions_usecase.dart';
 import '../../domain/usecases/request_inbound_work_usecase_impl.dart';
 import '../inbound_viewmodel.dart';
 import '../notifiers/inbound_registration_list_notifier.dart';
@@ -103,11 +104,19 @@ final getCurrentInboundMissionsUseCaseProvider =
 
 /// ViewModel - 구현체 연결 Provider
 final inboundViewModelProvider =
-    StateNotifierProvider<InboundViewModel, CurrentInboundMissionState>(
-      (ref) => InboundViewModel(
-        getCurrentInboundMissionsUseCase: ref.read(
-          getCurrentInboundMissionsUseCaseProvider,
-        ),
-        ref: ref, // 기능 추가: Ref 전달
-      ),
-    );
+    StateNotifierProvider<InboundViewModel, CurrentInboundMissionState>((ref) {
+      // ref를 블록으로 감싸서 내부에서 변수 선언 가능하게 변경
+      final getCurrentInboundMissionsUseCase = ref.read(
+        getCurrentInboundMissionsUseCaseProvider,
+      );
+      final deleteMissionsUseCase = ref.read(
+        deleteMissionsUseCaseProvider,
+      ); // deleteMissionsUseCase 주입
+
+      return InboundViewModel(
+        getCurrentInboundMissionsUseCase: getCurrentInboundMissionsUseCase,
+        deleteMissionsUseCase:
+            deleteMissionsUseCase, // deleteMissionsUseCase 전달
+        ref: ref, // Ref 전달
+      );
+    });

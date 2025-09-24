@@ -20,7 +20,7 @@ class RequestOrderDto {
   Map<String, dynamic> toJson() {
     return {
       'cmdId': cmdId,
-      'missionList': missionList.map((item) => item.toJson()).toList(),
+      'payload': missionList.map((item) => item.toJson()).toList(),
     };
   }
 }

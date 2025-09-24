@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
+import 'package:npda_ui_flutter/features/inbound/domain/usecases/delete_missions_usecase.dart';
 
 import '../../../core/state/scanner_viewmodel.dart';
 import '../domain/entities/current_inbound_mission_entity.dart';
@@ -17,6 +18,9 @@ class CurrentInboundMissionState {
   final String? scannedDataForPopup;
   final bool showInboundPopup;
 
+  /// 미션 삭제
+  final bool isDeleting;
+
   const CurrentInboundMissionState({
     this.currentInboundMissions = const [],
     this.isLoading = false,
@@ -26,6 +30,7 @@ class CurrentInboundMissionState {
     this.isSelectionModeActive = false,
     this.scannedDataForPopup,
     this.showInboundPopup = false,
+    this.isDeleting = false,
   });
 
   CurrentInboundMissionState copyWith({
@@ -37,6 +42,7 @@ class CurrentInboundMissionState {
     bool? isSelectionModeActive,
     String? scannedDataForPopup,
     bool? showInboundPopup,
+    bool? isDeleting,
   }) {
     return CurrentInboundMissionState(
       currentInboundMissions:
@@ -49,20 +55,24 @@ class CurrentInboundMissionState {
           isSelectionModeActive ?? this.isSelectionModeActive,
       scannedDataForPopup: scannedDataForPopup ?? this.scannedDataForPopup,
       showInboundPopup: showInboundPopup ?? this.showInboundPopup,
+      isDeleting: isDeleting ?? this.isDeleting,
     );
   }
 }
 
 class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
   final GetCurrentInboundMissionsUseCase _getCurrentInboundMissionsUseCase;
+  final DeleteMissionsUseCase _deleteMissionsUseCase;
 
   final Ref _ref;
   StreamSubscription? _missionSubscription;
 
   InboundViewModel({
     required GetCurrentInboundMissionsUseCase getCurrentInboundMissionsUseCase,
+    required DeleteMissionsUseCase deleteMissionsUseCase,
     required Ref ref,
   }) : _getCurrentInboundMissionsUseCase = getCurrentInboundMissionsUseCase,
+       _deleteMissionsUseCase = deleteMissionsUseCase,
        _ref = ref,
        super(const CurrentInboundMissionState()) {
     _listenToInboundMissions(); // Viewmodel 생성 시 스트림 구독 시작
@@ -136,6 +146,7 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
     );
   }
 
+  /// 셀렉션 모드 해제
   void disableSelectionMode() {
     state = state.copyWith(
       isSelectionModeActive: false,
@@ -150,7 +161,45 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
     } else {
       currentSelection.add(missionNo);
     }
+
+    logger("토글된 미션 번호: $missionNo");
+    logger("현재 선택된 미션 번호들: $currentSelection");
+
     state = state.copyWith(selectedMissionNos: currentSelection);
+  }
+
+  Future<bool> deleteSelectedInboundMissions() async { // modified
+    if (state.selectedMissionNos.isEmpty) {
+      logger("삭제할 미션이 선택되지 않았습니다.");
+      return false; // modified
+    }
+
+    state = state.copyWith(isDeleting: true);
+
+    logger('selectedMissionNos: ${state.selectedMissionNos}');
+
+    try {
+      final List<String> missionNosToDelete =
+          state.selectedMissionNos.map((e) => e.toString()).toList();
+
+      await _deleteMissionsUseCase.call(missionNosToDelete);
+
+      state = state.copyWith(
+        isDeleting: false,
+        isSelectionModeActive: false,
+        selectedMissionNos: {},
+        selectedMission: null,
+      );
+      logger(" 선택된 미션 삭제요청 완료 : $missionNosToDelete");
+      return true; // modified
+    } catch (e) {
+      logger("미션 삭제 중 오류 발생: $e");
+      state = state.copyWith(
+        isDeleting: false,
+        errorMessage: "미션 삭제 중 오류가 발생했습니다: $e",
+      );
+      return false; // modified
+    }
   }
 
   //StateNotifier를 dispose할 때 스트림 구독 취소
