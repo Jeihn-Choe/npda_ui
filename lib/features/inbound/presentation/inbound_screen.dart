@@ -7,22 +7,9 @@ import 'package:npda_ui_flutter/features/inbound/presentation/inbound_viewmodel.
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup.dart';
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
+import 'package:npda_ui_flutter/presentation/widgets/info_field_widget.dart';
 
 import '../../../core/state/scanner_viewmodel.dart';
-
-class _InboundItem {
-  final int id;
-  final String pltNo;
-  final String source;
-  final String destination;
-
-  _InboundItem({
-    required this.id,
-    required this.pltNo,
-    required this.source,
-    required this.destination,
-  });
-}
 
 class InboundScreen extends ConsumerStatefulWidget {
   const InboundScreen({super.key});
@@ -197,24 +184,32 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
-                            onPressed: selectedMissionNos.isEmpty ||
-                                    inboundState.isDeleting // modified
+                            onPressed:
+                                selectedMissionNos.isEmpty ||
+                                    inboundState
+                                        .isDeleting // modified
                                 ? null
                                 : () async {
-                                    final success = await ref // modified
-                                        .read(inboundViewModelProvider.notifier)
-                                        .deleteSelectedInboundMissions();
+                                    final success =
+                                        await ref // modified
+                                            .read(
+                                              inboundViewModelProvider.notifier,
+                                            )
+                                            .deleteSelectedInboundMissions();
 
                                     if (!context.mounted) return; // modified
 
-                                    showDialog( // modified
+                                    showDialog(
+                                      // modified
                                       context: context,
                                       builder: (BuildContext dialogContext) {
                                         return AlertDialog(
                                           title: Text(success ? '성공' : '실패'),
-                                          content: Text(success
-                                              ? '선택된 미션이 삭제되었습니다.'
-                                              : '미션 삭제에 실패했습니다.'),
+                                          content: Text(
+                                            success
+                                                ? '선택된 미션이 삭제되었습니다.'
+                                                : '미션 삭제에 실패했습니다.',
+                                          ),
                                           actions: [
                                             TextButton(
                                               onPressed: () => Navigator.of(
@@ -227,10 +222,12 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                                       },
                                     );
 
-                                    if (success) { // modified
+                                    if (success) {
+                                      // modified
                                       ref
                                           .read(
-                                              inboundViewModelProvider.notifier)
+                                            inboundViewModelProvider.notifier,
+                                          )
                                           .disableSelectionMode();
                                     }
                                   },
@@ -242,7 +239,9 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                                 vertical: 10,
                               ),
                             ),
-                            child: inboundState.isDeleting // modified
+                            child:
+                                inboundState
+                                    .isDeleting // modified
                                 ? const CircularProgressIndicator(
                                     color: Colors.white,
                                     strokeWidth: 2,
@@ -444,13 +443,13 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                     Expanded(
                       child: Column(
                         children: [
-                          _buildInfoField(
-                            'No.',
-                            selectedMission?.pltNo.toString(),
+                          InfoFieldWidget(
+                            fieldName: 'No.',
+                            fieldValue: selectedMission?.pltNo.toString(),
                           ),
-                          _buildInfoField(
-                            '제품',
-                            selectedMission != null
+                          InfoFieldWidget(
+                            fieldName: '제품',
+                            fieldValue: selectedMission != null
                                 ? "${selectedMission?.targetRackLevel.toString()}단 - 00${selectedMission?.targetRackLevel.toString()}"
                                 : "-",
                           ),
@@ -461,13 +460,13 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                     Expanded(
                       child: Column(
                         children: [
-                          _buildInfoField(
-                            '시간',
-                            selectedMission?.startTime.toString(),
+                          InfoFieldWidget(
+                            fieldName: '시간',
+                            fieldValue: selectedMission?.startTime.toString(),
                           ),
-                          _buildInfoField(
-                            '랩핑',
-                            selectedMission?.isWrapped.toString(),
+                          InfoFieldWidget(
+                            fieldName: '랩핑',
+                            fieldValue: selectedMission?.isWrapped.toString(),
                           ),
                         ],
                       ),

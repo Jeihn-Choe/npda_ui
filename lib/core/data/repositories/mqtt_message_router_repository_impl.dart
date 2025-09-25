@@ -40,7 +40,7 @@ class MqttMessageRouterRepositoryImpl {
       return;
     }
 
-    _mqttSubscription = _mqttService.messageStream.listen((message) {
+    _mqttSubscription = _mqttService.rawMqttMessageStream.listen((message) {
       try {
         final decodedJson = jsonDecode(message.payload) as Map<String, dynamic>;
         final rawDto = MqttReceiveRawDto.fromJson(decodedJson);

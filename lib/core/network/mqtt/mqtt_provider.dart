@@ -25,9 +25,7 @@ final mqttConnectionStateStreamProvider = StreamProvider<MqttState>((ref) {
 });
 
 // MQTT 수신 메시지 스트림 노출 StreamProvider
-final mqttMessageStateStreamProvider = StreamProvider<ReceivedMqttMessage>((
-  ref,
-) {
+final mqttMessageStateStreamProvider = StreamProvider<RawMqttMessage>((ref) {
   final mqttService = ref.watch(mqttServiceProvider);
-  return mqttService.messageStream;
+  return mqttService.rawMqttMessageStream;
 });

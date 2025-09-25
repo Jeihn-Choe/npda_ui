@@ -11,8 +11,7 @@ import 'mqtt_service.dart';
 class MqttServiceImpl implements MqttService {
   late MqttServerClient _client;
   final _connectionStateController = StreamController<MqttState>.broadcast();
-  final _messageController = StreamController<ReceivedMqttMessage>.broadcast();
-
+  final _messageController = StreamController<RawMqttMessage>.broadcast();
   final List<String> _topics = [MqttConfig.mwTopic];
 
   MqttServiceImpl() {
@@ -78,7 +77,7 @@ class MqttServiceImpl implements MqttService {
     logger("MQTT::New message received on topic ${recMess.topic}: $payload");
 
     _messageController.add(
-      ReceivedMqttMessage(topic: recMess.topic, payload: payload),
+      RawMqttMessage(topic: recMess.topic, payload: payload),
     );
     logger(
       "_messageController.add ==============================================",
@@ -86,11 +85,27 @@ class MqttServiceImpl implements MqttService {
   }
 
   @override
+  MqttState get connectionState {
+    switch (_client.connectionStatus?.state) {
+      case MqttConnectionState.connected:
+        return MqttState.connected;
+      case MqttConnectionState.connecting:
+        return MqttState.connecting;
+      case MqttConnectionState.disconnecting:
+      case MqttConnectionState.disconnected:
+      case MqttConnectionState.faulted:
+        return MqttState.disconnected;
+      default:
+        return MqttState.error;
+    }
+  }
+
+  @override
   Stream<MqttState> get connectionStateStream =>
       _connectionStateController.stream;
 
   @override
-  Stream<ReceivedMqttMessage> get messageStream => _messageController.stream;
+  Stream<RawMqttMessage> get rawMqttMessageStream => _messageController.stream;
 
   @override
   Future<void> connect() async {
