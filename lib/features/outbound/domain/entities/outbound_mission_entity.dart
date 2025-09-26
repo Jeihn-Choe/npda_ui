@@ -7,6 +7,7 @@ class OutboundMissionEntity {
   final String sourceBin;
   final String destinationBin;
   final int? subMissionStatus;
+  final String? startTime;
   final int missionType; // outbound 미션 필터링에 사용될 수 있음
   final bool isWrapped;
 
@@ -17,6 +18,7 @@ class OutboundMissionEntity {
     required this.sourceBin,
     required this.destinationBin,
     required this.subMissionStatus,
+    this.startTime,
     required this.missionType,
     required this.isWrapped,
   });
@@ -30,6 +32,7 @@ class OutboundMissionEntity {
       sourceBin: smEntity.sourceBin,
       destinationBin: smEntity.destinationBin,
       subMissionStatus: smEntity.subMissionStatus,
+      startTime: smEntity.startTime,
       missionType: smEntity.missionType,
       isWrapped: smEntity.isWrapped,
     );

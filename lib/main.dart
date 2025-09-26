@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/themes/app_theme.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 
-import 'core/providers/mqtt_message_router_provider.dart';
 import 'core/routes/router.dart';
+import 'features/outbound/presentation/providers/outbound_dependency_provider.dart';
 
 // TODO: SplashScreen import 추가
 // TODO: AppTheme import 추가 (core/themes/app_theme.dart)
@@ -24,8 +25,8 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(mqttMessageRouterRepositoryProvider);
-
+    ref.watch(inboundMissionUseCaseProvider);
+    ref.watch(outboundMissionUseCaseProvider);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'Celltrion NPDA',

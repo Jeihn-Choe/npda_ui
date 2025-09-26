@@ -1,13 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/usecases/get_current_inbound_missions_usecase.dart';
+import 'package:npda_ui_flutter/core/providers/usecase_providers.dart';
+import 'package:npda_ui_flutter/features/inbound/domain/usecases/inbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/usecases/request_inbound_work_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart';
 import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 
 import '../../../../core/network/http/api_provider.dart';
-import '../../data/repositories/current_inbound_mission_repository_impl.dart';
 import '../../data/repositories/request_inbound_work_repository_impl.dart';
-import '../../domain/repositories/current_inbound_mission_repository.dart';
 import '../../domain/repositories/request_inbound_work_repository.dart';
 import '../../domain/usecases/add_inbound_item_usecase.dart';
 import '../../domain/usecases/add_inbound_item_usecase_impl.dart';
@@ -84,39 +85,40 @@ final inboundRegistrationPopupViewModelProvider =
 // [GET CURRENT INBOUND MISSIONS]
 ///  입고 미션 현황 관련 프로바이더 모음
 
-/// Repository - 구현체 연결 Provider
-final currentInboundMissionRepositoryProvider =
-    Provider<CurrentInboundMissionRepository>((ref) {
-      final repository = CurrentInboundMissionRepositoryImpl();
+/// UseCase
+final inboundMissionUseCaseProvider = Provider<InboundMissionUseCase>((ref) {
+  // 1. 의존 관계에 있는 MqttMessageRouterUseCase를 주입받습니다.
+  final mqttMessageRouterUseCase = ref.watch(mqttMessageRouterUseCaseProvider);
 
-      // provider가 dispose될 때 리소스 해제
-      ref.onDispose(() => repository.dispose());
+  // 2. InboundMissionUseCase의 인스턴스를 생성합니다.
+  final useCase = InboundMissionUseCase(mqttMessageRouterUseCase);
 
-      return repository;
-    });
+  // 3. MQTT 메시지 스트림에 대한 리스닝을 시작합니다.
+  useCase.startListening();
 
-/// UseCase - 구현체 연결 Provider
-final getCurrentInboundMissionsUseCaseProvider =
-    Provider<GetCurrentInboundMissionsUseCase>((ref) {
-      final repository = ref.watch(currentInboundMissionRepositoryProvider);
-      return GetCurrentInboundMissionsUseCase(repository);
-    });
+  // 4. 프로바이더가 소멸될 때 useCase의 리소스를 해제하도록 설정합니다.
+  ref.onDispose(() {
+    useCase.dispose();
+  });
+
+  // 5. 생성된 useCase 인스턴스를 반환합니다.
+  return useCase;
+});
 
 /// ViewModel - 구현체 연결 Provider
 final inboundViewModelProvider =
-    StateNotifierProvider<InboundViewModel, CurrentInboundMissionState>((ref) {
-      // ref를 블록으로 감싸서 내부에서 변수 선언 가능하게 변경
-      final getCurrentInboundMissionsUseCase = ref.read(
-        getCurrentInboundMissionsUseCaseProvider,
+    StateNotifierProvider<InboundViewModel, InboundMissionState>((ref) {
+      // 스트림을 제공하는 올바른 UseCase Provider를 구독합니다.
+      final getInboundMissionsUseCase = ref.watch(
+        inboundMissionUseCaseProvider,
       );
       final deleteMissionsUseCase = ref.read(
         deleteMissionsUseCaseProvider,
-      ); // deleteMissionsUseCase 주입
+      );
 
       return InboundViewModel(
-        getCurrentInboundMissionsUseCase: getCurrentInboundMissionsUseCase,
-        deleteMissionsUseCase:
-            deleteMissionsUseCase, // deleteMissionsUseCase 전달
-        ref: ref, // Ref 전달
+        getInboundMissionsUseCase: getInboundMissionsUseCase,
+        deleteMissionsUseCase: deleteMissionsUseCase,
+        ref: ref,
       );
     });

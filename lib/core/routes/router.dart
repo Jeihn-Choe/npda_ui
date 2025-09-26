@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_screen.dart';
 import 'package:npda_ui_flutter/features/login/presentation/login_screen.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/outbound_screen.dart';
 
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../presentation/main_shell.dart';
@@ -38,8 +39,7 @@ final router = GoRouter(
               path: '/outbound',
 
               // builder: (context, state) => OutboundScreen(),
-              builder: (context, state) =>
-                  const _PlaceholderScreen(title: '출고 화면', color: Colors.green),
+              builder: (context, state) => OutboundScreen(),
             ),
           ],
         ),

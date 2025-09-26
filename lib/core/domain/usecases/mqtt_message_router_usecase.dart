@@ -30,6 +30,8 @@ class MqttMessageRouterUseCase {
     _mqttSubscription ??= _mqttMessageRepository.mqttMessageDtoStream.listen((
       message,
     ) {
+      appLogger.d("UseCase에서 mqttMessageDtoStream 수신");
+      appLogger.d(message.toString());
       switch (message.cmdId) {
         case 'SM':
           try {
@@ -68,16 +70,16 @@ class MqttMessageRouterUseCase {
     _mqttMessageRepository.dispose();
   }
 
-  List<SmEntity> _parseSmPayload(String payloadJson) {
-    final decoded = jsonDecode(payloadJson);
-    if (decoded is Map<String, dynamic> &&
-        decoded.containsKey('payload') &&
-        decoded['payload'] is List) {
-      final List<dynamic> missionListJson = decoded['payload'] as List<dynamic>;
-
-      return missionListJson
-          .map((item) => SmEntity.fromJson(item as Map<String, dynamic>))
-          .toList();
+  List<SmEntity> _parseSmPayload(dynamic payload) {
+    if (payload is List) {
+      try {
+        return payload
+            .map((item) => SmEntity.fromJson(item as Map<String, dynamic>))
+            .toList();
+      } catch (e) {
+        appLogger.d("SM 페이로드 파싱 중 오류 발생: $e");
+        return [];
+      }
     } else {
       throw FormatException("Invalid SM payload format");
     }

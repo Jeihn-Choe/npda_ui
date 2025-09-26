@@ -41,4 +41,9 @@ class OutboundMissionUseCase {
       _outboundMissionController.add(outboundMissions);
     });
   }
+
+  void dispose() {
+    _smMissionSubscription?.cancel();
+    _outboundMissionController.close();
+  }
 }

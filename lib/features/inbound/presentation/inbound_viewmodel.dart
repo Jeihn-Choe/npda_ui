@@ -3,17 +3,17 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/usecases/delete_missions_usecase.dart';
+import 'package:npda_ui_flutter/features/inbound/domain/usecases/inbound_mission_usecase.dart';
 
 import '../../../core/state/scanner_viewmodel.dart';
-import '../domain/entities/current_inbound_mission_entity.dart';
-import '../domain/usecases/get_current_inbound_missions_usecase.dart';
+import '../domain/entities/inbound_mission_entity.dart';
 
-class CurrentInboundMissionState {
-  final List<CurrentInboundMissionEntity> currentInboundMissions;
+class InboundMissionState {
+  final List<InboundMissionEntity> inboundMissions;
   final bool isLoading;
   final String? errorMessage;
   final Set<int> selectedMissionNos;
-  final CurrentInboundMissionEntity? selectedMission;
+  final InboundMissionEntity? selectedMission;
   final bool isSelectionModeActive;
   final String? scannedDataForPopup;
   final bool showInboundPopup;
@@ -21,8 +21,8 @@ class CurrentInboundMissionState {
   /// 미션 삭제
   final bool isDeleting;
 
-  const CurrentInboundMissionState({
-    this.currentInboundMissions = const [],
+  const InboundMissionState({
+    this.inboundMissions = const [],
     this.isLoading = false,
     this.errorMessage,
     this.selectedMissionNos = const {},
@@ -33,20 +33,19 @@ class CurrentInboundMissionState {
     this.isDeleting = false,
   });
 
-  CurrentInboundMissionState copyWith({
-    List<CurrentInboundMissionEntity>? currentInboundMissions,
+  InboundMissionState copyWith({
+    List<InboundMissionEntity>? inboundMissions,
     bool? isLoading,
     String? errorMessage,
     Set<int>? selectedMissionNos,
-    CurrentInboundMissionEntity? selectedMission,
+    InboundMissionEntity? selectedMission,
     bool? isSelectionModeActive,
     String? scannedDataForPopup,
     bool? showInboundPopup,
     bool? isDeleting,
   }) {
-    return CurrentInboundMissionState(
-      currentInboundMissions:
-          currentInboundMissions ?? this.currentInboundMissions,
+    return InboundMissionState(
+      inboundMissions: inboundMissions ?? this.inboundMissions,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage ?? this.errorMessage,
       selectedMissionNos: selectedMissionNos ?? this.selectedMissionNos,
@@ -60,21 +59,21 @@ class CurrentInboundMissionState {
   }
 }
 
-class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
-  final GetCurrentInboundMissionsUseCase _getCurrentInboundMissionsUseCase;
+class InboundViewModel extends StateNotifier<InboundMissionState> {
+  final InboundMissionUseCase _getInboundMissionsUseCase;
   final DeleteMissionsUseCase _deleteMissionsUseCase;
 
   final Ref _ref;
   StreamSubscription? _missionSubscription;
 
   InboundViewModel({
-    required GetCurrentInboundMissionsUseCase getCurrentInboundMissionsUseCase,
+    required InboundMissionUseCase getInboundMissionsUseCase,
     required DeleteMissionsUseCase deleteMissionsUseCase,
     required Ref ref,
-  }) : _getCurrentInboundMissionsUseCase = getCurrentInboundMissionsUseCase,
+  }) : _getInboundMissionsUseCase = getInboundMissionsUseCase,
        _deleteMissionsUseCase = deleteMissionsUseCase,
        _ref = ref,
-       super(const CurrentInboundMissionState()) {
+       super(const InboundMissionState()) {
     _listenToInboundMissions(); // Viewmodel 생성 시 스트림 구독 시작
   }
 
@@ -106,13 +105,14 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
   }
 
   void _listenToInboundMissions() {
-    state = state.copyWith(isLoading: true); // 로딩 시작
-    _missionSubscription = _getCurrentInboundMissionsUseCase().listen(
+    state = state.copyWith(isLoading: true);
+    _missionSubscription = _getInboundMissionsUseCase.inboundMissionStream.listen(
       (missions) {
         // 데이터 수신 성공 시
         state = state.copyWith(
-          currentInboundMissions: missions,
+          inboundMissions: missions,
           isLoading: false,
+          errorMessage: null, // 에러 메시지 초기화
         );
       },
       onError: (error) {
@@ -120,6 +120,7 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
         state = state.copyWith(
           errorMessage: error.toString(),
           isLoading: false,
+          inboundMissions: [], // 에러 발생 시 기존 목록을 비움
         );
       },
     );
@@ -128,7 +129,7 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
   /// 사용자가 미션을 터치했을 때 :
   /// isSelectionModeActive false 변경
   /// 상세보기 내용 띄워줌.
-  void selectMission(CurrentInboundMissionEntity mission) {
+  void selectMission(InboundMissionEntity mission) {
     state = state.copyWith(
       selectedMission: mission,
       isSelectionModeActive: false,
@@ -168,7 +169,8 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
     state = state.copyWith(selectedMissionNos: currentSelection);
   }
 
-  Future<bool> deleteSelectedInboundMissions() async { // modified
+  Future<bool> deleteSelectedInboundMissions() async {
+    // modified
     if (state.selectedMissionNos.isEmpty) {
       logger("삭제할 미션이 선택되지 않았습니다.");
       return false; // modified
@@ -179,8 +181,9 @@ class InboundViewModel extends StateNotifier<CurrentInboundMissionState> {
     logger('selectedMissionNos: ${state.selectedMissionNos}');
 
     try {
-      final List<String> missionNosToDelete =
-          state.selectedMissionNos.map((e) => e.toString()).toList();
+      final List<String> missionNosToDelete = state.selectedMissionNos
+          .map((e) => e.toString())
+          .toList();
 
       await _deleteMissionsUseCase.call(missionNosToDelete);
 

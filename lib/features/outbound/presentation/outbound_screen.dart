@@ -1,0 +1,541 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
+
+import '../../../core/constants/colors.dart';
+import '../../../presentation/widgets/form_card_layout.dart';
+import '../../../presentation/widgets/info_field_widget.dart';
+import 'outbound_screen_viewmodel.dart';
+
+class OutboundScreen extends ConsumerStatefulWidget {
+  const OutboundScreen({super.key});
+
+  @override
+  ConsumerState<OutboundScreen> createState() => _OutboundScreenState();
+}
+
+class _OutboundScreenState extends ConsumerState<OutboundScreen> {
+  late FocusNode _scannerFocusNode;
+  late TextEditingController _scannerTextController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scannerFocusNode = FocusNode();
+    _scannerTextController = TextEditingController();
+
+    // 포커스 변경 감지 리스너 추가 => 포커스를 invisible에서 잃으면 다시 갖다놔야함.
+    _scannerFocusNode.addListener(_onFocusChange);
+  }
+
+  void _onFocusChange() {
+    final outboundState = ref.read(outboundScreenViewModelProvider);
+    if (!_scannerFocusNode.hasFocus && !outboundState.showOutboundPopup) {
+      FocusScope.of(context).requestFocus(_scannerFocusNode);
+      appLogger.d("포커스 다시 가져옴");
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final outboundState = ref.watch(outboundScreenViewModelProvider);
+    final missions = outboundState.outboundMissions;
+    final isMissionListLoading = outboundState.isMissionListLoading;
+
+    return Scaffold(
+      resizeToAvoidBottomInset: false,
+      backgroundColor: Colors.grey.shade100,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              /// 보이지 않는 스캐너 입력용 TextField
+              Opacity(
+                opacity: 0.0,
+                child: SizedBox(
+                  width: 0.0,
+                  height: 0.0,
+                  child: TextField(
+                    focusNode: _scannerFocusNode,
+                    controller: _scannerTextController,
+                    autofocus: true,
+                    keyboardType: TextInputType.none,
+                    enabled: !outboundState.showOutboundPopup,
+                    onSubmitted: (value) {
+                      final outboundState = ref.read(
+                        outboundScreenViewModelProvider,
+                      );
+                      if (outboundState.showOutboundPopup) {
+                        appLogger.d("팝업이 떠있는 상태에서 스캔 입력이 들어왔습니다. 무시합니다.");
+                        _scannerTextController.clear();
+                        return;
+                      }
+                      appLogger.d("아웃바운드 화면 스캐너 입력 감지 : $value");
+                      // viewmodel에 스캔된 데이터 전달
+                      ref
+                          .read(outboundScreenViewModelProvider.notifier)
+                          .handleScannedData(value);
+                      // 텍스트필드 초기화
+                      _scannerTextController.clear();
+                      appLogger.d("텍스트필드 초기화");
+
+                      /// 스캔 모드가 활성화되어있지 않고, 팝업이 떠 있지 않다면 포커스를 다시 요청해서 스캐너 입력을 받을 수 있도록 해야함.
+                      // final isScannerModeActive = ref.read(
+                      //   scannerViewModelProvider,
+                      // );
+
+                      if (!outboundState.showOutboundPopup) {
+                        FocusScope.of(context).requestFocus(_scannerFocusNode);
+                        logger("포커스 다시 가져옴");
+                      }
+                    },
+                  ),
+                ),
+              ),
+
+              /// 상단 버튼 바
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 4,
+                ),
+
+                /// 선택모드 활성화 --> 삭제, 취소 버튼 표시.
+                child: outboundState.isMissionSelectionModeActive
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            onPressed:
+                                outboundState.selectedMissionNos.isEmpty ||
+                                    outboundState.isMissionDeleting
+                                ? null
+                                : () async {
+                                    final success =
+                                        await ref // modified
+                                            .read(
+                                              outboundScreenViewModelProvider
+                                                  .notifier,
+                                            )
+                                            .deleteSelectedOutboundMissions();
+
+                                    if (!context.mounted) return; // modified
+
+                                    showDialog(
+                                      // modified
+                                      context: context,
+                                      builder: (BuildContext dialogContext) {
+                                        return AlertDialog(
+                                          title: Text(success ? '성공' : '실패'),
+                                          content: Text(
+                                            success
+                                                ? '선택된 미션이 삭제되었습니다.'
+                                                : '미션 삭제에 실패했습니다.',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () => Navigator.of(
+                                                dialogContext,
+                                              ).pop(),
+                                              child: const Text('확인'),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    );
+
+                                    if (success) {
+                                      // modified
+                                      ref
+                                          .read(
+                                            outboundScreenViewModelProvider
+                                                .notifier,
+                                          )
+                                          .disableSelectionMode();
+                                    }
+                                  },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
+                            child:
+                                outboundState
+                                    .isMissionDeleting // modified
+                                ? const CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  )
+                                : Text(
+                                    '선택 항목 삭제 (${outboundState.selectedMissionNos.length})',
+                                  ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              ref
+                                  .read(
+                                    outboundScreenViewModelProvider.notifier,
+                                  )
+                                  .disableSelectionMode();
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.lightBlueAccent,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
+                            child: const Text('취소'),
+                          ),
+                        ],
+                      )
+                    /// 선택모드 비활성화 --> 생성, 작업시작 버튼 표시
+                    : Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            onPressed: null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.red,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
+                            child: const Text('삭제'),
+                          ),
+                          ElevatedButton(
+                            // 리스트가 비어있거나, 로딩중일때는 버튼 비활성화
+                            onPressed: () {},
+                            /*
+                      outboundState.selectedMissionNos.isEmpty ||
+                          outboundState.isMissionDeleting
+                          ? null
+                          : () async {
+                        // Notifier에서 작업 시작 로직 호출
+                        final result = await ref
+                            .read(
+                          outboundScreenRegistrationListProvider
+                              .notifier,
+                        )
+                            .requestInboundWork();
+
+                        // 결과에 따라 다이얼로그 표시
+                        if (!context.mounted) return;
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext dialogContext) {
+                            return AlertDialog(
+                              title: Text(
+                                result.isSuccess ? '성공' : '실패',
+                              ),
+                              content: Text(
+                                result.msg ??
+                                    (result.isSuccess
+                                        ? '작업이 성공적으로 요청되었습니다.'
+                                        : '작업 요청에 실패했습니다.'),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(
+                                    dialogContext,
+                                  ).pop(),
+                                  child: const Text('확인'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }, */
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.celltrionGreen,
+                              foregroundColor: AppColors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: const Text(' 작업 시작 '),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              /*
+                        _scannerFocusNode.unfocus();
+                        ref
+                            .read(outboundScreenViewModelProvider.notifier)
+                            .setOutboundPopupState(true);
+
+                         */
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue.shade500,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
+                            ),
+                            child: const Text('생성'),
+
+                            //   .then((_){
+                            // ref.read(inboundViewModelProvider.notifier).setInboundPopupState(false);
+                            // ref.read(inboundRegistrationPopupViewModelProvider).resetForm();
+                          ),
+                        ],
+                      ),
+              ),
+
+              const SizedBox(height: 4),
+              /*
+              /// inboundRegistrationList 생성 시 해당 정보 표시 - 평소에는 존재 x
+              if (inboundRegistrationListItems.isNotEmpty)
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 8,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.green.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withAlpha(90),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+
+                  child: Column(
+                    children: [
+                      Text(
+                        style: TextStyle(
+                          color: AppColors.celltrionBlack,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        "입고 요청 List (${inboundRegistrationListItems.length}건)",
+                      ),
+                      const SizedBox(height: 4),
+                      DataTable(
+                        horizontalMargin: 8,
+                        columnSpacing: 8,
+                        headingRowHeight: 28,
+                        dataRowMinHeight: 20,
+                        dataRowMaxHeight: 40,
+                        headingTextStyle: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                        dataTextStyle: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.black87,
+                        ),
+                        columns: const [
+                          DataColumn(label: Text('PLT No.')),
+                          DataColumn(label: Text('제품랙단수')),
+                          DataColumn(label: Text('요청시간')),
+                        ],
+                        rows: inboundRegistrationListItems.map((item) {
+                          return DataRow(
+                            cells: [
+                              DataCell(Text(item.pltNo)),
+                              DataCell(Text(item.selectedRackLevel)),
+                              DataCell(
+                                Text(formatter.format(item.workStartTime)),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+*/
+
+              /// 중앙 오더 상세 표시
+              FormCardLayout(
+                contentPadding: 12,
+                verticalMargin: 4,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    /// 하단의 리스트에서 선택된 행 표시, null 이면 빈칸
+                    Expanded(
+                      child: Column(
+                        children: [
+                          InfoFieldWidget(
+                            fieldName: 'No.',
+                            fieldValue: outboundState.selectedMission?.pltNo
+                                .toString(),
+                          ),
+                          InfoFieldWidget(fieldName: '제품', fieldValue: "-"),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          InfoFieldWidget(
+                            fieldName: '시간',
+                            fieldValue: outboundState.selectedMission?.startTime
+                                .toString(),
+                          ),
+                          InfoFieldWidget(
+                            fieldName: '랩핑',
+                            fieldValue: outboundState.selectedMission?.isWrapped
+                                .toString(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 8),
+
+              /// 하단 데이터그리드
+              if (outboundState.isMissionListLoading)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(100),
+                    child: CircularProgressIndicator(),
+                  ),
+                )
+              else
+                Container(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(90),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: DataTable(
+                      horizontalMargin: 8,
+                      columnSpacing: 16,
+                      headingRowHeight: 36,
+                      dataRowMinHeight: 36,
+                      dataRowMaxHeight: 36,
+                      headingTextStyle: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      dataTextStyle: const TextStyle(
+                        fontSize: 12,
+                        color: Colors.black87,
+                      ),
+                      columns: const [
+                        DataColumn(label: Text('No.')),
+                        DataColumn(label: Text('PltNo.')),
+                        DataColumn(label: Text('출발지')),
+                        DataColumn(label: Text('목적지')),
+                      ],
+
+                      rows: outboundState.outboundMissions.map((mission) {
+                        /// 각 셀을 감싸는 GestureDetector 위젯 생성 헬퍼 함수
+                        /// onTap, onLongPress 이벤트 핸들러 추가해야함.
+                        DataCell buildTappableCell(Widget child) {
+                          return DataCell(
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onLongPress: () {
+                                ref
+                                    .read(
+                                      outboundScreenViewModelProvider.notifier,
+                                    )
+                                    .enableSelectionMode(mission.missionNo);
+                              },
+                              onTap: () {
+                                if (outboundState
+                                    .isMissionSelectionModeActive) {
+                                  ref
+                                      .read(
+                                        outboundScreenViewModelProvider
+                                            .notifier,
+                                      )
+                                      .toggleMissionForDeletion(
+                                        mission.missionNo,
+                                      );
+                                } else {
+                                  ref
+                                      .read(
+                                        outboundScreenViewModelProvider
+                                            .notifier,
+                                      )
+                                      .selectMission(mission);
+                                }
+                              },
+                              child: child,
+                            ),
+                          );
+                        }
+
+                        return DataRow(
+                          /// 선택모드 UI 로직
+                          /// isSelectionModeActive true --> 체크박스 표시 o
+                          /// isSelectionModeActive false --> 체크박스 표시 x
+                          /// 선택모드가 활성화된 상태에서 행을 탭하면 해당 행이 선택/선택해제 토글됨.
+                          selected:
+                              outboundState.isMissionSelectionModeActive &&
+                              outboundState.selectedMissionNos.contains(
+                                mission.missionNo,
+                              ),
+
+                          onSelectChanged:
+                              outboundState.isMissionSelectionModeActive
+                              ? (isSelected) {
+                                  ref
+                                      .read(
+                                        outboundScreenViewModelProvider
+                                            .notifier,
+                                      )
+                                      .toggleMissionForDeletion(
+                                        mission.missionNo,
+                                      );
+                                }
+                              : null,
+
+                          cells: [
+                            buildTappableCell(
+                              Text(mission.missionNo.toString()),
+                            ),
+                            buildTappableCell(Text(mission.pltNo)),
+                            buildTappableCell(Text(mission.sourceBin)),
+                            buildTappableCell(Text(mission.destinationBin)),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}

@@ -1,4 +1,4 @@
-class CurrentInboundMissionEntity {
+class InboundMissionEntity {
   final int missionNo;
   final int subMissionNo;
   final int missionType;
@@ -10,7 +10,7 @@ class CurrentInboundMissionEntity {
   final bool isWrapped;
   final int subMissionStatus;
 
-  CurrentInboundMissionEntity({
+  InboundMissionEntity({
     required this.missionNo,
     required this.subMissionNo,
     required this.missionType,
@@ -22,4 +22,19 @@ class CurrentInboundMissionEntity {
     required this.isWrapped,
     required this.subMissionStatus,
   });
+
+  factory InboundMissionEntity.fromSmEntity(sm) {
+    return InboundMissionEntity(
+      missionNo: sm.missionNo,
+      subMissionNo: sm.subMissionNo,
+      missionType: sm.missionType,
+      pltNo: sm.pltNo,
+      startTime: sm.startTime,
+      targetRackLevel: sm.targetRackLevel,
+      sourceBin: sm.sourceBin,
+      destinationBin: sm.destinationBin,
+      isWrapped: sm.isWrapped,
+      subMissionStatus: sm.subMissionStatus,
+    );
+  }
 }

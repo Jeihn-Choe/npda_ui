@@ -9,8 +9,6 @@ import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_re
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 import 'package:npda_ui_flutter/presentation/widgets/info_field_widget.dart';
 
-import '../../../core/state/scanner_viewmodel.dart';
-
 class InboundScreen extends ConsumerStatefulWidget {
   const InboundScreen({super.key});
 
@@ -41,10 +39,6 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
   }
 
   void _onFocusChange() {
-    // isScannerModeActive == true 일때만 포커스 유지
-    // ref 는 ConsumerState에서 직접 접근 가능.
-
-    final isScannerModeActive = ref.read(scannerViewModelProvider);
     final inboundState = ref.read(inboundViewModelProvider);
 
     if (!inboundState.showInboundPopup && !_scannerFocusNode.hasFocus) {
@@ -72,7 +66,7 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
     final inboundState = ref.watch(inboundViewModelProvider);
 
     /// Viwemodel에서 정의한 상태에서 필요한 값 추출
-    final currentInboundMissions = inboundState.currentInboundMissions;
+    final inboundMissions = inboundState.inboundMissions;
     final getCurrentMissionsIsLoading = inboundState.isLoading;
     final getCurrentMissionsErrorMessage = inboundState.errorMessage;
     final selectedMissionNos = inboundState.selectedMissionNos;
@@ -81,10 +75,7 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
     final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
 
     /// inboundViewModel의 팝업 상태(scanned 여부가 들어옴) 변화 감지 후 팝업 띄움
-    ref.listen<CurrentInboundMissionState>(inboundViewModelProvider, (
-      previous,
-      next,
-    ) {
+    ref.listen<InboundMissionState>(inboundViewModelProvider, (previous, next) {
       if (next.showInboundPopup && !previous!.showInboundPopup) {
         // 팝업이 뜬다면 포커스를 없애줘야 popup의 텍스트필드에 포커스가 갈수있음.
         _scannerFocusNode.unfocus();
@@ -520,7 +511,7 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                         DataColumn(label: Text('목적지')),
                       ],
 
-                      rows: currentInboundMissions.map((mission) {
+                      rows: inboundMissions.map((mission) {
                         /// 각 셀을 감싸는 GestureDetector 위젯 생성 헬퍼 함수
                         /// onTap, onLongPress 이벤트 핸들러 추가해야함.
                         DataCell buildTappableCell(Widget child) {
@@ -585,46 +576,6 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  // 정보 필드 UI 헬퍼 메서드
-  Widget _buildInfoField(String fieldName, [dynamic? fieldValue]) {
-    return Padding(
-      padding: const EdgeInsets.all(4),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$fieldName: ',
-            textAlign: TextAlign.left,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.darkGrey,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              border: Border.all(color: AppColors.grey300),
-              borderRadius: BorderRadius.circular(8),
-              color: AppColors.grey100,
-            ),
-            child: Text(
-              fieldValue ?? '-',
-              textAlign: TextAlign.left,
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppColors.black,
-                fontWeight: FontWeight.normal,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

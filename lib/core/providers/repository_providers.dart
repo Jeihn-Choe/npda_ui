@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/data/dtos/received_mqtt_message_dto.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/mqtt_message_repository.dart';
 import 'package:npda_ui_flutter/core/network/mqtt/mqtt_provider.dart';
@@ -18,4 +19,16 @@ final missionRepositoryProvider = Provider<MissionRepository>((ref) {
 final mqttMessageRepositoryProvider = Provider<MqttMessageRepository>((ref) {
   final mqttService = ref.watch(mqttServiceProvider);
   return MqttMessageRepositoryImpl(mqttService);
+});
+
+/// 앱 전역에서 MqttMessageRepository 가 제공하는 DTO 스트림을 구독하는 StreamProvider
+
+final mqttMessageDtoStreamProvider = StreamProvider<ReceivedMqttMessageDto>((
+  ref,
+) {
+  /// ReceivedMqttMessageDto 스트림을 구독
+  final repository = ref.watch(mqttMessageRepositoryProvider);
+
+  /// repository의 mqttMessageDtoStream을 return
+  return repository.mqttMessageDtoStream;
 });

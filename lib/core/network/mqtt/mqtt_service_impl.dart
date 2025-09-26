@@ -62,26 +62,22 @@ class MqttServiceImpl implements MqttService {
   }
 
   void _pong() {
-    logger('MQTT::Ping response client callback invoked');
+    appLogger.d('MQTT::Ping response client callback invoked');
   }
 
   void _onMessageReceived(List<MqttReceivedMessage<MqttMessage?>>? c) {
-    logger("_onMessageReceived called");
-
     final recMess = c![0];
     final pubMess = recMess.payload as MqttPublishMessage;
     final payload = MqttPublishPayload.bytesToStringAsString(
       pubMess.payload.message,
     );
 
-    logger("MQTT::New message received on topic ${recMess.topic}: $payload");
+    // appLogger.d("MQTT::New message received on topic ${recMess.topic}");
 
     _messageController.add(
       RawMqttMessage(topic: recMess.topic, payload: payload),
     );
-    logger(
-      "_messageController.add ==============================================",
-    );
+    appLogger.d("=== [MQTT_Service_impl] :: 메시지 스트림 브로드캐스트 완료 ===");
   }
 
   @override
@@ -169,7 +165,7 @@ class MqttServiceImpl implements MqttService {
       final builder = MqttClientPayloadBuilder();
       builder.addString(message);
 
-      logger("MQTT::메시지 퍼블리싱 [topic : $topic] [Msg : $message]");
+      // appLogger.d("MQTT::메시지 퍼블리싱 [topic : $topic] [Msg : $message]");
 
       _client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
     } else {

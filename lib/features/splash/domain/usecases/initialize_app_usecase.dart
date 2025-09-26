@@ -7,6 +7,8 @@
 // 5. 디바이스 정보 수집
 // 6. 초기 설정값 로드
 
+
+
 class InitializeAppUseCase {
   // TODO: 의존성 주입 - MQTT 클라이언트, HTTP 클라이언트, 저장소 등
 
