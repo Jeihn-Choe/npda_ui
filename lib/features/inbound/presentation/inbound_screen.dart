@@ -9,6 +9,8 @@ import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_re
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 import 'package:npda_ui_flutter/presentation/widgets/info_field_widget.dart';
 
+import '../../../presentation/main_shell.dart';
+
 class InboundScreen extends ConsumerStatefulWidget {
   const InboundScreen({super.key});
 
@@ -18,7 +20,7 @@ class InboundScreen extends ConsumerStatefulWidget {
 
 class _InboundScreenState extends ConsumerState<InboundScreen> {
   late FocusNode _scannerFocusNode; // 스캐너 입력용 FocusNode
-  late TextEditingController _scannerTextController; // 스캐너 입력용 컨트롤러
+  late TextEditingController _scannerTextController;
 
   @override
   void initState() {
@@ -39,9 +41,13 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
   }
 
   void _onFocusChange() {
+    final currentTabIndex = ref.read(mainShellTabIndexProvider); // modified
+    if (currentTabIndex != 0) return; // 인바운드 탭이 아닐때는 포커스 로직 무시
+
     final inboundState = ref.read(inboundViewModelProvider);
 
     if (!inboundState.showInboundPopup && !_scannerFocusNode.hasFocus) {
+      // modified
       FocusScope.of(context).requestFocus(_scannerFocusNode);
       logger("포커스 다시 가져옴");
     }

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/popups/outbound_popup.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_order_list_provider.dart';
 
 import '../../../core/constants/colors.dart';
+import '../../../presentation/main_shell.dart';
 import '../../../presentation/widgets/form_card_layout.dart';
 import '../../../presentation/widgets/info_field_widget.dart';
-import 'outbound_screen_viewmodel.dart';
+import 'outbound_screen_vm.dart';
 
 class OutboundScreen extends ConsumerStatefulWidget {
   const OutboundScreen({super.key});
@@ -29,6 +33,9 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
   }
 
   void _onFocusChange() {
+    final currentTabIndex = ref.read(mainShellTabIndexProvider); // modified
+    if (currentTabIndex != 1) return; // 아웃바운드 화면이 아닐때는 무시
+
     final outboundState = ref.read(outboundScreenViewModelProvider);
     if (!_scannerFocusNode.hasFocus && !outboundState.showOutboundPopup) {
       FocusScope.of(context).requestFocus(_scannerFocusNode);
@@ -38,14 +45,49 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
 
   @override
   void dispose() {
+    // 컨트롤러와 포커스 노드의 리소스를 해제합니다. // modified
+    _scannerFocusNode.removeListener(_onFocusChange); // added
+    _scannerFocusNode.dispose(); // added
+    _scannerTextController.dispose(); // added
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final outboundState = ref.watch(outboundScreenViewModelProvider);
-    final missions = outboundState.outboundMissions;
-    final isMissionListLoading = outboundState.isMissionListLoading;
+    final orderListState = ref.watch(outboundOrderListProvider);
+
+    // viewmodel 의 팝업 상태 감지
+    ref.listen<OutboundScreenState>(outboundScreenViewModelProvider, (
+      previous,
+      next,
+    ) {
+      /// ShowOutboundPopup 상태가 true로 변경되면 popup을 띄움움
+      if (next.showOutboundPopup && previous?.showOutboundPopup == false) {
+        /// 팝업 띄우기 전 스캐너 포커스 해제
+        _scannerFocusNode.unfocus();
+
+        showDialog(
+          context: context,
+          barrierDismissible: false, // 바깥 영역 터치시 닫히지 않도록 설정
+          builder: (BuildContext dialogContext) {
+            return OutboundPopup(scannedData: next.scannedDataForPopup);
+          },
+        ).then((_) {
+          // 팝업이 닫히고 나서 포커스 다시 가져오기
+          if (mounted) {
+            /// 1. viewmodel 에 팝업 닫힘 상태 전달
+            ref
+                .read(outboundScreenViewModelProvider.notifier)
+                .setPopupVisibility(false);
+
+            /// 2. 포커스 다시 가져오기
+            FocusScope.of(context).requestFocus(_scannerFocusNode);
+            appLogger.d("팝업 닫힘 - 포커스 다시 가져옴");
+          }
+        });
+      }
+    });
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -301,9 +343,9 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
               ),
 
               const SizedBox(height: 4),
-              /*
+
               /// inboundRegistrationList 생성 시 해당 정보 표시 - 평소에는 존재 x
-              if (inboundRegistrationListItems.isNotEmpty)
+              if (orderListState.orders.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.symmetric(
                     vertical: 4,
@@ -311,7 +353,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                   ),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.green.shade100,
+                    color: Colors.orange.shade100,
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
@@ -329,7 +371,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                           color: AppColors.celltrionBlack,
                           fontWeight: FontWeight.bold,
                         ),
-                        "입고 요청 List (${inboundRegistrationListItems.length}건)",
+                        "출고 요청 List (${orderListState.orders.length}건)",
                       ),
                       const SizedBox(height: 4),
                       DataTable(
@@ -348,17 +390,21 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                           color: Colors.black87,
                         ),
                         columns: const [
-                          DataColumn(label: Text('PLT No.')),
-                          DataColumn(label: Text('제품랙단수')),
+                          DataColumn(label: Text('DO No / 저장빈 No.')),
                           DataColumn(label: Text('요청시간')),
                         ],
-                        rows: inboundRegistrationListItems.map((item) {
+                        rows: orderListState.orders.map((order) {
                           return DataRow(
                             cells: [
-                              DataCell(Text(item.pltNo)),
-                              DataCell(Text(item.selectedRackLevel)),
                               DataCell(
-                                Text(formatter.format(item.workStartTime)),
+                                Text(order.doNo ?? order.savedBinNo ?? "-"),
+                              ),
+                              DataCell(
+                                Text(
+                                  DateFormat(
+                                    'yyyy-MM-dd HH:mm:ss',
+                                  ).format(order.startTime),
+                                ),
                               ),
                             ],
                           );
@@ -367,7 +413,6 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                     ],
                   ),
                 ),
-*/
 
               /// 중앙 오더 상세 표시
               FormCardLayout(

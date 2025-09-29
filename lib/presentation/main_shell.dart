@@ -148,6 +148,9 @@ class _MainShellState extends ConsumerState<MainShell> {
   }
 
   void _onTap(BuildContext context, int index) {
+    //Provider에 현재 탭 인덱스 저장
+    ref.read(mainShellTabIndexProvider.notifier).state = index; // modified
+
     widget.navigationShell.goBranch(
       index,
       // 현재 탭을 다시 탭해도 화면이 새로고침되지 않도록 설정
@@ -155,3 +158,5 @@ class _MainShellState extends ConsumerState<MainShell> {
     );
   }
 }
+
+final mainShellTabIndexProvider = StateProvider<int>((ref) => 0);

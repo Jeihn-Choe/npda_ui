@@ -5,6 +5,7 @@ import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_missi
 import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_dependency_provider.dart';
 
+import '../../../core/state/scanner_viewmodel.dart';
 import '../../../core/utils/logger.dart';
 import '../domain/entities/outbound_order_entity.dart';
 
@@ -91,37 +92,49 @@ class OutboundScreenState {
   }
 }
 
-class OutboundScreenViewModel extends StateNotifier<OutboundScreenState> {
+class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
+  final Ref _ref;
   final OutboundMissionUseCase _getOutboundMissionUseCase;
   StreamSubscription? _missionSubscription;
 
-  OutboundScreenViewModel({
+  OutboundScreenVm({
+    required Ref ref,
     required OutboundMissionUseCase getOutboundMissionUseCase,
-  }) : _getOutboundMissionUseCase = getOutboundMissionUseCase,
+  }) : _ref = ref,
+       _getOutboundMissionUseCase = getOutboundMissionUseCase,
        super(const OutboundScreenState()) {
-    //* 여기에 viewmodel 열릴 때 초기화하는 작업들이 들어가야함.
+    // 여기에 viewmodel 열릴 때 초기화하는 작업들이 들어가야함.
 
     _listenToOutboundMissions();
-
-    //*//
   }
 
   /// ===== 중단 outboundOrder 관련 메서드 섹션 ======
   // 스캔된 데이터 처리/ 팝업 띄우는 메서드
+  // handleScannedData 메소드를 아래 내용으로 교체
   void handleScannedData(String scannedData) {
-    appLogger.d("인바운드 viewmodel handleScannedData 호출");
-    appLogger.d("- 스캔된 데이터: $scannedData");
+    appLogger.d("아웃바운드 ViewModel handleScannedData 호출: $scannedData");
 
-    // final isScannerModeActive = _ref.read(scannerViewModelProvider);
-    //
-    // if (isScannerModeActive) {
-    //   state = state.copyWith(
-    //     scannedDataForPopup: scannedData,
-    //     showInboundPopup: true,
-    //   );
-    // } else {
-    //   logger("스캐너모드가 비활성화되어 팝업이 표시되지 않습니다.");
-    // }
+    final isScannerModeActive = _ref.read(scannerViewModelProvider);
+
+    if (isScannerModeActive) {
+      // 스캐너 모드가 활성화된 경우: 팝업을 띄우도록 상태 변경
+      state = state.copyWith(
+        showOutboundPopup: true,
+        scannedDataForPopup: scannedData,
+      );
+    } else {
+      // 스캐너 모드가 비활성화된 경우: 아무것도 하지 않음 (또는 다른 정책을 여기에 정의)
+      appLogger.d("스캐너 모드가 비활성화되어 스캔 입력을 무시합니다.");
+    }
+  }
+
+  void showCreationPopup() {
+    state = state.copyWith(showOutboundPopup: true, scannedDataForPopup: null);
+  }
+
+  /// 팝업 닫기
+  void setPopupVisibility(bool isVisible) {
+    state = state.copyWith(showOutboundPopup: false, scannedDataForPopup: null);
   }
 
   /// ====== 하단 OutboundMission 관련 메서드 섹션 ======
@@ -233,12 +246,13 @@ class OutboundScreenViewModel extends StateNotifier<OutboundScreenState> {
 }
 
 final outboundScreenViewModelProvider =
-    StateNotifierProvider<OutboundScreenViewModel, OutboundScreenState>((ref) {
+    StateNotifierProvider<OutboundScreenVm, OutboundScreenState>((ref) {
       /// 1.  UseCase Provider 를 watch하여 UseCase 구현체를 주입받음
       final getOutboundMissionUseCase = ref.watch(
         outboundMissionUseCaseProvider,
       );
-      return OutboundScreenViewModel(
+      return OutboundScreenVm(
+        ref: ref,
         getOutboundMissionUseCase: getOutboundMissionUseCase,
       );
     });
