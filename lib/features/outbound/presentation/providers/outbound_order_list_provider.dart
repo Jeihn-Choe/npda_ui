@@ -1,8 +1,9 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/domain/entities/response_order_entity.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_order_entity.dart';
-
-/// viewmodel에 제공해야하는 상태들
+import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_order_usecase.dart';
 
 class OutboundOrderListState extends Equatable {
   final List<OutboundOrderEntity> orders;
@@ -32,11 +33,34 @@ class OutboundOrderListState extends Equatable {
 }
 
 class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
-  OutboundOrderListNotifier() : super(const OutboundOrderListState());
+  final OutboundOrderUseCase _orderUseCase;
 
-  void addOrder(OutboundOrderEntity newOrder) {
-    /// orders 를 ...스프레드 연산자로 리스트를 펼치고, newOrder를 추가
+  OutboundOrderListNotifier(this._orderUseCase)
+    : super(const OutboundOrderListState());
+
+  void addOrderToList(OutboundOrderEntity newOrder) {
     state = state.copyWith(orders: [...state.orders, newOrder]);
+  }
+
+  void clearOrders() {
+    state = state.copyWith(orders: []);
+  }
+
+  Future<void> requestOutboundOrder() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final result = await _orderUseCase.requestOutboundOrder(
+        items: state.orders,
+      );
+
+      if (result.isSuccess) {
+        clearOrders();
+      }
+    } catch (e) {
+      logger('Error requesting outbound work: $e');
+    } finally {
+      state = state.copyWith(isLoading: false);
+    }
   }
 }
 
@@ -44,5 +68,6 @@ final outboundOrderListProvider =
     StateNotifierProvider<OutboundOrderListNotifier, OutboundOrderListState>((
       ref,
     ) {
-      return OutboundOrderListNotifier();
+      final orderUseCase = ref.watch(outboundOrderUseCaseProvider);
+      return OutboundOrderListNotifier(orderUseCase);
     });

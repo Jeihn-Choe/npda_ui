@@ -3,6 +3,7 @@ class SmEntity {
   final int subMissionNo;
   final int missionType;
   final String pltNo;
+  final String? doNo;
   final String startTime;
   final int targetRackLevel;
   final String sourceBin;
@@ -15,6 +16,7 @@ class SmEntity {
     required this.subMissionNo,
     required this.missionType,
     required this.pltNo,
+    required this.doNo,
     required this.startTime,
     required this.targetRackLevel,
     required this.sourceBin,
@@ -29,6 +31,7 @@ class SmEntity {
       subMissionNo: json['subMissionNo'] as int,
       missionType: json['missionType'] as int,
       pltNo: json['pltNo'] as String,
+      doNo: json['doNo'] as String?,
       startTime: json['startTime'] as String,
       targetRackLevel: json['targetRackLevel'] as int,
       sourceBin: json['sourceBin'] as String,

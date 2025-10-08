@@ -79,7 +79,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
             /// 1. viewmodel 에 팝업 닫힘 상태 전달
             ref
                 .read(outboundScreenViewModelProvider.notifier)
-                .setPopupVisibility(false);
+                .closeCreationPopup(false);
 
             /// 2. 포커스 다시 가져오기
             FocusScope.of(context).requestFocus(_scannerFocusNode);
@@ -259,48 +259,18 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                             child: const Text('삭제'),
                           ),
                           ElevatedButton(
-                            // 리스트가 비어있거나, 로딩중일때는 버튼 비활성화
-                            onPressed: () {},
-                            /*
-                      outboundState.selectedMissionNos.isEmpty ||
-                          outboundState.isMissionDeleting
-                          ? null
-                          : () async {
-                        // Notifier에서 작업 시작 로직 호출
-                        final result = await ref
-                            .read(
-                          outboundScreenRegistrationListProvider
-                              .notifier,
-                        )
-                            .requestInboundWork();
+                            onPressed:
+                                orderListState.orders.isEmpty ||
+                                    orderListState.isLoading
+                                ? null
+                                : () {
+                                    ref
+                                        .read(
+                                          outboundOrderListProvider.notifier,
+                                        )
+                                        .requestOutboundOrder();
+                                  },
 
-                        // 결과에 따라 다이얼로그 표시
-                        if (!context.mounted) return;
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext dialogContext) {
-                            return AlertDialog(
-                              title: Text(
-                                result.isSuccess ? '성공' : '실패',
-                              ),
-                              content: Text(
-                                result.msg ??
-                                    (result.isSuccess
-                                        ? '작업이 성공적으로 요청되었습니다.'
-                                        : '작업 요청에 실패했습니다.'),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(
-                                    dialogContext,
-                                  ).pop(),
-                                  child: const Text('확인'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }, */
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.celltrionGreen,
                               foregroundColor: AppColors.white,
@@ -312,17 +282,25 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                            child: const Text(' 작업 시작 '),
+                            child: orderListState.isLoading
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Text(' 작업 시작 '),
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              /*
-                        _scannerFocusNode.unfocus();
-                        ref
-                            .read(outboundScreenViewModelProvider.notifier)
-                            .setOutboundPopupState(true);
-
-                         */
+                              _scannerFocusNode.unfocus();
+                              ref
+                                  .read(
+                                    outboundScreenViewModelProvider.notifier,
+                                  )
+                                  .showCreationPopup();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade500,
@@ -333,10 +311,6 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                               ),
                             ),
                             child: const Text('생성'),
-
-                            //   .then((_){
-                            // ref.read(inboundViewModelProvider.notifier).setInboundPopupState(false);
-                            // ref.read(inboundRegistrationPopupViewModelProvider).resetForm();
                           ),
                         ],
                       ),
@@ -427,10 +401,14 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                         children: [
                           InfoFieldWidget(
                             fieldName: 'No.',
-                            fieldValue: outboundState.selectedMission?.pltNo
+                            fieldValue: outboundState.selectedMission?.doNo
                                 .toString(),
                           ),
-                          InfoFieldWidget(fieldName: '제품', fieldValue: "-"),
+                          InfoFieldWidget(
+                            fieldName: '출발지',
+                            fieldValue:
+                                outboundState.selectedMission?.sourceBin,
+                          ),
                         ],
                       ),
                     ),
@@ -444,8 +422,10 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                                 .toString(),
                           ),
                           InfoFieldWidget(
-                            fieldName: '랩핑',
-                            fieldValue: outboundState.selectedMission?.isWrapped
+                            fieldName: '목적지',
+                            fieldValue: outboundState
+                                .selectedMission
+                                ?.destinationBin
                                 .toString(),
                           ),
                         ],
@@ -568,7 +548,9 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                             buildTappableCell(
                               Text(mission.missionNo.toString()),
                             ),
-                            buildTappableCell(Text(mission.pltNo)),
+                            buildTappableCell(
+                              Text(mission?.doNo ?? mission?.sourceBin ?? "-"),
+                            ),
                             buildTappableCell(Text(mission.sourceBin)),
                             buildTappableCell(Text(mission.destinationBin)),
                           ],

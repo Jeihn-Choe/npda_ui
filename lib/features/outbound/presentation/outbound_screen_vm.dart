@@ -133,7 +133,7 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
   }
 
   /// 팝업 닫기
-  void setPopupVisibility(bool isVisible) {
+  void closeCreationPopup(bool isVisible) {
     state = state.copyWith(showOutboundPopup: false, scannedDataForPopup: null);
   }
 

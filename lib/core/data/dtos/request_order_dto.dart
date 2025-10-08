@@ -28,6 +28,7 @@ class RequestOrderDto {
 class WorkItem {
   final int missionType;
   final String? pltNo;
+  final String? doNo;
   final DateTime? startTime;
   final int? targetRackLevel;
   final String employeeId;
@@ -39,6 +40,7 @@ class WorkItem {
   WorkItem({
     required this.missionType,
     this.pltNo,
+    this.doNo,
     this.startTime,
     this.targetRackLevel,
     required this.employeeId,
@@ -52,6 +54,7 @@ class WorkItem {
     return WorkItem(
       missionType: json['missionType'] as int,
       pltNo: json['pltNo'] as String?,
+      doNo: json['doNo'] as String?,
       startTime: json['startTime'] != null
           ? DateTime.parse(json['startTime'] as String)
           : null,
@@ -69,6 +72,7 @@ class WorkItem {
     return {
       'missionType': missionType,
       'pltNo': pltNo,
+      'doNo': doNo,
       'startTime': startTime?.toIso8601String(),
       'targetRackLevel': targetRackLevel,
       'employeeId': employeeId,

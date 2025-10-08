@@ -6,6 +6,8 @@ import 'package:npda_ui_flutter/core/network/mqtt/mqtt_provider.dart';
 
 import '../data/repositories/mission_repository_impl.dart';
 import '../data/repositories/mqtt_message_repository_impl.dart';
+import '../data/repositories/order_repository_impl.dart';
+import '../domain/repositories/order_repository.dart';
 import '../network/http/api_provider.dart';
 
 /// 앱 전역에서 MissionRepository를 제공하는 Provider
@@ -31,4 +33,10 @@ final mqttMessageDtoStreamProvider = StreamProvider<ReceivedMqttMessageDto>((
 
   /// repository의 mqttMessageDtoStream을 return
   return repository.mqttMessageDtoStream;
+});
+
+/// 앱 전역에서 OrderRepository를 제공하는 Provider
+final orderRepositoryProvider = Provider<OrderRepository>((ref) {
+  final apiService = ref.watch(apiServiceProvider);
+  return OrderRepositoryImpl(apiService);
 });

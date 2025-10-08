@@ -1,9 +1,9 @@
 import '../../../../core/domain/entities/sm_entity.dart';
 
-class OutboundMissionEntity {
+class Outbound1FMissionEntity {
   final int missionNo;
   final int subMissionNo;
-  final String doNo;
+  final String pltNo;
   final String sourceBin;
   final String destinationBin;
   final int? subMissionStatus;
@@ -11,10 +11,10 @@ class OutboundMissionEntity {
   final int missionType; // outbound 미션 필터링에 사용될 수 있음
   final bool isWrapped;
 
-  const OutboundMissionEntity({
+  const Outbound1FMissionEntity({
     required this.missionNo,
     required this.subMissionNo,
-    required this.doNo,
+    required this.pltNo,
     required this.sourceBin,
     required this.destinationBin,
     required this.subMissionStatus,
@@ -24,11 +24,11 @@ class OutboundMissionEntity {
   });
 
   // SmEntity로부터 OutboundMissionEntity를 생성하는 팩토리 생성자
-  factory OutboundMissionEntity.fromSmEntity(SmEntity smEntity) {
-    return OutboundMissionEntity(
+  factory Outbound1FMissionEntity.fromSmEntity(SmEntity smEntity) {
+    return Outbound1FMissionEntity(
       missionNo: smEntity.missionNo,
       subMissionNo: smEntity.subMissionNo,
-      doNo: smEntity.doNo ?? '',
+      pltNo: smEntity.pltNo,
       sourceBin: smEntity.sourceBin,
       destinationBin: smEntity.destinationBin,
       subMissionStatus: smEntity.subMissionStatus,
