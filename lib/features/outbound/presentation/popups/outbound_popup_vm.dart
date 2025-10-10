@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
+import 'package:npda_ui_flutter/features/login/presentation/state/login_state.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_order_usecase.dart';
 
+import '../../../login/presentation/providers/login_providers.dart';
 import '../providers/outbound_order_list_provider.dart';
 
 class OutboundPopupState {
@@ -55,6 +57,8 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
     String initialDoNo = '';
     String initialSavedBinNo = '';
 
+    LoginState loginState = _ref.read(loginViewModelProvider);
+
     if (scannedData != null && scannedData.isNotEmpty) {
       if (scannedData.startsWith('2A')) {
         initialSavedBinNo = scannedData;
@@ -67,7 +71,7 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
       doNo: initialDoNo,
       savedBinNo: initialSavedBinNo,
       startTime: DateTime.now().toUtc().add(const Duration(hours: 9)),
-      userId: userId ?? '12345',
+      userId: loginState.userId!,
       isLoading: false,
       resetError: true,
     );
@@ -92,7 +96,7 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
     try {
       final existingOrders = _ref.read(outboundOrderListProvider).orders;
 
-      final result = _ref
+      final (newOrder, errorMessage) = _ref
           .read(outboundOrderUseCaseProvider)
           .addOrder(
             doNo: state.doNo,
@@ -102,10 +106,12 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
             existingOrders: existingOrders,
           );
 
-      if (!result.isSuccess) {
-        state = state.copyWith(isLoading: false, error: result.message);
+      if (errorMessage != null || newOrder == null) {
+        state = state.copyWith(isLoading: false, error: errorMessage);
         return false;
       }
+
+      _ref.read(outboundOrderListProvider.notifier).addOrderToList(newOrder);
 
       appLogger.i('출고 오더가 리스트에 추가됨');
       state = state.copyWith(isLoading: false);
@@ -121,6 +127,8 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
 }
 
 final outboundPopupVMProvider =
-    StateNotifierProvider<OutboundPopupVM, OutboundPopupState>((ref) {
+    StateNotifierProvider.autoDispose<OutboundPopupVM, OutboundPopupState>((
+      ref,
+    ) {
       return OutboundPopupVM(ref);
     });

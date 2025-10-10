@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/data/dtos/request_order_dto.dart';
 import 'package:npda_ui_flutter/core/domain/entities/response_order_entity.dart';
-import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_order_list_provider.dart';
 
 import '../../../../core/providers/repository_providers.dart';
 import '../entities/outbound_order_entity.dart';
@@ -19,7 +18,7 @@ class OutboundOrderUseCase {
   final Ref ref;
 
   /// --- 주문 추가 로직 ---
-  UseCaseResult addOrder({
+  (OutboundOrderEntity?, String?) addOrder({
     required String doNo,
     required String savedBinNo,
     required DateTime startTime,
@@ -28,28 +27,26 @@ class OutboundOrderUseCase {
   }) {
     // 중복 주문 확인
     if (doNo.isNotEmpty && existingOrders.any((order) => order.doNo == doNo)) {
-      return UseCaseResult(isSuccess: false, message: '이미 등록된 Order No 입니다.');
+      return (null, '이미 등록된 DO 번호 입니다.');
     }
 
     // 저장빈 중복 확인
     if (savedBinNo.isNotEmpty &&
         existingOrders.any((order) => order.savedBinNo == savedBinNo)) {
-      return UseCaseResult(isSuccess: false, message: '이미 등록된 저장빈 입니다.');
+      return (null, '이미 등록된 저장빈 번호 입니다.');
     }
 
     // 새로운 주문 생성
     final newOrder = OutboundOrderEntity(
       orderNo: 'ORD-${DateTime.now().millisecondsSinceEpoch}',
       // 예시로 고유한 주문 번호 생성
-      doNo: doNo,
-      savedBinNo: savedBinNo,
+      doNo: doNo.isEmpty ? null : doNo,
+      savedBinNo: savedBinNo.isEmpty ? null : savedBinNo,
       userId: userId,
       startTime: DateTime.now(),
     );
 
-    ref.read(outboundOrderListProvider.notifier).addOrderToList(newOrder);
-
-    return UseCaseResult(isSuccess: true, message: 'Order가 성공적으로 추가되었습니다.');
+    return (newOrder, null);
   }
 
   /// --- Order Repository 전송 로직 ---
