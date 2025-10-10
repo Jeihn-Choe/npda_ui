@@ -1,12 +1,14 @@
 import 'package:equatable/equatable.dart';
 
 class OutboundOrderEntity extends Equatable {
+  final String orderNo;
   final String? doNo;
   final String? savedBinNo;
   final DateTime startTime;
   final String userId;
 
-  OutboundOrderEntity({
+  const OutboundOrderEntity({
+    required this.orderNo,
     this.doNo,
     this.savedBinNo,
     required this.startTime,
@@ -14,5 +16,5 @@ class OutboundOrderEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [doNo, savedBinNo, startTime, userId];
+  List<Object?> get props => [orderNo, doNo, savedBinNo, startTime, userId];
 }

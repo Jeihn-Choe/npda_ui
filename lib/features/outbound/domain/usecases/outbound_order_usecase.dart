@@ -39,6 +39,8 @@ class OutboundOrderUseCase {
 
     // 새로운 주문 생성
     final newOrder = OutboundOrderEntity(
+      orderNo: 'ORD-${DateTime.now().millisecondsSinceEpoch}',
+      // 예시로 고유한 주문 번호 생성
       doNo: doNo,
       savedBinNo: savedBinNo,
       userId: userId,

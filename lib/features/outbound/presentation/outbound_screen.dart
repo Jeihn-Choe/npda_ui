@@ -151,7 +151,9 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
 
                 /// 선택모드 활성화 --> 삭제, 취소 버튼 표시.
                 child: outboundState.isMissionSelectionModeActive
-                    ? Row(
+                    ?
+                    // 1. 미션 선택 모드일 때의 버튼
+                    Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
@@ -242,78 +244,133 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                           ),
                         ],
                       )
-                    /// 선택모드 비활성화 --> 생성, 작업시작 버튼 표시
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          ElevatedButton(
-                            onPressed: null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
+                    : outboundState.isOrderSelectionModeActive
+                        ?
+                        // 2. 주문 선택 모드일 때의 버튼
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                onPressed:
+                                    outboundState.selectedOrderNos.isEmpty ||
+                                            outboundState.isOrderDeleting
+                                        ? null
+                                        : () async {
+                                            // 주문 삭제 메서드 호출
+                                            await ref
+                                                .read(outboundScreenViewModelProvider
+                                                    .notifier)
+                                                .deleteSelectedOutboundOrders();
+                                          },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                child: outboundState.isOrderDeleting
+                                    ? const CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      )
+                                    : Text(
+                                        '선택 항목 삭제 (${outboundState.selectedOrderNos.length})',
+                                      ),
                               ),
-                            ),
-                            child: const Text('삭제'),
-                          ),
-                          ElevatedButton(
-                            onPressed:
-                                orderListState.orders.isEmpty ||
-                                    orderListState.isLoading
-                                ? null
-                                : () {
-                                    ref
-                                        .read(
-                                          outboundOrderListProvider.notifier,
-                                        )
-                                        .requestOutboundOrder();
-                                  },
+                              ElevatedButton(
+                                onPressed: () {
+                                  // 주문 선택 모드 비활성화
+                                  ref
+                                      .read(outboundScreenViewModelProvider.notifier)
+                                      .disableOrderSelectionMode();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.lightBlueAccent,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                child: const Text('취소'),
+                              ),
+                            ],
+                          )
+                        :
+                        // 3. 기본 상태일 때의 버튼
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ElevatedButton(
+                                onPressed: null,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                child: const Text('삭제'),
+                              ),
+                              ElevatedButton(
+                                onPressed:
+                                    orderListState.orders.isEmpty ||
+                                        orderListState.isLoading
+                                    ? null
+                                    : () {
+                                        ref
+                                            .read(
+                                              outboundOrderListProvider.notifier,
+                                            )
+                                            .requestOutboundOrder();
+                                      },
 
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.celltrionGreen,
-                              foregroundColor: AppColors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.celltrionGreen,
+                                  foregroundColor: AppColors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: orderListState.isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Text(' 작업 시작 '),
                               ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _scannerFocusNode.unfocus();
+                                  ref
+                                      .read(
+                                        outboundScreenViewModelProvider.notifier,
+                                      )
+                                      .showCreationPopup();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.blue.shade500,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
+                                ),
+                                child: const Text('생성'),
                               ),
-                            ),
-                            child: orderListState.isLoading
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      color: Colors.white,
-                                      strokeWidth: 2,
-                                    ),
-                                  )
-                                : const Text(' 작업 시작 '),
+                            ],
                           ),
-                          ElevatedButton(
-                            onPressed: () {
-                              _scannerFocusNode.unfocus();
-                              ref
-                                  .read(
-                                    outboundScreenViewModelProvider.notifier,
-                                  )
-                                  .showCreationPopup();
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.blue.shade500,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
-                              ),
-                            ),
-                            child: const Text('생성'),
-                          ),
-                        ],
-                      ),
               ),
 
               const SizedBox(height: 4),
@@ -363,27 +420,78 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                           fontSize: 11,
                           color: Colors.black87,
                         ),
+                        showCheckboxColumn: outboundState.isOrderSelectionModeActive,
                         columns: const [
                           DataColumn(label: Text('DO No / 저장빈 No.')),
                           DataColumn(label: Text('요청시간')),
                         ],
                         rows: orderListState.orders.map((order) {
                           return DataRow(
+                            selected: outboundState.isOrderSelectionModeActive &&
+                                outboundState.selectedOrderNos.contains(order.orderNo),
+                            onSelectChanged: (isSelected) {
+                              if (outboundState.isOrderSelectionModeActive) {
+                                ref
+                                    .read(outboundScreenViewModelProvider.notifier)
+                                    .toggleOrderForDeletion(order.orderNo);
+                              }
+                            },
                             cells: [
                               DataCell(
-                                Text(order.doNo ?? order.savedBinNo ?? "-"),
+                                GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onLongPress: () {
+                                    ref
+                                        .read(outboundScreenViewModelProvider.notifier)
+                                        .enableOrderSelectionMode(order.orderNo);
+                                  },
+                                  onTap: () {
+                                    if (outboundState.isOrderSelectionModeActive) {
+                                      ref
+                                          .read(outboundScreenViewModelProvider.notifier)
+                                          .toggleOrderForDeletion(order.orderNo);
+                                    }
+                                  },
+                                  child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    child: Text(order.doNo ?? order.savedBinNo ?? "-"),
+                                  ),
+                                ),
                               ),
                               DataCell(
-                                Text(
-                                  DateFormat(
-                                    'yyyy-MM-dd HH:mm:ss',
-                                  ).format(order.startTime),
+                                GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onLongPress: () {
+                                    ref
+                                        .read(outboundScreenViewModelProvider.notifier)
+                                        .enableOrderSelectionMode(order.orderNo);
+                                  },
+                                  onTap: () {
+                                    if (outboundState.isOrderSelectionModeActive) {
+                                      ref
+                                          .read(outboundScreenViewModelProvider.notifier)
+                                          .toggleOrderForDeletion(order.orderNo);
+                                    }
+                                  },
+                                  child: Container(
+                                    alignment: Alignment.centerLeft,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    child: Text(
+                                      DateFormat(
+                                        'yyyy-MM-dd HH:mm:ss',
+                                      ).format(order.startTime),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
                           );
                         }).toList(),
                       ),
+
                     ],
                   ),
                 ),

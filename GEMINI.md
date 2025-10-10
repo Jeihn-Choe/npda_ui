@@ -35,3 +35,7 @@ When a new feature is requested, the following step-by-step process will be foll
                 │
                 └── [screen_name]_screen.dart       // 🖼️ 최종 UI 위젯
 ```
+---
+### 코드 변경 제안 시 규칙
+- 코드 변경 사항을 제안할 때, 변경되거나 추가된 부분에 주석과 이모지를 사용하여 명확하게 표시합니다. (예: `// ✨ 변경된 부분` 또는 `// 🚀 추가된 부분`)
+- 사용자는 이 주석을 실제 코드에 반영하지 않으므로, 설명 목적으로만 사용합니다.

@@ -46,6 +46,21 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
     state = state.copyWith(orders: []);
   }
 
+  void removeOrders(Set<String> orderNosToRemove) {
+    // 1. 현재 주문 목록을 가져옵니다.
+    final currentOrders = state.orders;
+
+    // 2. 제거할 주문들을 제외하고 새 목록을 만듭니다.
+    final updatedOrders = currentOrders
+        .where((order) => !orderNosToRemove.contains(order.orderNo))
+        .toList();
+
+    // 3. 필터링된 새 목록으로 상태를 업데이트합니다.
+    state = state.copyWith(orders: updatedOrders);
+
+    appLogger.d("OutboundOrderListProvider: ${orderNosToRemove.length}개의 주문을 목록에서 제거했습니다.");
+  }
+
   Future<void> requestOutboundOrder() async {
     state = state.copyWith(isLoading: true);
     try {

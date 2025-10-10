@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_mission_entity.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_dependency_provider.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_order_list_provider.dart';
 
 import '../../../core/state/scanner_viewmodel.dart';
 import '../../../core/utils/logger.dart';
@@ -108,9 +109,9 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
     _listenToOutboundMissions();
   }
 
-  /// ===== 중단 outboundOrder 관련 메서드 섹션 ======
-  // 스캔된 데이터 처리/ 팝업 띄우는 메서드
-  // handleScannedData 메소드를 아래 내용으로 교체
+  /// ===== ↓↓↓ outboundOrder 관련 메서드 섹션 ======
+
+  // 스캔된 데이터 처리/ 팝업 호출 메서드
   void handleScannedData(String scannedData) {
     appLogger.d("아웃바운드 ViewModel handleScannedData 호출: $scannedData");
 
@@ -128,6 +129,65 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
     }
   }
 
+  void enableOrderSelectionMode(String orderNo) {
+    state = state.copyWith(
+      isOrderSelectionModeActive: true,
+      selectedOrderNos: {orderNo}, // 길게 누른 오더 첫 항목으로 추가
+    );
+  }
+
+  void toggleOrderForDeletion(String orderNo) {
+    final currentSelection = Set<String>.from(state.selectedOrderNos);
+    if (currentSelection.contains(orderNo)) {
+      currentSelection.remove(orderNo);
+    } else {
+      currentSelection.add(orderNo);
+    }
+    state = state.copyWith(selectedOrderNos: currentSelection);
+  }
+
+  void disableOrderSelectionMode() {
+    state = state.copyWith(
+      isOrderSelectionModeActive: false,
+      selectedOrderNos: {}, // 선택된 오더 초기화
+    );
+  }
+
+  Future<bool> deleteSelectedOutboundOrders() async {
+    if (state.selectedOrderNos.isEmpty) {
+      appLogger.w("삭제할 주문이 선택되지 않았습니다.");
+      return false;
+    }
+
+    state = state.copyWith(isOrderDeleting: true);
+
+    try {
+      _ref
+          .read(outboundOrderListProvider.notifier)
+          .removeOrders(state.selectedOrderNos);
+
+      appLogger.d(
+        "[Outbound ViewModel] OutboundOrderListProvider에 주문 삭제를 요청했습니다.",
+      );
+
+      state = state.copyWith(
+        isOrderDeleting: false,
+        isOrderSelectionModeActive: false,
+        selectedOrderNos: {},
+      );
+
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isOrderDeleting: false,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
+  /// ===== ↑↑↑ outboundOrder 관련 메서드 섹션 ======
+
   void showCreationPopup() {
     state = state.copyWith(showOutboundPopup: true, scannedDataForPopup: null);
   }
@@ -137,7 +197,7 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
     state = state.copyWith(showOutboundPopup: false, scannedDataForPopup: null);
   }
 
-  /// ====== 하단 OutboundMission 관련 메서드 섹션 ======
+  /// ====== ↓↓↓ OutboundMission 관련 메서드 섹션 ======
   /// 스트림 구독, mission 상태를 업데이트
   void _listenToOutboundMissions() {
     // 이미 구독 중이면 중복 구독 방지
@@ -213,9 +273,11 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
     state = state.copyWith(isMissionDeleting: true);
 
     try {
-      // 여기에 실제 삭제 로직 추가
-      // usecase에 위임 예정
-      await Future.delayed(const Duration(seconds: 2));
+      var selectedMissions = state.selectedMissionNos.toList();
+      appLogger.d("[Outbound ViewModel] 선택된 미션 삭제 요청: $selectedMissions");
+      await _getOutboundMissionUseCase.deleteSelectedOutboundMissions(
+        selectedMissionNos: selectedMissions,
+      );
 
       // 삭제 성공 시 상태 업데이트
       state = state.copyWith(
@@ -235,6 +297,8 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
       return false;
     }
   }
+
+  /// ====== ↑↑↑ OutboundMission 관련 메서드 섹션 ======
 
   /// viewmodel 소멸 시 스트림 구독 취소, 리소스 해제
   @override

@@ -17,12 +17,14 @@ class MissionRepositoryImpl extends MissionRepository {
       /// repository의 책임 : entity --> dto 변환
       final requestPayload = DeleteMissionsDto(payload: entity.subMissionNos);
 
+      appLogger.d("[MissionRepositoryImpl] 미션 삭제 요청: $requestPayload");
+
       await _apiService.post(
         ApiConfig.deleteOrderEndpoint,
         data: requestPayload.toJson(),
       );
     } catch (e) {
-      logger("[MissionRepositoryImpl] 미션 삭제 실패: $e");
+      appLogger.e("[MissionRepositoryImpl] 미션 삭제 실패: $e");
       rethrow;
     }
   }
