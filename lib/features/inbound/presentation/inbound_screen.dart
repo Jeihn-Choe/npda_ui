@@ -447,7 +447,7 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                           InfoFieldWidget(
                             fieldName: '제품',
                             fieldValue: selectedMission != null
-                                ? "${selectedMission?.targetRackLevel.toString()}단 - 00${selectedMission?.targetRackLevel.toString()}"
+                                ? "${selectedMission.targetRackLevel.toString()}단 - 00${selectedMission.targetRackLevel.toString()}"
                                 : "-",
                           ),
                         ],

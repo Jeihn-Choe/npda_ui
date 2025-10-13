@@ -19,14 +19,13 @@ class OutboundScreenState {
   final bool showOutboundPopup;
   final String? scannedDataForPopup;
 
-  /// outbound 미션 리스트
-  final List<OutboundMissionEntity> outboundMissions;
+  /// outbound 미션 관련 UI vm
   final Set<int> selectedMissionNos;
   final OutboundMissionEntity? selectedMission;
   final bool isMissionSelectionModeActive;
   final bool isMissionDeleting;
 
-  /// outbound 오더 리스트
+  /// outbound 오더 관련 UI vm
   final List<OutboundOrderEntity> outboundOrders;
   final Set<String> selectedOrderNos;
   final OutboundOrderEntity? selectedOrder;
@@ -40,7 +39,6 @@ class OutboundScreenState {
     this.showOutboundPopup = false,
     this.scannedDataForPopup,
     this.isOrderListLoading = false,
-    this.outboundMissions = const [],
     this.selectedMissionNos = const {},
     this.selectedMission,
     this.isMissionSelectionModeActive = false,
@@ -59,7 +57,6 @@ class OutboundScreenState {
     bool? showOutboundPopup,
     String? scannedDataForPopup,
     bool? isOrderListLoading,
-    List<OutboundMissionEntity>? outboundMissions,
     Set<int>? selectedMissionNos,
     OutboundMissionEntity? selectedMission,
     bool? isMissionSelectionModeActive,
@@ -77,7 +74,6 @@ class OutboundScreenState {
       showOutboundPopup: showOutboundPopup ?? this.showOutboundPopup,
       scannedDataForPopup: scannedDataForPopup ?? this.scannedDataForPopup,
       isOrderListLoading: isOrderListLoading ?? this.isOrderListLoading,
-      outboundMissions: outboundMissions ?? this.outboundMissions,
       selectedMissionNos: selectedMissionNos ?? this.selectedMissionNos,
       selectedMission: selectedMission ?? this.selectedMission,
       isMissionSelectionModeActive:
@@ -96,18 +92,13 @@ class OutboundScreenState {
 class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
   final Ref _ref;
   final OutboundMissionUseCase _getOutboundMissionUseCase;
-  StreamSubscription? _missionSubscription;
 
   OutboundScreenVm({
     required Ref ref,
     required OutboundMissionUseCase getOutboundMissionUseCase,
   }) : _ref = ref,
        _getOutboundMissionUseCase = getOutboundMissionUseCase,
-       super(const OutboundScreenState()) {
-    // 여기에 viewmodel 열릴 때 초기화하는 작업들이 들어가야함.
-
-    _listenToOutboundMissions();
-  }
+       super(const OutboundScreenState()) {}
 
   /// ===== ↓↓↓ outboundOrder 관련 메서드 섹션 ======
 
@@ -199,33 +190,6 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
 
   /// ====== ↓↓↓ OutboundMission 관련 메서드 섹션 ======
   /// 스트림 구독, mission 상태를 업데이트
-  void _listenToOutboundMissions() {
-    // 이미 구독 중이면 중복 구독 방지
-    if (_missionSubscription != null) {
-      return;
-    }
-
-    /// 미션 수신 상태로 변경
-    state = state.copyWith(isMissionListLoading: true);
-
-    ///  주입받은 Outbound UseCase의 스트림 구독 시작
-    _getOutboundMissionUseCase.outboundMissionStream.listen(
-      (missions) {
-        /// 새로운 데이터 수신 시 상태 업데이트
-        state = state.copyWith(
-          outboundMissions: missions,
-          isMissionListLoading: false,
-        );
-      },
-      onError: (error) {
-        /// 에러 발생 시 상태 업데이트
-        state = state.copyWith(
-          errorMessage: error.toString(),
-          isMissionListLoading: false,
-        );
-      },
-    );
-  }
 
   /// 사용자가 미션을 터치했을 때 : 선택모드가 아닐 때 개별 mission의 정보 가져옴.
   void selectMission(OutboundMissionEntity mission) {
@@ -303,7 +267,6 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
   /// viewmodel 소멸 시 스트림 구독 취소, 리소스 해제
   @override
   void dispose() {
-    _missionSubscription?.cancel();
     _getOutboundMissionUseCase.dispose();
     super.dispose();
   }

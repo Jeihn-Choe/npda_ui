@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/popups/outbound_popup.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_mission_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_order_list_provider.dart';
 
 import '../../../core/constants/colors.dart';
@@ -621,82 +622,87 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                         DataColumn(label: Text('목적지')),
                       ],
 
-                      rows: outboundState.outboundMissions.map((mission) {
-                        /// 각 셀을 감싸는 GestureDetector 위젯 생성 헬퍼 함수
-                        /// onTap, onLongPress 이벤트 핸들러 추가해야함.
-                        DataCell buildTappableCell(Widget child) {
-                          return DataCell(
-                            GestureDetector(
-                              behavior: HitTestBehavior.opaque,
-                              onLongPress: () {
-                                ref
-                                    .read(
-                                      outboundScreenViewModelProvider.notifier,
-                                    )
-                                    .enableSelectionMode(mission.missionNo);
-                              },
-                              onTap: () {
-                                if (outboundState
-                                    .isMissionSelectionModeActive) {
+                      rows: ref.watch(outboundMissionListProvider).missions.map(
+                        (mission) {
+                          /// 각 셀을 감싸는 GestureDetector 위젯 생성 헬퍼 함수
+                          /// onTap, onLongPress 이벤트 핸들러 추가해야함.
+                          DataCell buildTappableCell(Widget child) {
+                            return DataCell(
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onLongPress: () {
                                   ref
                                       .read(
                                         outboundScreenViewModelProvider
                                             .notifier,
                                       )
-                                      .toggleMissionForDeletion(
-                                        mission.missionNo,
-                                      );
-                                } else {
-                                  ref
-                                      .read(
-                                        outboundScreenViewModelProvider
-                                            .notifier,
-                                      )
-                                      .selectMission(mission);
-                                }
-                              },
-                              child: child,
-                            ),
-                          );
-                        }
-
-                        return DataRow(
-                          /// 선택모드 UI 로직
-                          /// isSelectionModeActive true --> 체크박스 표시 o
-                          /// isSelectionModeActive false --> 체크박스 표시 x
-                          /// 선택모드가 활성화된 상태에서 행을 탭하면 해당 행이 선택/선택해제 토글됨.
-                          selected:
-                              outboundState.isMissionSelectionModeActive &&
-                              outboundState.selectedMissionNos.contains(
-                                mission.missionNo,
+                                      .enableSelectionMode(mission.missionNo);
+                                },
+                                onTap: () {
+                                  if (outboundState
+                                      .isMissionSelectionModeActive) {
+                                    ref
+                                        .read(
+                                          outboundScreenViewModelProvider
+                                              .notifier,
+                                        )
+                                        .toggleMissionForDeletion(
+                                          mission.missionNo,
+                                        );
+                                  } else {
+                                    ref
+                                        .read(
+                                          outboundScreenViewModelProvider
+                                              .notifier,
+                                        )
+                                        .selectMission(mission);
+                                  }
+                                },
+                                child: child,
                               ),
+                            );
+                          }
 
-                          onSelectChanged:
-                              outboundState.isMissionSelectionModeActive
-                              ? (isSelected) {
-                                  ref
-                                      .read(
-                                        outboundScreenViewModelProvider
-                                            .notifier,
-                                      )
-                                      .toggleMissionForDeletion(
-                                        mission.missionNo,
-                                      );
-                                }
-                              : null,
+                          return DataRow(
+                            /// 선택모드 UI 로직
+                            /// isSelectionModeActive true --> 체크박스 표시 o
+                            /// isSelectionModeActive false --> 체크박스 표시 x
+                            /// 선택모드가 활성화된 상태에서 행을 탭하면 해당 행이 선택/선택해제 토글됨.
+                            selected:
+                                outboundState.isMissionSelectionModeActive &&
+                                outboundState.selectedMissionNos.contains(
+                                  mission.missionNo,
+                                ),
 
-                          cells: [
-                            buildTappableCell(
-                              Text(mission.missionNo.toString()),
-                            ),
-                            buildTappableCell(
-                              Text(mission?.doNo ?? mission?.sourceBin ?? "-"),
-                            ),
-                            buildTappableCell(Text(mission.sourceBin)),
-                            buildTappableCell(Text(mission.destinationBin)),
-                          ],
-                        );
-                      }).toList(),
+                            onSelectChanged:
+                                outboundState.isMissionSelectionModeActive
+                                ? (isSelected) {
+                                    ref
+                                        .read(
+                                          outboundScreenViewModelProvider
+                                              .notifier,
+                                        )
+                                        .toggleMissionForDeletion(
+                                          mission.missionNo,
+                                        );
+                                  }
+                                : null,
+
+                            cells: [
+                              buildTappableCell(
+                                Text(mission.missionNo.toString()),
+                              ),
+                              buildTappableCell(
+                                Text(
+                                  mission?.doNo ?? mission?.sourceBin ?? "-",
+                                ),
+                              ),
+                              buildTappableCell(Text(mission.sourceBin)),
+                              buildTappableCell(Text(mission.destinationBin)),
+                            ],
+                          );
+                        },
+                      ).toList(),
                     ),
                   ),
                 ),

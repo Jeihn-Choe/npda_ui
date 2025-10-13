@@ -35,14 +35,28 @@ class OutboundMissionUseCase {
     _smMissionSubscription = _mqttMessageRouterUseCase.smStream.listen((
       smEntities,
     ) {
+      // [디버깅 로그 1] 원본 데이터 확인
+      appLogger.d("[디버깅] 수신된 전체 SM Entities (${smEntities.length}개): }");
+
+      // 1. missionType == 1 인 미션만 필터링
+      final filteredEntities = smEntities
+          .where((sm) => sm.missionType == 1)
+          .toList();
+
+      // [디버깅 로그 2] 필터링 후 데이터 확인
       appLogger.d(
-        "[Outbound Mission UseCase] SM 메시지 수신: ${smEntities.length} 개 미션",
+        "[디버깅] 출고 미션(missionType:1)으로 필터링된 Entities (${filteredEntities.length}개): }",
       );
 
-      final outboundMissions = smEntities
-          .where((sm) => sm.missionType == 1)
+      // 2. OutboundMissionEntity로 변환 (매핑)
+      final outboundMissions = filteredEntities
           .map((sm) => OutboundMissionEntity.fromSmEntity(sm))
           .toList();
+
+      // [디버깅 로그 3] 최종 변환 데이터 확인
+      appLogger.d(
+        "[디버깅] 최종 변환된 OutboundMissions (${outboundMissions.length}개): }",
+      );
 
       _outboundMissionController.add(outboundMissions);
     });
