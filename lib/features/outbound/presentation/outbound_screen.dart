@@ -46,10 +46,10 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
 
   @override
   void dispose() {
-    // 컨트롤러와 포커스 노드의 리소스를 해제합니다. // modified
-    _scannerFocusNode.removeListener(_onFocusChange); // added
-    _scannerFocusNode.dispose(); // added
-    _scannerTextController.dispose(); // added
+    // 컨트롤러와 포커스 노드의 리소스를 해제합니다.
+    _scannerFocusNode.removeListener(_onFocusChange);
+    _scannerFocusNode.dispose();
+    _scannerTextController.dispose();
     super.dispose();
   }
 

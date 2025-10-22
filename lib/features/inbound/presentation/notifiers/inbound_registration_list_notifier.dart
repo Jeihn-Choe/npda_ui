@@ -45,6 +45,30 @@ class InboundRegistrationListNotifier
     }
   }
 
+  /// 입고 작업 리스트 토글
+  void toggleItemSelection(String pltNo) {
+    final newSelectedPltNos = Set<String>.from(state.selectedPltNos);
+    if (newSelectedPltNos.contains(pltNo)) {
+      newSelectedPltNos.remove(pltNo);
+    } else {
+      newSelectedPltNos.add(pltNo);
+    }
+    state = state.copyWith(selectedPltNos: newSelectedPltNos);
+  }
+
+  /// 입고리스트 일부 삭제
+  void deletedSelectionItems() {
+    final newItems = state.items
+        .where((item) => !state.selectedPltNos.contains(item.pltNo))
+        .toList();
+    state = state.copyWith(items: newItems, selectedPltNos: {});
+  }
+
+  /// 선택 모드 해제
+  void disableSelectionMode() {
+    state = state.copyWith(selectedPltNos: {});
+  }
+
   Future<ResponseOrderEntity> requestInboundWork() async {
     // 상태를 로딩으로 변경
     state = state.copyWith(isLoading: true);

@@ -68,6 +68,11 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
     final inboundResgistrationSelectedItems =
         inboundRegistrationList.selectedPltNos;
 
+    // ✨ 추가될 부분
+    // '입고 요청 List'의 선택 모드 활성화 여부
+    final isRegistrationSelectionModeActive =
+        inboundResgistrationSelectedItems.isNotEmpty;
+
     /// viewmodel 상태 구독
     final inboundState = ref.watch(inboundViewModelProvider);
 
@@ -175,82 +180,109 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                   vertical: 4,
                 ),
 
-                /// 선택모드 활성화 --> 삭제, 취소 버튼 표시.
-                child: isSelectionModeActive
+                // ✨ 변경된 부분 --- 시작
+                /// Mission 선택 모드 또는 입고 요청 List 선택 모드 둘 중 하나라도 활성화되면 선택 버튼 바를 표시
+                child: isSelectionModeActive || isRegistrationSelectionModeActive
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          ElevatedButton(
-                            onPressed:
-                                selectedMissionNos.isEmpty ||
-                                    inboundState
-                                        .isDeleting // modified
-                                ? null
-                                : () async {
-                                    final success =
-                                        await ref // modified
-                                            .read(
-                                              inboundViewModelProvider.notifier,
-                                            )
-                                            .deleteSelectedInboundMissions();
+                          // Mission 선택 모드일 때 '미션 삭제' 버튼 표시
+                          if (isSelectionModeActive)
+                            ElevatedButton(
+                              onPressed:
+                                  selectedMissionNos.isEmpty ||
+                                          inboundState.isDeleting
+                                      ? null
+                                      : () async {
+                                          final success = await ref
+                                              .read(inboundViewModelProvider
+                                                  .notifier)
+                                              .deleteSelectedInboundMissions();
 
-                                    if (!context.mounted) return; // modified
+                                          if (!context.mounted) return;
 
-                                    showDialog(
-                                      // modified
-                                      context: context,
-                                      builder: (BuildContext dialogContext) {
-                                        return AlertDialog(
-                                          title: Text(success ? '성공' : '실패'),
-                                          content: Text(
-                                            success
-                                                ? '선택된 미션이 삭제되었습니다.'
-                                                : '미션 삭제에 실패했습니다.',
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.of(
-                                                dialogContext,
-                                              ).pop(),
-                                              child: const Text('확인'),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    );
+                                          showDialog(
+                                            context: context,
+                                            builder:
+                                                (BuildContext dialogContext) {
+                                              return AlertDialog(
+                                                title:
+                                                    Text(success ? '성공' : '실패'),
+                                                content: Text(
+                                                  success
+                                                      ? '선택된 미션이 삭제되었습니다.'
+                                                      : '미션 삭제에 실패했습니다.',
+                                                ),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(
+                                                              dialogContext)
+                                                            .pop(),
+                                                    child: const Text('확인'),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
 
-                                    if (success) {
-                                      // modified
-                                      ref
-                                          .read(
-                                            inboundViewModelProvider.notifier,
-                                          )
-                                          .disableSelectionMode();
-                                    }
-                                  },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 10,
+                                          if (success) {
+                                            ref
+                                                .read(inboundViewModelProvider
+                                                    .notifier)
+                                                .disableSelectionMode();
+                                          }
+                                        },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.red,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                              ),
+                              child: inboundState.isDeleting
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                      strokeWidth: 2,
+                                    )
+                                  : Text(
+                                      '미션 삭제 (${selectedMissionNos.length})',
+                                    ),
+                            ),
+
+                          // 입고 요청 List 선택 모드일 때 '요청 항목 삭제' 버튼 표시
+                          if (isRegistrationSelectionModeActive)
+                            ElevatedButton(
+                              onPressed: () {
+                                ref
+                                    .read(inboundRegistrationListProvider
+                                        .notifier)
+                                    .deletedSelectionItems();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.orange,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
+                              ),
+                              child: Text(
+                                '요청 항목 삭제 (${inboundResgistrationSelectedItems.length})',
                               ),
                             ),
-                            child:
-                                inboundState
-                                    .isDeleting // modified
-                                ? const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 2,
-                                  )
-                                : Text(
-                                    '선택 항목 삭제 (${selectedMissionNos.length})',
-                                  ),
-                          ),
+
+                          // 통합된 '취소' 버튼
                           ElevatedButton(
                             onPressed: () {
+                              // 두 Notifier의 선택 모드를 모두 해제
                               ref
                                   .read(inboundViewModelProvider.notifier)
+                                  .disableSelectionMode();
+                              ref
+                                  .read(inboundRegistrationListProvider
+                                      .notifier)
                                   .disableSelectionMode();
                             },
                             style: ElevatedButton.styleFrom(
@@ -285,44 +317,45 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                             // 리스트가 비어있거나, 로딩중일때는 버튼 비활성화
                             onPressed:
                                 inboundRegistrationList.items.isEmpty ||
-                                    inboundRegistrationList.isLoading
-                                ? null
-                                : () async {
-                                    // Notifier에서 작업 시작 로직 호출
-                                    final result = await ref
-                                        .read(
-                                          inboundRegistrationListProvider
-                                              .notifier,
-                                        )
-                                        .requestInboundWork();
+                                        inboundRegistrationList.isLoading
+                                    ? null
+                                    : () async {
+                                        // Notifier에서 작업 시작 로직 호출
+                                        final result = await ref
+                                            .read(
+                                              inboundRegistrationListProvider
+                                                  .notifier,
+                                            )
+                                            .requestInboundWork();
 
-                                    // 결과에 따라 다이얼로그 표시
-                                    if (!context.mounted) return;
-                                    showDialog(
-                                      context: context,
-                                      builder: (BuildContext dialogContext) {
-                                        return AlertDialog(
-                                          title: Text(
-                                            result.isSuccess ? '성공' : '실패',
-                                          ),
-                                          content: Text(
-                                            result.msg ??
-                                                (result.isSuccess
-                                                    ? '작업이 성공적으로 요청되었습니다.'
-                                                    : '작업 요청에 실패했습니다.'),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                              onPressed: () => Navigator.of(
-                                                dialogContext,
-                                              ).pop(),
-                                              child: const Text('확인'),
-                                            ),
-                                          ],
+                                        // 결과에 따라 다이얼로그 표시
+                                        if (!context.mounted) return;
+                                        showDialog(
+                                          context: context,
+                                          builder: (BuildContext dialogContext) {
+                                            return AlertDialog(
+                                              title: Text(
+                                                result.isSuccess ? '성공' : '실패',
+                                              ),
+                                              content: Text(
+                                                result.msg ??
+                                                    (result.isSuccess
+                                                        ? '작업이 성공적으로 요청되었습니다.'
+                                                        : '작업 요청에 실패했습니다.'),
+                                              ),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () =>
+                                                      Navigator.of(
+                                                    dialogContext,
+                                                  ).pop(),
+                                                  child: const Text('확인'),
+                                                ),
+                                              ],
+                                            );
+                                          },
                                         );
                                       },
-                                    );
-                                  },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.celltrionGreen,
                               foregroundColor: AppColors.white,
@@ -352,10 +385,6 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                               ),
                             ),
                             child: const Text('생성'),
-
-                            //   .then((_){
-                            // ref.read(inboundViewModelProvider.notifier).setInboundPopupState(false);
-                            // ref.read(inboundRegistrationPopupViewModelProvider).resetForm();
                           ),
                         ],
                       ),
@@ -414,11 +443,41 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                           DataColumn(label: Text('요청시간')),
                         ],
                         rows: inboundRegistrationListItems.map((item) {
+                          /// '입고 요청 List'의 각 셀을 감싸는 GestureDetector 위젯 생성 헬퍼 함수
+                          DataCell buildTappableCellForRegistration(Widget child) {
+                            return DataCell(
+                              GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                // ✨ 변경된 부분: 길게 눌러서 선택 모드 시작
+                                onLongPress: () {
+                                  ref.read(inboundRegistrationListProvider.notifier).toggleItemSelection(item.pltNo);
+                                },
+                                // 탭 이벤트는 onSelectChanged가 처리하므로 여기서는 비워둠
+                                onTap: () {
+                                   // 선택 모드일 때만 탭으로 토글 가능
+                                  if (isRegistrationSelectionModeActive) {
+                                     ref.read(inboundRegistrationListProvider.notifier).toggleItemSelection(item.pltNo);
+                                  }
+                                },
+                                child: child,
+                              ),
+                            );
+                          }
+
                           return DataRow(
+                            // ✨ 변경된 부분 --- 시작
+                            selected: inboundResgistrationSelectedItems.contains(item.pltNo),
+                            // 선택 모드가 활성화되었을 때만 onSelectChanged를 설정하여 체크박스 표시
+                            onSelectChanged: isRegistrationSelectionModeActive
+                                ? (isSelected) {
+                                    ref.read(inboundRegistrationListProvider.notifier).toggleItemSelection(item.pltNo);
+                                  }
+                                : null, // null이면 체크박스가 보이지 않음
+                            // ✨ 변경된 부분 --- 끝
                             cells: [
-                              DataCell(Text(item.pltNo)),
-                              DataCell(Text(item.selectedRackLevel)),
-                              DataCell(
+                              buildTappableCellForRegistration(Text(item.pltNo)),
+                              buildTappableCellForRegistration(Text(item.selectedRackLevel)),
+                              buildTappableCellForRegistration(
                                 Text(formatter.format(item.workStartTime)),
                               ),
                             ],
