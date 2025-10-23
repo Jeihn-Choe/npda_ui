@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_screen.dart';
 import 'package:npda_ui_flutter/features/login/presentation/login_screen.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/outbound_screen.dart';
+import 'package:npda_ui_flutter/features/outbound_1f/presentation/outbound_1f_page.dart';
 
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../presentation/main_shell.dart';
@@ -49,10 +49,7 @@ final router = GoRouter(
             GoRoute(
               path: '/outbound_1f',
               // builder: (context, state) => Outbound1fScreen(),
-              builder: (context, state) => const _PlaceholderScreen(
-                title: '1층 출고 화면',
-                color: Colors.red,
-              ),
+              builder: (context, state) => const Outbound1FPage(),
             ),
           ],
         ),
@@ -60,28 +57,3 @@ final router = GoRouter(
     ),
   ],
 );
-
-//TODO : 기능 구현 시 실제 화면으로 대체할 임시 위젯
-class _PlaceholderScreen extends StatelessWidget {
-  final String title;
-  final Color color;
-
-  const _PlaceholderScreen({
-    super.key,
-    required this.title,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: color.withAlpha(10),
-      body: Center(
-        child: Text(
-          '$title 테스트용화면',
-          style: TextStyle(fontSize: 12, color: color),
-        ),
-      ),
-    );
-  }
-}

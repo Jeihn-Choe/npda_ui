@@ -26,12 +26,12 @@ class RequestOrderDto {
 }
 
 class WorkItem {
-  final int missionType;
+  final int? missionType;
   final String? pltNo;
   final String? doNo;
   final DateTime? startTime;
   final int? targetRackLevel;
-  final String employeeId;
+  final String? employeeId;
   final String? sourceBin;
   final String? destinationBin;
   final bool? isWrapped;
