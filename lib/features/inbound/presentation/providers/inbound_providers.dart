@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/providers/usecase_providers.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/usecases/inbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/usecases/request_inbound_work_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart';
-import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
+// 🚀 삭제: import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 
 import '../../../../core/network/http/api_provider.dart';
 import '../../data/repositories/request_inbound_work_repository_impl.dart';
@@ -76,9 +74,10 @@ final inboundRegistrationListProvider =
 // InboundRegistrationPopupViewModel Provider
 final inboundRegistrationPopupViewModelProvider =
     ChangeNotifierProvider.autoDispose((ref) {
-      final loginState = ref.watch(loginViewModelProvider);
-      final popupViewModel = InboundRegistrationPopupViewModel();
-      popupViewModel.initialize(loginState);
+      // 🚀 삭제: final loginState = ref.watch(loginViewModelProvider);
+      // 🚀 수정: InboundRegistrationPopupViewModel 생성자에 ref 전달
+      final popupViewModel = InboundRegistrationPopupViewModel(ref);
+      popupViewModel.initialize(); // initialize()는 이제 파라미터 없음
       return popupViewModel;
     });
 
@@ -112,9 +111,7 @@ final inboundViewModelProvider =
       final getInboundMissionsUseCase = ref.watch(
         inboundMissionUseCaseProvider,
       );
-      final deleteMissionsUseCase = ref.read(
-        deleteMissionsUseCaseProvider,
-      );
+      final deleteMissionsUseCase = ref.read(deleteMissionsUseCaseProvider);
 
       return InboundViewModel(
         getInboundMissionsUseCase: getInboundMissionsUseCase,

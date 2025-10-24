@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:npda_ui_flutter/core/state/session_manager.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/login/presentation/state/login_state.dart';
 
@@ -11,12 +12,14 @@ import '../domain/usecase/login_usecase.dart';
 class LoginViewModel extends StateNotifier<LoginState> {
   /// LoginUseCase 주입
   final LoginUseCase _loginUseCase;
+  final SessionManagerNotifier _sessionManagerNotifier;
 
   /// controller 선언해줌.
   final TextEditingController _userIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  LoginViewModel(this._loginUseCase) : super(LoginState());
+  LoginViewModel(this._loginUseCase, this._sessionManagerNotifier)
+    : super(LoginState());
 
   /// getter 써서 접근 가능하게 해줌 => 외부에서 controller 직접 접근 가능하도록 함.
 
@@ -47,12 +50,13 @@ class LoginViewModel extends StateNotifier<LoginState> {
       logger('Error Message: ${result.message}');
 
       if (result.isSuccess) {
-        state = state.copyWith(
-          isLoading: false,
-          isLoggedIn: true,
-          userId: result.userId,
-          userName: result.userName,
+        _sessionManagerNotifier.login(
+          userId: result.userId!,
+          userName: result.userName!,
+          userCode: result.userCode!,
         );
+
+        state = state.copyWith(isLoading: false);
 
         context.go('/inbound'); // 로그인 성공 시 이동할 경로
       } else {
@@ -70,5 +74,7 @@ class LoginViewModel extends StateNotifier<LoginState> {
     }
   }
 
-  void logout() async {}
+  void logout() async {
+    _sessionManagerNotifier.logout();
+  }
 }

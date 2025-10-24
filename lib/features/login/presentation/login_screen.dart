@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:npda_ui_flutter/core/state/session_manager.dart';
 import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 
 import '../../../core/constants/colors.dart';
@@ -12,12 +13,13 @@ class LoginScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(loginViewModelProvider);
+    final sessionState = ref.watch(sessionManagerProvider);
 
     /// provider 통해 생성된 viewmodel의 인스턴스에 접근하기 위해 notifier 사용
     final viewmodel = ref.watch(loginViewModelProvider.notifier);
 
     /// 로그인 상태 변화를 감지하고 화면 전환.
-    ref.listen(loginViewModelProvider, (previous, next) {
+    ref.listen(sessionManagerProvider, (previous, next) {
       if (next.isLoggedIn) {
         // 사용자가 로그인 화면으로 못돌아오도록 go
         // 뒤로가기 해도 로그인 화면으로 못돌아오도록

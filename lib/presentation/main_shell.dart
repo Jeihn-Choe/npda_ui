@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
+import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../core/state/scanner_viewmodel.dart';
-import '../features/login/presentation/providers/login_providers.dart';
+// 🚀 삭제: import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
+// 🚀 추가: SessionManagerNotifier import
+import 'package:npda_ui_flutter/core/state/session_manager.dart';
+
 
 class MainShell extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -33,8 +37,15 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final loginState = ref.watch(loginViewModelProvider);
+    // 🚀 수정: loginViewModelProvider 대신 sessionManagerProvider를 watch
+    final sessionState = ref.watch(sessionManagerProvider);
     final isScannerModeActive = ref.watch(scannerViewModelProvider);
+
+    // ✨ 활동 감지 시 호출될 함수
+    void resetSessionTimer() {
+      ref.read(sessionManagerProvider.notifier).resetSessionTimer(); // 🚀 수정: .notifier 추가
+      // logger('Session timer has been reset.'); // 디버깅용
+    }
 
     return DefaultTabController(
       length: (3),
@@ -63,10 +74,14 @@ class _MainShellState extends ConsumerState<MainShell> {
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
-                        '${loginState.userId} ${loginState.userName}님',
+                        // 🚀 수정: sessionState에서 userId와 userName 가져오기
+                        '${sessionState.userId} ${sessionState.userName}님',
                       ),
                       IconButton(
-                        onPressed: () {},
+                        // 🚀 수정: 로그아웃 버튼 클릭 시 sessionManagerProvider의 logout 호출
+                        onPressed: () {
+                          ref.read(sessionManagerProvider.notifier).logout();
+                        },
                         icon: Icon(Icons.logout),
                         color: AppColors.grey900,
                         iconSize: 20,
@@ -103,7 +118,10 @@ class _MainShellState extends ConsumerState<MainShell> {
                           Tab(text: '1층출고'),
                         ],
                         //탭이 선택될 때 GoRouter의 브랜치 변경
-                        onTap: (index) => _onTap(context, index),
+                        onTap: (index) {
+                          resetSessionTimer(); // ✨ 추가: 탭 클릭 시 타이머 리셋
+                          _onTap(context, index);
+                        },
                       ),
                     ),
 
@@ -140,7 +158,12 @@ class _MainShellState extends ConsumerState<MainShell> {
               ),
             ),
             // 탭에 따라 다른 화면을 보여주는 Shell
-            body: widget.navigationShell,
+            body: GestureDetector( // ✨ 추가: 화면 전체 감싸기
+              onTap: resetSessionTimer,
+              onPanDown: (_) => resetSessionTimer(),
+              behavior: HitTestBehavior.translucent,
+              child: widget.navigationShell,
+            ),
           ),
         ],
       ),

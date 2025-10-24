@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/state/session_manager.dart';
+import 'package:npda_ui_flutter/features/login/data/repositories/login_repository_mock.dart';
 import 'package:npda_ui_flutter/features/login/domain/usecase/login_usecase.dart';
 import 'package:npda_ui_flutter/features/login/presentation/login_viewmodel.dart';
 
-import '../../../../core/network/http/api_provider.dart';
-import '../../data/repositories/login_repository_impl.dart';
 import '../../domain/repositories/login_repository.dart';
 import '../state/login_state.dart';
 
@@ -11,8 +11,10 @@ import '../state/login_state.dart';
 // Data계층의 LoginRepositoryImpl 생성 및 Domain계층의 LoginRepository 인터페이스 주입
 
 final loginRepositoryProvider = Provider<LoginRepository>((ref) {
-  final apiService = ref.watch(apiServiceProvider);
-  return LoginRepositoryImpl(apiService);
+  // final apiService = ref.watch(apiServiceProvider);
+  // return LoginRepositoryImpl(apiService);
+
+  return LoginRepositoryMock();
 });
 
 // 2. UseCase Provider
@@ -27,5 +29,6 @@ final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
 final loginViewModelProvider =
     StateNotifierProvider<LoginViewModel, LoginState>((ref) {
       final loginUseCase = ref.watch(loginUseCaseProvider);
-      return LoginViewModel(loginUseCase);
+      final sessionManagerNotifier = ref.watch(sessionManagerProvider.notifier);
+      return LoginViewModel(loginUseCase, sessionManagerNotifier);
     });

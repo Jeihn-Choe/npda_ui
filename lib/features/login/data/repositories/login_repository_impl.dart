@@ -25,18 +25,19 @@ class LoginRepositoryImpl implements LoginRepository {
         data: {'userId': userId.trim(), 'password': password.trim()},
       );
 
-      logger("======================== 로그인 API 응답 =======================");
+      logger("======================== 로그인 API 응답 ========================");
 
       // 2. API 응답을 기반으로 LoginResult 생성 및 반환
       final responseDTO = LoginResponseDTO.fromJson(responseJson.data);
 
-      logger("======================== 변환완료 =======================");
+      logger("======================== 변환완료 ========================");
       logger(responseDTO.toString());
 
       if (responseDTO.result == "S" && responseDTO.status == "200") {
         return LoginResult.success(
           userId: userId,
           userName: responseDTO.userName,
+          userCode: responseDTO.userCode, // 🚀 추가: userCode 전달
         );
       } else {
         return LoginResult.failure(responseDTO.msg);

@@ -1,8 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/state/session_manager.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
-import 'package:npda_ui_flutter/features/login/presentation/state/login_state.dart';
 
-import '../../../login/presentation/providers/login_providers.dart';
 import '../../domain/entities/outbound_1f_order_entity.dart';
 import '../providers/outbound_1f_order_list_provider.dart';
 
@@ -57,8 +56,7 @@ class Outbound1FPopupVM extends StateNotifier<Outbound1FPopupState> {
     String initialDoNo = '';
     String initialSavedBinNo = '';
 
-    LoginState loginState = _ref.read(loginViewModelProvider);
-
+    final sessionState = _ref.watch(sessionManagerProvider);
     if (scannedData != null && scannedData.isNotEmpty) {
       if (scannedData.startsWith('2A')) {
         initialSavedBinNo = scannedData;
@@ -71,7 +69,7 @@ class Outbound1FPopupVM extends StateNotifier<Outbound1FPopupState> {
       doNo: initialDoNo,
       savedBinNo: initialSavedBinNo,
       startTime: DateTime.now().toUtc().add(const Duration(hours: 9)),
-      userId: loginState.userId!,
+      userId: sessionState.userId!,
       isLoading: false,
       resetError: true,
     );
@@ -104,7 +102,8 @@ class Outbound1FPopupVM extends StateNotifier<Outbound1FPopupState> {
 
       // 새로운 주문 생성
       final newOrder = Outbound1FOrderEntity(
-        orderNo: 'ORD1F-${DateTime.now().millisecondsSinceEpoch}', // 🚀 추가된 부분
+        orderNo: 'ORD1F-${DateTime.now().millisecondsSinceEpoch}',
+        // 🚀 추가된 부분
         // TODO: pltQty의 출처를 확인해야 합니다. 현재는 1로 하드코딩되어 있습니다.
         pltQty: 1,
         pickingArea: state.doNo.isNotEmpty ? state.doNo : null,

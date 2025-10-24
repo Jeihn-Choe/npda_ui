@@ -31,7 +31,7 @@ class MyApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       title: 'Celltrion NPDA',
       theme: AppTheme.lightTheme,
-      routerConfig: router,
+      routerConfig: ref.watch(routerProvider),
 
       // TODO: 라우팅 설정 추가
       // - /splash (초기 화면)

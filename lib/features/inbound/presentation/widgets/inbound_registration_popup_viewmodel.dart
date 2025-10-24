@@ -1,8 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/state/session_manager.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
-import '../../../login/presentation/state/login_state.dart';
 import '../providers/inbound_providers.dart';
 
 /// inbound_popup viewmodel에서 관리하는 상태 모음
@@ -12,7 +12,6 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   final TextEditingController workTimeController = TextEditingController();
   final TextEditingController userIdController = TextEditingController();
 
-  /// 선택된 랙 레벨
   String? _selectedRackLevel;
 
   String? get selectedRackLevel => _selectedRackLevel;
@@ -20,14 +19,21 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   /// 랙 레벨 목록
   final List<String> rackLevels = ['1단 - 001', '2단 - 002', '3단 - 003', '기준없음'];
 
+  final Ref _ref;
+
+  InboundRegistrationPopupViewModel(this._ref);
+
   /// 초기화
-  void initialize(LoginState loginState) {
+  void initialize() {
+    final sessionState = _ref.read(sessionManagerProvider);
+
     /// 현재 시간을 작업시간으로 설정
     final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
+
     workTimeController.text = currentTime.toString().substring(0, 19);
 
     /// userId 로 사번 업데이트
-    userIdController.text = loginState.userId ?? '';
+    userIdController.text = sessionState.userId ?? '';
 
     /// 초기화 필요 시 추가
     // pltCodeController.text = 'P180047852-020001';
