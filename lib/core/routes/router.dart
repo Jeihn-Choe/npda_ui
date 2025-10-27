@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart'; // 🚀 추가
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_screen.dart';
@@ -10,14 +10,46 @@ import '../../features/splash/presentation/splash_screen.dart';
 import '../../presentation/main_shell.dart';
 import '../state/session_manager.dart';
 
-// 🚀 추가: 앱의 최상단 네비게이터에 접근하기 위한 GlobalKey
+// 🚀 추가: 초기화할 Provider들을 import
+import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
+import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/outbound_screen_vm.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_mission_list_provider.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_order_list_provider.dart';
+import 'package:npda_ui_flutter/features/outbound_1f/presentation/outbound_1f_vm.dart';
+import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_mission_list_provider.dart';
+import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_order_list_provider.dart';
+
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
+  // 🚀 추가: 로그아웃 시 모든 관련 상태를 초기화하는 리스너
+  ref.listen<SessionState>(sessionManagerProvider, (previous, next) {
+    // loggedOut 상태가 되면 모든 상태를 초기화합니다.
+    // 세션 만료(expired) 시에는 팝업에서 확인을 누르면 logout()이 호출되어 loggedOut 상태가 됩니다.
+    if (next.status == SessionStatus.loggedOut) {
+      // 입고
+      ref.invalidate(inboundRegistrationListProvider);
+      ref.invalidate(inboundViewModelProvider);
+      // 출고
+      ref.invalidate(outboundScreenViewModelProvider);
+      ref.invalidate(outboundMissionListProvider);
+      ref.invalidate(outboundOrderListProvider);
+      // 1층 출고
+      ref.invalidate(outbound1FVMProvider);
+      ref.invalidate(outbound1FMissionListProvider);
+      ref.invalidate(outbound1FOrderListProvider);
+      // 기타
+      ref.invalidate(loginViewModelProvider);
+      ref.invalidate(scannerViewModelProvider);
+      ref.invalidate(mainShellTabIndexProvider);
+    }
+  });
+
   final sessionState = ref.watch(sessionManagerProvider);
 
   return GoRouter(
-    // 🚀 추가: 네비게이터 키 설정
     navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
     redirect: (context, state) {
