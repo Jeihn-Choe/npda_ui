@@ -1,10 +1,8 @@
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/domain/entities/outbound_1f_order_entity.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/domain/usecases/outbound_1f_order_usecase.dart';
-import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_dependency_provider.dart';
 
 // ✨ 1. 상태 클래스에 선택 관련 필드 추가
 class Outbound1FOrderListState extends Equatable {
@@ -50,14 +48,14 @@ class Outbound1FOrderListState extends Equatable {
 
   @override
   List<Object?> get props => [
-        orders,
-        isLoading,
-        errorMessage,
-        // ✨ props에 추가
-        selectedOrderNos,
-        isOrderSelectionModeActive,
-        isOrderDeleting,
-      ];
+    orders,
+    isLoading,
+    errorMessage,
+    // ✨ props에 추가
+    selectedOrderNos,
+    isOrderSelectionModeActive,
+    isOrderDeleting,
+  ];
 }
 
 // ✨ 2. Notifier에 선택 관련 로직 추가
@@ -66,7 +64,7 @@ class Outbound1FOrderListNotifier
   final Outbound1FOrderUseCase _orderUseCase;
 
   Outbound1FOrderListNotifier(this._orderUseCase)
-      : super(const Outbound1FOrderListState());
+    : super(const Outbound1FOrderListState());
 
   void addOrderToList(Outbound1FOrderEntity newOrder) {
     state = state.copyWith(orders: [...state.orders, newOrder]);
@@ -121,14 +119,15 @@ class Outbound1FOrderListNotifier
         selectedOrderNos: {},
       );
       appLogger.d(
-          "Outbound1FOrderListProvider: ${state.selectedOrderNos.length}개의 주문을 목록에서 제거했습니다.");
+        "Outbound1FOrderListProvider: ${state.selectedOrderNos.length}개의 주문을 목록에서 제거했습니다.",
+      );
     } catch (e) {
       state = state.copyWith(isOrderDeleting: false);
       appLogger.e("주문 삭제 중 오류 발생", error: e);
     }
   }
 
-  Future<void> requestOutboundOrder() async {
+  Future<void> requestOutbound1FOrder() async {
     state = state.copyWith(isLoading: true);
     try {
       final result = await _orderUseCase.requestOutbound1FOrder(
@@ -146,10 +145,11 @@ class Outbound1FOrderListNotifier
   }
 }
 
-final outbound1FOrderListProvider = StateNotifierProvider<
-    Outbound1FOrderListNotifier, Outbound1FOrderListState>((
-  ref,
-) {
-  final orderUseCase = ref.watch(outbound1FOrderUseCaseProvider);
-  return Outbound1FOrderListNotifier(orderUseCase);
-});
+final outbound1FOrderListProvider =
+    StateNotifierProvider<
+      Outbound1FOrderListNotifier,
+      Outbound1FOrderListState
+    >((ref) {
+      final orderUseCase = ref.watch(outbound1FOrderUseCaseProvider);
+      return Outbound1FOrderListNotifier(orderUseCase);
+    });

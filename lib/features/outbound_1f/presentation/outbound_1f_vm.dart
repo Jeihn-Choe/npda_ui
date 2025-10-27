@@ -4,7 +4,6 @@ import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/domain/entities/outbound_1f_mission_entity.dart';
 
-// ✨ 1. 상태 클래스에서 선택 관련 필드 모두 제거
 class Outbound1FState extends Equatable {
   final bool isLoading;
   final String? errorMessage;
@@ -43,21 +42,19 @@ class Outbound1FState extends Equatable {
 
   @override
   List<Object?> get props => [
-        isLoading,
-        errorMessage,
-        showOutboundPopup,
-        scannedDataForPopup,
-        selectedMission,
-      ];
+    isLoading,
+    errorMessage,
+    showOutboundPopup,
+    scannedDataForPopup,
+    selectedMission,
+  ];
 }
 
-// ✨ 2. Notifier에서 선택 관련 로직 모두 제거
 class Outbound1FVM extends StateNotifier<Outbound1FState> {
   final Ref _ref;
 
   Outbound1FVM(this._ref) : super(const Outbound1FState());
 
-  // 스캐너 및 팝업 관련 로직만 남김
   void handleScannedData(String scannedData) {
     appLogger.d("아웃바운드(1F) ViewModel handleScannedData 호출: $scannedData");
     final isScannerModeActive = _ref.read(scannerViewModelProvider);
@@ -92,5 +89,5 @@ class Outbound1FVM extends StateNotifier<Outbound1FState> {
 
 final outbound1FVMProvider =
     StateNotifierProvider<Outbound1FVM, Outbound1FState>((ref) {
-  return Outbound1FVM(ref);
-});
+      return Outbound1FVM(ref);
+    });

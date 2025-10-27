@@ -11,6 +11,7 @@ import '../../../presentation/main_shell.dart';
 import '../../../presentation/widgets/form_card_layout.dart';
 import '../../../presentation/widgets/info_field_widget.dart';
 import 'outbound_1f_vm.dart';
+import '../../../core/state/session_manager.dart';
 
 class Outbound1FPage extends ConsumerStatefulWidget {
   const Outbound1FPage({super.key});
@@ -32,6 +33,10 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
   }
 
   void _onFocusChange() {
+    // 🚀 추가된 부분: 로그인 상태가 아닐 경우, 포커스 로직을 실행하지 않음
+    final sessionStatus = ref.read(sessionManagerProvider).status;
+    if (sessionStatus != SessionStatus.loggedIn) return;
+
     final currentTabIndex = ref.read(mainShellTabIndexProvider);
     if (currentTabIndex != 2) return;
 
@@ -161,12 +166,14 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
   }
 
   Widget _buildMissionSelectionButtons(
-      Outbound1FMissionListState missionListState) {
+    Outbound1FMissionListState missionListState,
+  ) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(
-          onPressed: missionListState.selectedMissionNos.isEmpty ||
+          onPressed:
+              missionListState.selectedMissionNos.isEmpty ||
                   missionListState.isMissionDeleting
               ? null
               : () async {
@@ -205,12 +212,15 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
                   strokeWidth: 2,
                 )
               : Text(
-                  '선택 항목 삭제 (${missionListState.selectedMissionNos.length})'),
+                  '선택 항목 삭제 (${missionListState.selectedMissionNos.length})',
+                ),
         ),
         ElevatedButton(
           onPressed: () {
             // ✨ MissionListProvider의 메서드 호출
-            ref.read(outbound1FMissionListProvider.notifier).disableSelectionMode();
+            ref
+                .read(outbound1FMissionListProvider.notifier)
+                .disableSelectionMode();
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.lightBlueAccent,
@@ -228,7 +238,8 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         ElevatedButton(
-          onPressed: orderListState.selectedOrderNos.isEmpty ||
+          onPressed:
+              orderListState.selectedOrderNos.isEmpty ||
                   orderListState.isOrderDeleting
               ? null
               : () {
@@ -286,7 +297,7 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
               : () {
                   ref
                       .read(outbound1FOrderListProvider.notifier)
-                      .requestOutboundOrder();
+                      .requestOutbound1FOrder();
                 },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.celltrionGreen,
@@ -359,7 +370,9 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
             ],
             rows: orderListState.orders.map((order) {
               return DataRow(
-                selected: orderListState.selectedOrderNos.contains(order.orderNo),
+                selected: orderListState.selectedOrderNos.contains(
+                  order.orderNo,
+                ),
                 onSelectChanged: (isSelected) {
                   if (orderListState.isOrderSelectionModeActive) {
                     ref
@@ -488,6 +501,15 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
         headingRowHeight: 36,
         dataRowMinHeight: 36,
         dataRowMaxHeight: 36,
+        headingTextStyle: const TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.bold,
+          color: Colors.black,
+        ),
+        dataTextStyle: const TextStyle(
+          fontSize: 12,
+          color: Colors.black87,
+        ),
         columns: const [
           DataColumn(label: Text('No.')),
           DataColumn(label: Text('PltNo.')),
@@ -524,8 +546,9 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
           }
 
           return DataRow(
-            selected: missionListState.selectedMissionNos
-                .contains(mission.subMissionNo),
+            selected: missionListState.selectedMissionNos.contains(
+              mission.subMissionNo,
+            ),
             onSelectChanged: (isSelected) {
               if (missionListState.isMissionSelectionModeActive) {
                 // ✨ MissionListProvider의 메서드 호출

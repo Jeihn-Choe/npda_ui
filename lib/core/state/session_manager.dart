@@ -5,28 +5,38 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../utils/logger.dart';
 
+// 🚀 추가된 부분: 세션 상태를 명확하게 표현하기 위한 enum
+enum SessionStatus {
+  loggedOut, // 로그아웃 상태
+  loggedIn, // 로그인 상태
+  expired, // 세션 만료 상태
+}
+
 @immutable
 class SessionState {
-  final bool isLoggedIn;
+  // ✨ 변경된 부분: isLoggedIn(bool) -> status(enum)
+  final SessionStatus status;
   final String? userId;
   final String? userName;
   final int? userCode;
 
+  // ✨ 변경된 부분: 기본 상태를 loggedOut으로 설정
   SessionState({
-    this.isLoggedIn = false,
+    this.status = SessionStatus.loggedOut,
     this.userId,
     this.userName,
     this.userCode,
   });
 
+  // ✨ 변경된 부분: isLoggedIn 제거, status 추가
   SessionState copyWith({
-    bool? isLoggedIn,
+    SessionStatus? status,
     String? userId,
     String? userName,
     int? userCode,
   }) {
     return SessionState(
-      isLoggedIn: isLoggedIn ?? this.isLoggedIn,
+      status: status ?? this.status,
       userId: userId ?? this.userId,
       userName: userName ?? this.userName,
       userCode: userCode ?? this.userCode,
@@ -38,27 +48,29 @@ class SessionState {
       identical(this, other) ||
       (other is SessionState &&
           runtimeType == other.runtimeType &&
-          isLoggedIn == other.isLoggedIn &&
+          // ✨ 변경된 부분
+          status == other.status &&
           userId == other.userId &&
           userName == other.userName &&
           userCode == other.userCode);
 
   @override
   int get hashCode =>
-      isLoggedIn.hashCode ^
-      userId.hashCode ^
-      userName.hashCode ^
-      userCode.hashCode;
+      // ✨ 변경된 부분
+      status.hashCode ^ userId.hashCode ^ userName.hashCode ^ userCode.hashCode;
 
   @override
   String toString() {
-    return 'SessionState(isLoggedIn: $isLoggedIn, userId: $userId, userName: $userName, userCode: $userCode)';
+    // ✨ 변경된 부분
+    return 'SessionState(status: $status, userId: $userId, userName: $userName, userCode: $userCode)';
   }
 }
 
 class SessionManagerNotifier extends StateNotifier<SessionState> {
   Timer? _sessionTimer;
-  final Duration _sessionTimeout = const Duration(minutes: 1);
+
+  // TODO: 세션 시간은 실제 운영 환경에 맞게 조절 필요
+  final Duration _sessionTimeout = const Duration(seconds: 10);
 
   SessionManagerNotifier() : super(SessionState());
 
@@ -68,7 +80,8 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
     required int userCode,
   }) {
     state = state.copyWith(
-      isLoggedIn: true,
+      // ✨ 변경된 부분
+      status: SessionStatus.loggedIn,
       userId: userId,
       userName: userName,
       userCode: userCode,
@@ -79,23 +92,32 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
 
   void logout() {
     _sessionTimer?.cancel();
-    state = SessionState();
+    // ✨ 변경된 부분: 상태를 명시적으로 loggedOut으로 설정
+    state = SessionState(status: SessionStatus.loggedOut);
     appLogger.d('로그아웃 완료');
-    // TODO: GoRouter 이용해서 로그인 화면으로 리디렉션해야함.
+  }
+
+  // 🚀 추가된 부분: 세션 만료 처리 전용 함수
+  void _expireSession() {
+    _sessionTimer?.cancel();
+    state = state.copyWith(status: SessionStatus.expired);
+    appLogger.d('세션 타임아웃 / 상태 expired로 변경');
+    // 🚀 추가: 변경 직후의 상태를 로그로 출력
+    appLogger.d('변경된 최종 상태: $state');
   }
 
   void startSessionTimer() {
     appLogger.d('세션타이머 시작');
     _sessionTimer?.cancel();
     _sessionTimer = Timer(_sessionTimeout, () {
-      appLogger.d('세션 타임 아웃 / 로그아웃처리');
-      logout();
+      // ✨ 변경된 부분: logout() -> _expireSession() 호출
+      _expireSession();
     });
-    appLogger.d('세션타이머 재시작');
   }
 
   void resetSessionTimer() {
-    if (state.isLoggedIn) startSessionTimer();
+    // ✨ 변경된 부분: isLoggedIn -> status 체크
+    if (state.status == SessionStatus.loggedIn) startSessionTimer();
     appLogger.d('세션타이머 리셋');
   }
 

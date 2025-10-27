@@ -10,7 +10,7 @@ class LoginRepositoryMock implements LoginRepository {
     // 네트워크 지연을 시뮬레이션하기 위한 딜레이
     await Future.delayed(const Duration(seconds: 1));
 
-    // 🚀 수정: 특정 아이디/비밀번호 조합만 성공하도록 변경
+    // 이 아이디만 가능하도록
     if (userId == 'test' && password == '1234') {
       return LoginResult.success(
         userId: 'CM0124456',

@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
-import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
-
-import '../core/state/scanner_viewmodel.dart';
 // 🚀 삭제: import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 // 🚀 추가: SessionManagerNotifier import
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
+import 'package:npda_ui_flutter/core/routes/router.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 
+import '../core/state/scanner_viewmodel.dart';
 
 class MainShell extends ConsumerStatefulWidget {
   final StatefulNavigationShell navigationShell;
@@ -37,13 +36,45 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    // 🚀 수정: loginViewModelProvider 대신 sessionManagerProvider를 watch
+    // 🚀 수정: ref.listen 대신 ref.watch를 통해 상태를 직접 확인
     final sessionState = ref.watch(sessionManagerProvider);
+
+    // 🚀 추가: 빌드가 끝난 직후에 상태를 확인하고 팝업을 띄우는 로직
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 세션이 만료되었고, 아직 팝업이 표시되지 않았다면 팝업을 띄웁니다.
+      if (sessionState.status == SessionStatus.expired &&
+          ModalRoute.of(rootNavigatorKey.currentContext!)?.isCurrent != true) {
+        final context = rootNavigatorKey.currentContext;
+        if (context == null) return;
+
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext dialogContext) {
+            return AlertDialog(
+              title: const Text('세션 만료'),
+              content: const Text('장시간 활동이 없어 자동으로 로그아웃됩니다.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                    ref.read(sessionManagerProvider.notifier).logout();
+                  },
+                  child: const Text('확인'),
+                ),
+              ],
+            );
+          },
+        );
+      }
+    });
     final isScannerModeActive = ref.watch(scannerViewModelProvider);
 
     // ✨ 활동 감지 시 호출될 함수
     void resetSessionTimer() {
-      ref.read(sessionManagerProvider.notifier).resetSessionTimer(); // 🚀 수정: .notifier 추가
+      ref
+          .read(sessionManagerProvider.notifier)
+          .resetSessionTimer(); // 🚀 수정: .notifier 추가
       // logger('Session timer has been reset.'); // 디버깅용
     }
 
@@ -74,11 +105,9 @@ class _MainShellState extends ConsumerState<MainShell> {
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
                         ),
-                        // 🚀 수정: sessionState에서 userId와 userName 가져오기
                         '${sessionState.userId} ${sessionState.userName}님',
                       ),
                       IconButton(
-                        // 🚀 수정: 로그아웃 버튼 클릭 시 sessionManagerProvider의 logout 호출
                         onPressed: () {
                           ref.read(sessionManagerProvider.notifier).logout();
                         },
@@ -158,7 +187,8 @@ class _MainShellState extends ConsumerState<MainShell> {
               ),
             ),
             // 탭에 따라 다른 화면을 보여주는 Shell
-            body: GestureDetector( // ✨ 추가: 화면 전체 감싸기
+            body: GestureDetector(
+              // ✨ 추가: 화면 전체 감싸기
               onTap: resetSessionTimer,
               onPanDown: (_) => resetSessionTimer(),
               behavior: HitTestBehavior.translucent,

@@ -1,5 +1,6 @@
+import 'package:flutter/material.dart'; // 🚀 추가
 import 'package:go_router/go_router.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // 🚀 추가
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_screen.dart';
 import 'package:npda_ui_flutter/features/login/presentation/login_screen.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/outbound_screen.dart';
@@ -7,46 +8,47 @@ import 'package:npda_ui_flutter/features/outbound_1f/presentation/outbound_1f_pa
 
 import '../../features/splash/presentation/splash_screen.dart';
 import '../../presentation/main_shell.dart';
-import '../state/session_manager.dart'; // 🚀 추가
+import '../state/session_manager.dart';
 
-// 🚀 수정: GoRouter를 ProviderScope 밖에서 정의할 수 있도록 ProviderRef를 받도록 변경
+// 🚀 추가: 앱의 최상단 네비게이터에 접근하기 위한 GlobalKey
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
+
 final routerProvider = Provider<GoRouter>((ref) {
-  final sessionState = ref.watch(sessionManagerProvider); // 🚀 sessionState를 watch
+  final sessionState = ref.watch(sessionManagerProvider);
 
   return GoRouter(
+    // 🚀 추가: 네비게이터 키 설정
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/splash',
-    // 🚀 추가: 리디렉션 로직
     redirect: (context, state) {
-      // 스플래시, 로그인 화면은 항상 접근 가능
       final bool loggingIn = state.matchedLocation == '/login';
       final bool splashing = state.matchedLocation == '/splash';
 
-      // 로그인 상태가 아니면 로그인 화면으로 리디렉션
-      if (!sessionState.isLoggedIn && !loggingIn && !splashing) {
+      final sessionStatus = sessionState.status;
+      final bool loggedIn = sessionStatus == SessionStatus.loggedIn;
+
+      if (sessionStatus == SessionStatus.expired) {
+        return null;
+      }
+
+      if (!loggedIn && !loggingIn && !splashing) {
         return '/login';
       }
-      // 로그인 상태인데 로그인/스플래시 화면에 있으려 하면 메인 화면으로 리디렉션
-      if (sessionState.isLoggedIn && (loggingIn || splashing)) {
-        return '/inbound'; // 로그인 후 기본 화면
+
+      if (loggedIn && (loggingIn || splashing)) {
+        return '/inbound';
       }
-      // 그 외의 경우는 현재 경로 유지
+
       return null;
     },
     routes: [
-      // 스플래시 화면
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
-      // 로그인 화면
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-
-      //메인 화면을 위한 셸 라우트
       StatefulShellRoute.indexedStack(
-        // 셸 UI 위젯 빌더
         builder: (context, state, navigationShell) {
           return MainShell(navigationShell: navigationShell);
         },
-
         branches: [
-          // 입고 화면
           StatefulShellBranch(
             routes: [
               GoRoute(
@@ -55,23 +57,18 @@ final routerProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // 출고 화면
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/outbound',
-
-                // builder: (context, state) => OutboundScreen(),
                 builder: (context, state) => OutboundScreen(),
               ),
             ],
           ),
-          // 1층 출고 화면
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: '/outbound_1f',
-                // builder: (context, state) => Outbound1fScreen(),
                 builder: (context, state) => const Outbound1FPage(),
               ),
             ],

@@ -7,6 +7,7 @@ import 'package:npda_ui_flutter/features/outbound/presentation/providers/outboun
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_order_list_provider.dart';
 
 import '../../../core/constants/colors.dart';
+import '../../../core/state/session_manager.dart';
 import '../../../presentation/main_shell.dart';
 import '../../../presentation/widgets/form_card_layout.dart';
 import '../../../presentation/widgets/info_field_widget.dart';
@@ -29,13 +30,16 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
     _scannerFocusNode = FocusNode();
     _scannerTextController = TextEditingController();
 
-    // 포커스 변경 감지 리스너 추가 => 포커스를 invisible에서 잃으면 다시 갖다놔야함.
     _scannerFocusNode.addListener(_onFocusChange);
   }
 
   void _onFocusChange() {
-    final currentTabIndex = ref.read(mainShellTabIndexProvider); // modified
-    if (currentTabIndex != 1) return; // 아웃바운드 화면이 아닐때는 무시
+    // 🚀 추가된 부분: 로그인 상태가 아닐 경우, 포커스 로직을 실행하지 않음
+    final sessionStatus = ref.read(sessionManagerProvider).status;
+    if (sessionStatus != SessionStatus.loggedIn) return;
+
+    final currentTabIndex = ref.read(mainShellTabIndexProvider);
+    if (currentTabIndex != 1) return;
 
     final outboundState = ref.read(outboundScreenViewModelProvider);
     if (!_scannerFocusNode.hasFocus && !outboundState.showOutboundPopup) {
@@ -46,7 +50,6 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
 
   @override
   void dispose() {
-    // 컨트롤러와 포커스 노드의 리소스를 해제합니다.
     _scannerFocusNode.removeListener(_onFocusChange);
     _scannerFocusNode.dispose();
     _scannerTextController.dispose();
@@ -55,34 +58,31 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ✨ 각 Provider와 ViewModel의 상태를 개별적으로 watch
     final outboundState = ref.watch(outboundScreenViewModelProvider);
     final orderListState = ref.watch(outboundOrderListProvider);
+    final missionListState = ref.watch(outboundMissionListProvider);
 
-    // viewmodel 의 팝업 상태 감지
     ref.listen<OutboundScreenState>(outboundScreenViewModelProvider, (
       previous,
       next,
     ) {
-      /// ShowOutboundPopup 상태가 true로 변경되면 popup을 띄움움
       if (next.showOutboundPopup && previous?.showOutboundPopup == false) {
-        /// 팝업 띄우기 전 스캐너 포커스 해제
         _scannerFocusNode.unfocus();
 
         showDialog(
           context: context,
-          barrierDismissible: false, // 바깥 영역 터치시 닫히지 않도록 설정
+          barrierDismissible: false,
           builder: (BuildContext dialogContext) {
             return OutboundPopup(scannedData: next.scannedDataForPopup);
           },
         ).then((_) {
-          // 팝업이 닫히고 나서 포커스 다시 가져오기
           if (mounted) {
-            /// 1. viewmodel 에 팝업 닫힘 상태 전달
+            // ✨ closeCreationPopup의 불필요한 파라미터 제거
             ref
                 .read(outboundScreenViewModelProvider.notifier)
-                .closeCreationPopup(false);
+                .closeCreationPopup();
 
-            /// 2. 포커스 다시 가져오기
             FocusScope.of(context).requestFocus(_scannerFocusNode);
             appLogger.d("팝업 닫힘 - 포커스 다시 가져옴");
           }
@@ -99,7 +99,6 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              /// 보이지 않는 스캐너 입력용 TextField
               Opacity(
                 opacity: 0.0,
                 child: SizedBox(
@@ -112,29 +111,22 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                     keyboardType: TextInputType.none,
                     enabled: !outboundState.showOutboundPopup,
                     onSubmitted: (value) {
-                      final outboundState = ref.read(
+                      final currentOutboundState = ref.read(
                         outboundScreenViewModelProvider,
                       );
-                      if (outboundState.showOutboundPopup) {
+                      if (currentOutboundState.showOutboundPopup) {
                         appLogger.d("팝업이 떠있는 상태에서 스캔 입력이 들어왔습니다. 무시합니다.");
                         _scannerTextController.clear();
                         return;
                       }
                       appLogger.d("아웃바운드 화면 스캐너 입력 감지 : $value");
-                      // viewmodel에 스캔된 데이터 전달
                       ref
                           .read(outboundScreenViewModelProvider.notifier)
                           .handleScannedData(value);
-                      // 텍스트필드 초기화
                       _scannerTextController.clear();
                       appLogger.d("텍스트필드 초기화");
 
-                      /// 스캔 모드가 활성화되어있지 않고, 팝업이 떠 있지 않다면 포커스를 다시 요청해서 스캐너 입력을 받을 수 있도록 해야함.
-                      // final isScannerModeActive = ref.read(
-                      //   scannerViewModelProvider,
-                      // );
-
-                      if (!outboundState.showOutboundPopup) {
+                      if (!currentOutboundState.showOutboundPopup) {
                         FocusScope.of(context).requestFocus(_scannerFocusNode);
                         logger("포커스 다시 가져옴");
                       }
@@ -143,38 +135,33 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                 ),
               ),
 
-              /// 상단 버튼 바
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
                   vertical: 4,
                 ),
-
-                /// 선택모드 활성화 --> 삭제, 취소 버튼 표시.
-                child: outboundState.isMissionSelectionModeActive
-                    ?
-                      // 1. 미션 선택 모드일 때의 버튼
-                      Row(
+                // ✨ Mission 관련 상태 참조를 ViewModel -> Provider로 변경
+                child: missionListState.isMissionSelectionModeActive
+                    ? Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
                             onPressed:
-                                outboundState.selectedMissionNos.isEmpty ||
-                                    outboundState.isMissionDeleting
+                                // ✨ 상태 참조 변경
+                                missionListState.selectedMissionNos.isEmpty ||
+                                    missionListState.isMissionDeleting
                                 ? null
                                 : () async {
-                                    final success =
-                                        await ref // modified
-                                            .read(
-                                              outboundScreenViewModelProvider
-                                                  .notifier,
-                                            )
-                                            .deleteSelectedOutboundMissions();
+                                    // ✨ 메소드 호출 변경
+                                    final success = await ref
+                                        .read(
+                                          outboundMissionListProvider.notifier,
+                                        )
+                                        .deleteSelectedOutboundMissions();
 
-                                    if (!context.mounted) return; // modified
+                                    if (!context.mounted) return;
 
                                     showDialog(
-                                      // modified
                                       context: context,
                                       builder: (BuildContext dialogContext) {
                                         return AlertDialog(
@@ -197,10 +184,10 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                                     );
 
                                     if (success) {
-                                      // modified
+                                      // ✨ 메소드 호출 변경
                                       ref
                                           .read(
-                                            outboundScreenViewModelProvider
+                                            outboundMissionListProvider
                                                 .notifier,
                                           )
                                           .disableSelectionMode();
@@ -215,22 +202,21 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                               ),
                             ),
                             child:
-                                outboundState
-                                    .isMissionDeleting // modified
+                                // ✨ 상태 참조 변경
+                                missionListState.isMissionDeleting
                                 ? const CircularProgressIndicator(
                                     color: Colors.white,
                                     strokeWidth: 2,
                                   )
                                 : Text(
-                                    '선택 항목 삭제 (${outboundState.selectedMissionNos.length})',
+                                    '선택 항목 삭제 (${missionListState.selectedMissionNos.length})',
                                   ),
                           ),
                           ElevatedButton(
                             onPressed: () {
+                              // ✨ 메소드 호출 변경
                               ref
-                                  .read(
-                                    outboundScreenViewModelProvider.notifier,
-                                  )
+                                  .read(outboundMissionListProvider.notifier)
                                   .disableSelectionMode();
                             },
                             style: ElevatedButton.styleFrom(
@@ -245,25 +231,21 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                           ),
                         ],
                       )
-                    : outboundState.isOrderSelectionModeActive
-                    ?
-                      // 2. 주문 선택 모드일 때의 버튼
-                      Row(
+                    : orderListState.isOrderSelectionModeActive
+                    ? Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
                             onPressed:
-                                outboundState.selectedOrderNos.isEmpty ||
-                                    outboundState.isOrderDeleting
+                                orderListState.selectedOrderNos.isEmpty ||
+                                    orderListState.isOrderDeleting
                                 ? null
                                 : () async {
-                                    // 주문 삭제 메서드 호출
-                                    await ref
+                                    ref
                                         .read(
-                                          outboundScreenViewModelProvider
-                                              .notifier,
+                                          outboundOrderListProvider.notifier,
                                         )
-                                        .deleteSelectedOutboundOrders();
+                                        .deleteSelectedOrders();
                                   },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
@@ -273,22 +255,19 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                                 vertical: 10,
                               ),
                             ),
-                            child: outboundState.isOrderDeleting
+                            child: orderListState.isOrderDeleting
                                 ? const CircularProgressIndicator(
                                     color: Colors.white,
                                     strokeWidth: 2,
                                   )
                                 : Text(
-                                    '선택 항목 삭제 (${outboundState.selectedOrderNos.length})',
+                                    '선택 항목 삭제 (${orderListState.selectedOrderNos.length})',
                                   ),
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              // 주문 선택 모드 비활성화
                               ref
-                                  .read(
-                                    outboundScreenViewModelProvider.notifier,
-                                  )
+                                  .read(outboundOrderListProvider.notifier)
                                   .disableOrderSelectionMode();
                             },
                             style: ElevatedButton.styleFrom(
@@ -303,9 +282,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                           ),
                         ],
                       )
-                    :
-                      // 3. 기본 상태일 때의 버튼
-                      Row(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
@@ -380,7 +357,6 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
 
               const SizedBox(height: 4),
 
-              /// inboundRegistrationList 생성 시 해당 정보 표시 - 평소에는 존재 x
               if (orderListState.orders.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.symmetric(
@@ -426,7 +402,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                           color: Colors.black87,
                         ),
                         showCheckboxColumn:
-                            outboundState.isOrderSelectionModeActive,
+                            orderListState.isOrderSelectionModeActive,
                         columns: const [
                           DataColumn(label: Text('DO No / 저장빈 No.')),
                           DataColumn(label: Text('요청시간')),
@@ -434,16 +410,14 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                         rows: orderListState.orders.map((order) {
                           return DataRow(
                             selected:
-                                outboundState.isOrderSelectionModeActive &&
-                                outboundState.selectedOrderNos.contains(
+                                orderListState.isOrderSelectionModeActive &&
+                                orderListState.selectedOrderNos.contains(
                                   order.orderNo,
                                 ),
                             onSelectChanged: (isSelected) {
-                              if (outboundState.isOrderSelectionModeActive) {
+                              if (orderListState.isOrderSelectionModeActive) {
                                 ref
-                                    .read(
-                                      outboundScreenViewModelProvider.notifier,
-                                    )
+                                    .read(outboundOrderListProvider.notifier)
                                     .toggleOrderForDeletion(order.orderNo);
                               }
                             },
@@ -454,20 +428,18 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                                   onLongPress: () {
                                     ref
                                         .read(
-                                          outboundScreenViewModelProvider
-                                              .notifier,
+                                          outboundOrderListProvider.notifier,
                                         )
                                         .enableOrderSelectionMode(
                                           order.orderNo,
                                         );
                                   },
                                   onTap: () {
-                                    if (outboundState
+                                    if (orderListState
                                         .isOrderSelectionModeActive) {
                                       ref
                                           .read(
-                                            outboundScreenViewModelProvider
-                                                .notifier,
+                                            outboundOrderListProvider.notifier,
                                           )
                                           .toggleOrderForDeletion(
                                             order.orderNo,
@@ -490,20 +462,18 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                                   onLongPress: () {
                                     ref
                                         .read(
-                                          outboundScreenViewModelProvider
-                                              .notifier,
+                                          outboundOrderListProvider.notifier,
                                         )
                                         .enableOrderSelectionMode(
                                           order.orderNo,
                                         );
                                   },
                                   onTap: () {
-                                    if (outboundState
+                                    if (orderListState
                                         .isOrderSelectionModeActive) {
                                       ref
                                           .read(
-                                            outboundScreenViewModelProvider
-                                                .notifier,
+                                            outboundOrderListProvider.notifier,
                                           )
                                           .toggleOrderForDeletion(
                                             order.orderNo,
@@ -530,26 +500,25 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                   ),
                 ),
 
-              /// 중앙 오더 상세 표시
+              // ✨ Mission 상세 정보 표시도 Provider 상태를 사용
               FormCardLayout(
                 contentPadding: 12,
                 verticalMargin: 4,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    /// 하단의 리스트에서 선택된 행 표시, null 이면 빈칸
                     Expanded(
                       child: Column(
                         children: [
                           InfoFieldWidget(
                             fieldName: 'No.',
-                            fieldValue: outboundState.selectedMission?.doNo
+                            fieldValue: missionListState.selectedMission?.doNo
                                 .toString(),
                           ),
                           InfoFieldWidget(
                             fieldName: '출발지',
                             fieldValue:
-                                outboundState.selectedMission?.sourceBin,
+                                missionListState.selectedMission?.sourceBin,
                           ),
                         ],
                       ),
@@ -560,12 +529,14 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                         children: [
                           InfoFieldWidget(
                             fieldName: '시간',
-                            fieldValue: outboundState.selectedMission?.startTime
+                            fieldValue: missionListState
+                                .selectedMission
+                                ?.startTime
                                 .toString(),
                           ),
                           InfoFieldWidget(
                             fieldName: '목적지',
-                            fieldValue: outboundState
+                            fieldValue: missionListState
                                 .selectedMission
                                 ?.destinationBin
                                 .toString(),
@@ -578,8 +549,8 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
               ),
               const SizedBox(height: 8),
 
-              /// 하단 데이터그리드
-              if (outboundState.isMissionListLoading)
+              // ✨ Mission 목록 로딩 상태도 Provider 상태를 사용
+              if (missionListState.isLoading)
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.all(100),
@@ -622,87 +593,78 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                         DataColumn(label: Text('목적지')),
                       ],
 
-                      rows: ref.watch(outboundMissionListProvider).missions.map(
-                        (mission) {
-                          /// 각 셀을 감싸는 GestureDetector 위젯 생성 헬퍼 함수
-                          /// onTap, onLongPress 이벤트 핸들러 추가해야함.
-                          DataCell buildTappableCell(Widget child) {
-                            return DataCell(
-                              GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onLongPress: () {
+                      rows: missionListState.missions.map((mission) {
+                        DataCell buildTappableCell(Widget child) {
+                          return DataCell(
+                            GestureDetector(
+                              behavior: HitTestBehavior.opaque,
+                              onLongPress: () {
+                                // ✨ 메소드 호출 변경
+                                ref
+                                    .read(outboundMissionListProvider.notifier)
+                                    .enableSelectionMode(mission.missionNo);
+                              },
+                              onTap: () {
+                                // ✨ 상태 참조 변경
+                                if (missionListState
+                                    .isMissionSelectionModeActive) {
+                                  // ✨ 메소드 호출 변경
                                   ref
                                       .read(
-                                        outboundScreenViewModelProvider
-                                            .notifier,
+                                        outboundMissionListProvider.notifier,
                                       )
-                                      .enableSelectionMode(mission.missionNo);
-                                },
-                                onTap: () {
-                                  if (outboundState
-                                      .isMissionSelectionModeActive) {
-                                    ref
-                                        .read(
-                                          outboundScreenViewModelProvider
-                                              .notifier,
-                                        )
-                                        .toggleMissionForDeletion(
-                                          mission.missionNo,
-                                        );
-                                  } else {
-                                    ref
-                                        .read(
-                                          outboundScreenViewModelProvider
-                                              .notifier,
-                                        )
-                                        .selectMission(mission);
-                                  }
-                                },
-                                child: child,
-                              ),
-                            );
-                          }
-
-                          return DataRow(
-                            /// 선택모드 UI 로직
-                            /// isSelectionModeActive true --> 체크박스 표시 o
-                            /// isSelectionModeActive false --> 체크박스 표시 x
-                            /// 선택모드가 활성화된 상태에서 행을 탭하면 해당 행이 선택/선택해제 토글됨.
-                            selected:
-                                outboundState.isMissionSelectionModeActive &&
-                                outboundState.selectedMissionNos.contains(
-                                  mission.missionNo,
-                                ),
-
-                            onSelectChanged:
-                                outboundState.isMissionSelectionModeActive
-                                ? (isSelected) {
-                                    ref
-                                        .read(
-                                          outboundScreenViewModelProvider
-                                              .notifier,
-                                        )
-                                        .toggleMissionForDeletion(
-                                          mission.missionNo,
-                                        );
-                                  }
-                                : null,
-
-                            cells: [
-                              buildTappableCell(
-                                Text(mission.missionNo.toString()),
-                              ),
-                              buildTappableCell(
-                                Text(
-                                  mission?.doNo ?? mission?.sourceBin ?? "-",
-                                ),
-                              ),
-                              buildTappableCell(Text(mission.sourceBin)),
-                              buildTappableCell(Text(mission.destinationBin)),
-                            ],
+                                      .toggleMissionForDeletion(
+                                        mission.missionNo,
+                                      );
+                                } else {
+                                  // ✨ 메소드 호출 변경
+                                  ref
+                                      .read(
+                                        outboundMissionListProvider.notifier,
+                                      )
+                                      .selectMission(mission);
+                                }
+                              },
+                              child: child,
+                            ),
                           );
-                        },
-                      ).toList(),
+                        }
+
+                        return DataRow(
+                          // ✨ 상태 참조 변경
+                          selected:
+                              missionListState.isMissionSelectionModeActive &&
+                              missionListState.selectedMissionNos.contains(
+                                mission.missionNo,
+                              ),
+
+                          onSelectChanged:
+                              // ✨ 상태 참조 변경
+                              missionListState.isMissionSelectionModeActive
+                              ? (isSelected) {
+                                  // ✨ 메소드 호출 변경
+                                  ref
+                                      .read(
+                                        outboundMissionListProvider.notifier,
+                                      )
+                                      .toggleMissionForDeletion(
+                                        mission.missionNo,
+                                      );
+                                }
+                              : null,
+
+                          cells: [
+                            buildTappableCell(
+                              Text(mission.missionNo.toString()),
+                            ),
+                            buildTappableCell(
+                              Text(mission.doNo ?? mission.sourceBin ?? "-"),
+                            ),
+                            buildTappableCell(Text(mission.sourceBin)),
+                            buildTappableCell(Text(mission.destinationBin)),
+                          ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),

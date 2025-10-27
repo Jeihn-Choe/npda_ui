@@ -10,6 +10,7 @@ import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 import 'package:npda_ui_flutter/presentation/widgets/info_field_widget.dart';
 
 import '../../../presentation/main_shell.dart';
+import '../../../core/state/session_manager.dart';
 
 class InboundScreen extends ConsumerStatefulWidget {
   const InboundScreen({super.key});
@@ -41,6 +42,10 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
   }
 
   void _onFocusChange() {
+    // 🚀 추가된 부분: 로그인 상태가 아닐 경우, 포커스 로직을 실행하지 않음
+    final sessionStatus = ref.read(sessionManagerProvider).status;
+    if (sessionStatus != SessionStatus.loggedIn) return;
+
     final currentTabIndex = ref.read(mainShellTabIndexProvider); // modified
     if (currentTabIndex != 0) return; // 인바운드 탭이 아닐때는 포커스 로직 무시
 

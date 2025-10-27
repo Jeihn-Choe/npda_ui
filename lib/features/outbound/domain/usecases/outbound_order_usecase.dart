@@ -51,22 +51,22 @@ class OutboundOrderUseCase {
 
   /// --- Order Repository 전송 로직 ---
   Future<UseCaseResult> requestOutboundOrder({
-    required List<OutboundOrderEntity> items,
+    required List<OutboundOrderEntity> outboundOrderEntities,
   }) async {
     final orderRepository = ref.read(orderRepositoryProvider);
 
-    final workitems = items
+    final workItems = outboundOrderEntities
         .map(
-          (item) => WorkItem(
+          (entity) => WorkItem(
             missionType: 1,
-            doNo: item.doNo!.isNotEmpty ? item.doNo : item.savedBinNo,
-            startTime: item.startTime,
-            employeeId: item.userId,
+            doNo: entity.doNo!.isNotEmpty ? entity.doNo : entity.savedBinNo,
+            startTime: entity.startTime,
+            employeeId: entity.userId,
           ),
         )
         .toList();
 
-    final requestDto = RequestOrderDto(cmdId: 'RO', missionList: workitems);
+    final requestDto = RequestOrderDto(cmdId: 'RO', missionList: workItems);
 
     final ResponseOrderEntity response = await orderRepository.requestOrder(
       requestDto,

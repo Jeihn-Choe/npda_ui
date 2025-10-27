@@ -18,14 +18,7 @@ class LoginScreen extends ConsumerWidget {
     /// provider 통해 생성된 viewmodel의 인스턴스에 접근하기 위해 notifier 사용
     final viewmodel = ref.watch(loginViewModelProvider.notifier);
 
-    /// 로그인 상태 변화를 감지하고 화면 전환.
-    ref.listen(sessionManagerProvider, (previous, next) {
-      if (next.isLoggedIn) {
-        // 사용자가 로그인 화면으로 못돌아오도록 go
-        // 뒤로가기 해도 로그인 화면으로 못돌아오도록
-        GoRouter.of(context).go('/inbound');
-      }
-    });
+    // 로그인 상태 변화 감지 및 리디렉션은 router.dart에서 중앙 관리합니다.
 
     /// 키보드 높이 감지해서 키보드 올라올 때도 화면이 잘 보이도록 함.
     final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
