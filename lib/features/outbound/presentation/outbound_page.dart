@@ -11,16 +11,16 @@ import '../../../core/state/session_manager.dart';
 import '../../../presentation/main_shell.dart';
 import '../../../presentation/widgets/form_card_layout.dart';
 import '../../../presentation/widgets/info_field_widget.dart';
-import 'outbound_screen_vm.dart';
+import 'outbound_page_vm.dart';
 
-class OutboundScreen extends ConsumerStatefulWidget {
-  const OutboundScreen({super.key});
+class OutboundPage extends ConsumerStatefulWidget {
+  const OutboundPage({super.key});
 
   @override
-  ConsumerState<OutboundScreen> createState() => _OutboundScreenState();
+  ConsumerState<OutboundPage> createState() => _OutboundPageState();
 }
 
-class _OutboundScreenState extends ConsumerState<OutboundScreen> {
+class _OutboundPageState extends ConsumerState<OutboundPage> {
   late FocusNode _scannerFocusNode;
   late TextEditingController _scannerTextController;
 
@@ -41,7 +41,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
     final currentTabIndex = ref.read(mainShellTabIndexProvider);
     if (currentTabIndex != 1) return;
 
-    final outboundState = ref.read(outboundScreenViewModelProvider);
+    final outboundState = ref.read(outboundPageVMProvider);
     if (!_scannerFocusNode.hasFocus && !outboundState.showOutboundPopup) {
       FocusScope.of(context).requestFocus(_scannerFocusNode);
       appLogger.d("포커스 다시 가져옴");
@@ -59,14 +59,11 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
   @override
   Widget build(BuildContext context) {
     // ✨ 각 Provider와 ViewModel의 상태를 개별적으로 watch
-    final outboundState = ref.watch(outboundScreenViewModelProvider);
+    final outboundState = ref.watch(outboundPageVMProvider);
     final orderListState = ref.watch(outboundOrderListProvider);
     final missionListState = ref.watch(outboundMissionListProvider);
 
-    ref.listen<OutboundScreenState>(outboundScreenViewModelProvider, (
-      previous,
-      next,
-    ) {
+    ref.listen<OutboundPageState>(outboundPageVMProvider, (previous, next) {
       if (next.showOutboundPopup && previous?.showOutboundPopup == false) {
         _scannerFocusNode.unfocus();
 
@@ -79,9 +76,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
         ).then((_) {
           if (mounted) {
             // ✨ closeCreationPopup의 불필요한 파라미터 제거
-            ref
-                .read(outboundScreenViewModelProvider.notifier)
-                .closeCreationPopup();
+            ref.read(outboundPageVMProvider.notifier).closeCreationPopup();
 
             FocusScope.of(context).requestFocus(_scannerFocusNode);
             appLogger.d("팝업 닫힘 - 포커스 다시 가져옴");
@@ -112,7 +107,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                     enabled: !outboundState.showOutboundPopup,
                     onSubmitted: (value) {
                       final currentOutboundState = ref.read(
-                        outboundScreenViewModelProvider,
+                        outboundPageVMProvider,
                       );
                       if (currentOutboundState.showOutboundPopup) {
                         appLogger.d("팝업이 떠있는 상태에서 스캔 입력이 들어왔습니다. 무시합니다.");
@@ -121,7 +116,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                       }
                       appLogger.d("아웃바운드 화면 스캐너 입력 감지 : $value");
                       ref
-                          .read(outboundScreenViewModelProvider.notifier)
+                          .read(outboundPageVMProvider.notifier)
                           .handleScannedData(value);
                       _scannerTextController.clear();
                       appLogger.d("텍스트필드 초기화");
@@ -302,12 +297,55 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                                 orderListState.orders.isEmpty ||
                                     orderListState.isLoading
                                 ? null
-                                : () {
-                                    ref
-                                        .read(
-                                          outboundOrderListProvider.notifier,
-                                        )
-                                        .requestOutboundOrder();
+                                : () async {
+                                    // ✨ async 추가
+                                    // ✨ 변경: try-catch 블록으로 감싸 에러 처리
+                                    try {
+                                      final count = await ref
+                                          .read(
+                                            outboundOrderListProvider.notifier,
+                                          )
+                                          .requestOutboundOrder();
+
+                                      if (!context.mounted) return;
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('성공'),
+                                          content: Text(
+                                            '$count건의 작업이 성공적으로 요청되었습니다.',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context).pop(),
+                                              child: const Text('확인'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    } catch (e) {
+                                      if (!context.mounted) return;
+                                      showDialog(
+                                        context: context,
+                                        builder: (context) => AlertDialog(
+                                          title: const Text('실패'),
+                                          content: Text(
+                                            e.toString().replaceFirst(
+                                              'Exception: ',
+                                              '',
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.of(context).pop(),
+                                              child: const Text('확인'),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
                                   },
 
                             style: ElevatedButton.styleFrom(
@@ -336,9 +374,7 @@ class _OutboundScreenState extends ConsumerState<OutboundScreen> {
                             onPressed: () {
                               _scannerFocusNode.unfocus();
                               ref
-                                  .read(
-                                    outboundScreenViewModelProvider.notifier,
-                                  )
+                                  .read(outboundPageVMProvider.notifier)
                                   .showCreationPopup();
                             },
                             style: ElevatedButton.styleFrom(

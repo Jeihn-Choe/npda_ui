@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
-import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_order_usecase.dart';
 
+import '../providers/outbound_dependency_provider.dart';
 import '../providers/outbound_order_list_provider.dart';
 
 class OutboundPopupState {

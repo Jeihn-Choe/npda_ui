@@ -325,41 +325,59 @@ class _InboundScreenState extends ConsumerState<InboundScreen> {
                                         inboundRegistrationList.isLoading
                                     ? null
                                     : () async {
-                                        // Notifier에서 작업 시작 로직 호출
-                                        final result = await ref
-                                            .read(
-                                              inboundRegistrationListProvider
-                                                  .notifier,
-                                            )
-                                            .requestInboundWork();
+                                        // ✨ 변경: try-catch 블록으로 감싸 에러 처리
+                                        try {
+                                          // Notifier에서 작업 시작 로직 호출 후 건수 받기
+                                          final count = await ref
+                                              .read(
+                                                inboundRegistrationListProvider
+                                                    .notifier,
+                                              )
+                                              .requestInboundWork();
 
-                                        // 결과에 따라 다이얼로그 표시
-                                        if (!context.mounted) return;
-                                        showDialog(
-                                          context: context,
-                                          builder: (BuildContext dialogContext) {
-                                            return AlertDialog(
-                                              title: Text(
-                                                result.isSuccess ? '성공' : '실패',
-                                              ),
-                                              content: Text(
-                                                result.msg ??
-                                                    (result.isSuccess
-                                                        ? '작업이 성공적으로 요청되었습니다.'
-                                                        : '작업 요청에 실패했습니다.'),
-                                              ),
-                                              actions: [
-                                                TextButton(
-                                                  onPressed: () =>
-                                                      Navigator.of(
-                                                    dialogContext,
-                                                  ).pop(),
-                                                  child: const Text('확인'),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        );
+                                          // 결과에 따라 다이얼로그 표시
+                                          if (!context.mounted) return;
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext dialogContext) {
+                                              return AlertDialog(
+                                                // ✨ 변경: 성공 메시지에 건수 표시
+                                                title: const Text('성공'),
+                                                content: Text('$count건의 작업이 성공적으로 요청되었습니다.'),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(
+                                                      dialogContext,
+                                                    ).pop(),
+                                                    child: const Text('확인'),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        } catch (e) {
+                                          // ✨ 추가: 에러 발생 시 실패 다이얼로그 표시
+                                          if (!context.mounted) return;
+                                          showDialog(
+                                            context: context,
+                                            builder: (BuildContext dialogContext) {
+                                              return AlertDialog(
+                                                title: const Text('실패'),
+                                                content: Text(e.toString().replaceFirst('Exception: ', '')),
+                                                actions: [
+                                                  TextButton(
+                                                    onPressed: () =>
+                                                        Navigator.of(
+                                                      dialogContext,
+                                                    ).pop(),
+                                                    child: const Text('확인'),
+                                                  ),
+                                                ],
+                                              );
+                                            },
+                                          );
+                                        }
                                       },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.celltrionGreen,

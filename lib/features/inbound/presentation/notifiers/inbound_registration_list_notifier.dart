@@ -69,7 +69,14 @@ class InboundRegistrationListNotifier
     state = state.copyWith(selectedPltNos: {});
   }
 
-  Future<ResponseOrderEntity> requestInboundWork() async {
+  // ✨ 변경: 반환 타입을 Future<int>로 수정
+  Future<int> requestInboundWork() async {
+    // ✨ 추가: 요청 전, 현재 아이템 개수를 변수에 저장
+    final itemCount = state.items.length;
+    if (itemCount == 0) {
+      throw Exception('요청할 작업이 없습니다.');
+    }
+
     // 상태를 로딩으로 변경
     state = state.copyWith(isLoading: true);
 
@@ -79,13 +86,17 @@ class InboundRegistrationListNotifier
 
       // 요청 성공 시
       if (response.isSuccess) {
+        // ✨ 변경: 성공 시 리스트를 비우고, 저장해둔 아이템 개수를 반환
         state = state.copyWith(items: [], selectedPltNos: {});
+        return itemCount;
+      } else {
+        // ✨ 변경: 응답 실패 시 Exception을 던져 UI에서 처리하도록 함
+        throw Exception(response.msg ?? '알 수 없는 오류가 발생했습니다.');
       }
-
-      return response;
     } catch (e) {
       logger('Error requesting inbound work: $e');
-      return ResponseOrderEntity.failure(msg: e.toString());
+      // ✨ 변경: 에러를 다시 던져서 UI에서 처리하도록 함
+      rethrow;
     } finally {
       // 작업 성공, 실패에 관계없이 상황이 종료되면 로딩 상태를 false 로 변경
       state = state.copyWith(isLoading: false);

@@ -51,10 +51,7 @@ class SessionState {
 
   @override
   int get hashCode =>
-      status.hashCode ^
-      userId.hashCode ^
-      userName.hashCode ^
-      userCode.hashCode;
+      status.hashCode ^ userId.hashCode ^ userName.hashCode ^ userCode.hashCode;
 
   @override
   String toString() {
@@ -64,7 +61,7 @@ class SessionState {
 
 class SessionManagerNotifier extends StateNotifier<SessionState> {
   Timer? _sessionTimer;
-  final Duration _sessionTimeout = const Duration(seconds: 10);
+  final Duration _sessionTimeout = const Duration(minutes: 30);
 
   SessionManagerNotifier() : super(SessionState());
 
@@ -113,5 +110,5 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
 
 final sessionManagerProvider =
     StateNotifierProvider<SessionManagerNotifier, SessionState>((ref) {
-  return SessionManagerNotifier();
-});
+      return SessionManagerNotifier();
+    });

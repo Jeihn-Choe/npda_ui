@@ -13,9 +13,6 @@ class LoginUseCase {
     }
     logger('USECASE : validation 완료');
 
-    userId = 'test';
-    password = '1234';
-
     return await _repository.login(userId, password);
   }
 }

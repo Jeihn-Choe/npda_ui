@@ -3,10 +3,8 @@ import 'package:npda_ui_flutter/core/providers/usecase_providers.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/usecases/inbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/usecases/request_inbound_work_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart';
-// 🚀 삭제: import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 
-import '../../../../core/network/http/api_provider.dart';
-import '../../data/repositories/request_inbound_work_repository_impl.dart';
+import '../../data/repositories/request_inbound_work_repository_mock.dart';
 import '../../domain/repositories/request_inbound_work_repository.dart';
 import '../../domain/usecases/add_inbound_item_usecase.dart';
 import '../../domain/usecases/add_inbound_item_usecase_impl.dart';
@@ -28,13 +26,13 @@ final requestInboundWorkRepositoryProvider =
     Provider<RequestInboundWorkRepository>((ref) {
       /// 레파지토리에서 통신을 담당하므로
       /// apiService 구독
-      final apiService = ref.watch(apiServiceProvider);
+      // final apiService = ref.watch(apiServiceProvider);
 
       /// apiService 주입해서 레파지토리 구현체 반환 => 이타이밍에 메모리에 구현체가 올라감
-      return RequestInboundWorkRepositoryImpl(apiService);
+      // return RequestInboundWorkRepositoryImpl(apiService);
 
       /// Mock 서버 사용 시
-      // return RequestInboundWorkRepositoryMock();
+      return RequestInboundWorkRepositoryMock();
     });
 
 // RequestInboundWorkUseCase - 구현체 연결 Provider
@@ -74,8 +72,6 @@ final inboundRegistrationListProvider =
 // InboundRegistrationPopupViewModel Provider
 final inboundRegistrationPopupViewModelProvider =
     ChangeNotifierProvider.autoDispose((ref) {
-      // 🚀 삭제: final loginState = ref.watch(loginViewModelProvider);
-      // 🚀 수정: InboundRegistrationPopupViewModel 생성자에 ref 전달
       final popupViewModel = InboundRegistrationPopupViewModel(ref);
       popupViewModel.initialize(); // initialize()는 이제 파라미터 없음
       return popupViewModel;

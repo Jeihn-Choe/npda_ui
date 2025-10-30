@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_screen.dart';
 import 'package:npda_ui_flutter/features/login/presentation/login_screen.dart';
-import 'package:npda_ui_flutter/features/outbound/presentation/outbound_screen.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/outbound_page.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/outbound_1f_page.dart';
 
 import '../../features/splash/presentation/splash_screen.dart';
@@ -14,7 +14,7 @@ import '../state/session_manager.dart';
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
-import 'package:npda_ui_flutter/features/outbound/presentation/outbound_screen_vm.dart';
+import 'package:npda_ui_flutter/features/outbound/presentation/outbound_page_vm.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_mission_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_order_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/outbound_1f_vm.dart';
@@ -33,7 +33,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ref.invalidate(inboundRegistrationListProvider);
       ref.invalidate(inboundViewModelProvider);
       // 출고
-      ref.invalidate(outboundScreenViewModelProvider);
+      ref.invalidate(outboundPageVMProvider);
       ref.invalidate(outboundMissionListProvider);
       ref.invalidate(outboundOrderListProvider);
       // 1층 출고
@@ -93,7 +93,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: '/outbound',
-                builder: (context, state) => OutboundScreen(),
+                builder: (context, state) => OutboundPage(),
               ),
             ],
           ),

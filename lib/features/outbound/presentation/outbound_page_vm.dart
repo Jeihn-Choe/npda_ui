@@ -6,22 +6,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
-// ✨ 1. 최종적으로 정리된 State 클래스
+// 1. State 클래스
 @immutable
-class OutboundScreenState extends Equatable {
+class OutboundPageState extends Equatable {
   final bool showOutboundPopup;
   final String? scannedDataForPopup;
 
-  const OutboundScreenState({
+  const OutboundPageState({ // ✨ 이름 변경
     this.showOutboundPopup = false,
     this.scannedDataForPopup,
   });
 
-  OutboundScreenState copyWith({
+  OutboundPageState copyWith({ // ✨ 이름 변경
     bool? showOutboundPopup,
     String? scannedDataForPopup,
   }) {
-    return OutboundScreenState(
+    return OutboundPageState( // ✨ 이름 변경
       showOutboundPopup: showOutboundPopup ?? this.showOutboundPopup,
       scannedDataForPopup: scannedDataForPopup ?? this.scannedDataForPopup,
     );
@@ -31,11 +31,11 @@ class OutboundScreenState extends Equatable {
   List<Object?> get props => [showOutboundPopup, scannedDataForPopup];
 }
 
-// ✨ 2. 최종적으로 정리된 ViewModel 클래스
-class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
+// 2. ViewModel 클래스
+class OutboundPageVm extends StateNotifier<OutboundPageState> { // ✨ 이름 변경
   final Ref _ref;
 
-  OutboundScreenVm(this._ref) : super(const OutboundScreenState());
+  OutboundPageVm(this._ref) : super(const OutboundPageState()); // ✨ 이름 변경
 
   // 스캔된 데이터 처리/ 팝업 호출 메서드
   void handleScannedData(String scannedData) {
@@ -63,8 +63,8 @@ class OutboundScreenVm extends StateNotifier<OutboundScreenState> {
   }
 }
 
-// ✨ 3. 최종적으로 정리된 Provider
-final outboundScreenViewModelProvider =
-    StateNotifierProvider<OutboundScreenVm, OutboundScreenState>((ref) {
-  return OutboundScreenVm(ref);
+// 3. Provider
+final outboundPageVMProvider =
+    StateNotifierProvider<OutboundPageVm, OutboundPageState>((ref) {
+  return OutboundPageVm(ref);
 });

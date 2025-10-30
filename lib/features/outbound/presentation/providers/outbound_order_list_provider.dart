@@ -2,8 +2,12 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_order_entity.dart';
-import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_order_usecase.dart';
+// ✨ 삭제: UseCase 파일을 직접 import 하지 않음
+// import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_order_usecase.dart';
+// ✨ 추가: dependency_provider 파일을 import
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_dependency_provider.dart';
+
+import '../../domain/usecases/outbound_order_usecase.dart';
 
 // ✨ 1. 상태 클래스에 선택 관련 필드 추가
 class OutboundOrderListState extends Equatable {
@@ -49,14 +53,14 @@ class OutboundOrderListState extends Equatable {
 
   @override
   List<Object?> get props => [
-        orders,
-        isLoading,
-        errorMessage,
-        // ✨ props에 추가
-        selectedOrderNos,
-        isOrderSelectionModeActive,
-        isOrderDeleting,
-      ];
+    orders,
+    isLoading,
+    errorMessage,
+    // ✨ props에 추가
+    selectedOrderNos,
+    isOrderSelectionModeActive,
+    isOrderDeleting,
+  ];
 }
 
 // ✨ 2. Notifier에 선택 관련 로직 추가
@@ -64,7 +68,7 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
   final OutboundOrderUseCase _orderUseCase;
 
   OutboundOrderListNotifier(this._orderUseCase)
-      : super(const OutboundOrderListState());
+    : super(const OutboundOrderListState());
 
   void addOrderToList(OutboundOrderEntity newOrder) {
     state = state.copyWith(orders: [...state.orders, newOrder]);
@@ -119,26 +123,41 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
         selectedOrderNos: {},
       );
       appLogger.d(
-          "OutboundOrderListProvider: ${state.selectedOrderNos.length}개의 주문을 목록에서 제거했습니다.");
+        "OutboundOrderListProvider: ${state.selectedOrderNos.length}개의 주문을 목록에서 제거했습니다.",
+      );
     } catch (e) {
       state = state.copyWith(isOrderDeleting: false);
       appLogger.e("주문 삭제 중 오류 발생", error: e);
     }
   }
 
-  Future<void> requestOutboundOrder() async {
+  // ✨ 변경: 반환 타입을 Future<int>로 수정
+  Future<int> requestOutboundOrder() async {
+    // ✨ 추가: 요청 전, 현재 아이템 개수를 변수에 저장
+    final itemCount = state.orders.length;
+    if (itemCount == 0) {
+      throw Exception('요청할 작업이 없습니다.');
+    }
+
     state = state.copyWith(isLoading: true);
     try {
-      // 🚀 UseCase의 파라미터명 변경 (items -> outboundOrderEntities)
+      // UseCase의 파라미터명 변경 (items -> outboundOrderEntities)
       final result = await _orderUseCase.requestOutboundOrder(
         outboundOrderEntities: state.orders,
       );
 
       if (result.isSuccess) {
+        // ✨ 변경: 성공 시 리스트를 비우고, 저장해둔 아이템 개수를 반환
         clearOrders();
+        return itemCount;
+      } else {
+        // ✨ 변경: result.msg를 result.message로 수정
+        throw Exception(result.message);
       }
     } catch (e) {
       appLogger.e('Error requesting outbound work: $e');
+      // ✨ 변경: 에러를 다시 던져서 UI에서 처리하도록 함
+      rethrow;
     } finally {
       state = state.copyWith(isLoading: false);
     }
@@ -147,8 +166,8 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
 
 final outboundOrderListProvider =
     StateNotifierProvider<OutboundOrderListNotifier, OutboundOrderListState>((
-  ref,
-) {
-  final orderUseCase = ref.watch(outboundOrderUseCaseProvider);
-  return OutboundOrderListNotifier(orderUseCase);
-});
+      ref,
+    ) {
+      final orderUseCase = ref.watch(outboundOrderUseCaseProvider);
+      return OutboundOrderListNotifier(orderUseCase);
+    });

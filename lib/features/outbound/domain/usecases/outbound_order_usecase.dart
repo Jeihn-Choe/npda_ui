@@ -59,7 +59,7 @@ class OutboundOrderUseCase {
         .map(
           (entity) => WorkItem(
             missionType: 1,
-            doNo: entity.doNo!.isNotEmpty ? entity.doNo : entity.savedBinNo,
+            doNo: (entity.doNo != null && entity.doNo!.isNotEmpty) ? entity.doNo : entity.savedBinNo,
             startTime: entity.startTime,
             employeeId: entity.userId,
           ),
@@ -85,7 +85,3 @@ class OutboundOrderUseCase {
     }
   }
 }
-
-final outboundOrderUseCaseProvider = Provider<OutboundOrderUseCase>((ref) {
-  return OutboundOrderUseCase(ref);
-});

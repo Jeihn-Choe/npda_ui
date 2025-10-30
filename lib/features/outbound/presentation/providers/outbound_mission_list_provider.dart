@@ -4,8 +4,8 @@ import 'package:equatable/equatable.dart'; // 🚀 Equatable import 추가
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart'; // 🚀 Logger import 추가
 import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_mission_entity.dart';
-import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_mission_usecase.dart';
 
+import '../../domain/usecases/outbound_mission_usecase.dart';
 import 'outbound_dependency_provider.dart';
 
 // ✨ 1. State 클래스 확장 및 Equatable 상속
@@ -57,14 +57,14 @@ class OutboundMissionListState extends Equatable {
   // ✨ props에 상태 추가
   @override
   List<Object?> get props => [
-        isLoading,
-        errorMessage,
-        missions,
-        selectedMissionNos,
-        selectedMission,
-        isMissionSelectionModeActive,
-        isMissionDeleting,
-      ];
+    isLoading,
+    errorMessage,
+    missions,
+    selectedMissionNos,
+    selectedMission,
+    isMissionSelectionModeActive,
+    isMissionDeleting,
+  ];
 }
 
 // ✨ 2. Notifier에 로직 메소드 추가
@@ -74,7 +74,7 @@ class OutboundMissionListNotifier
   StreamSubscription? _missionSubscription;
 
   OutboundMissionListNotifier(this._missionUseCase)
-      : super(const OutboundMissionListState()) {
+    : super(const OutboundMissionListState()) {
     _listenToMissions();
   }
 
@@ -169,9 +169,12 @@ class OutboundMissionListNotifier
   }
 }
 
-final outboundMissionListProvider = StateNotifierProvider<
-    OutboundMissionListNotifier, OutboundMissionListState>((ref) {
-  final missionUseCase = ref.watch(outboundMissionUseCaseProvider);
+final outboundMissionListProvider =
+    StateNotifierProvider<
+      OutboundMissionListNotifier,
+      OutboundMissionListState
+    >((ref) {
+      final missionUseCase = ref.watch(outboundMissionUseCaseProvider);
 
-  return OutboundMissionListNotifier(missionUseCase);
-});
+      return OutboundMissionListNotifier(missionUseCase);
+    });
