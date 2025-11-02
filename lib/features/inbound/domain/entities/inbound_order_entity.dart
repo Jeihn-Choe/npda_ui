@@ -1,11 +1,11 @@
-class InboundRegistrationItem {
+class InboundOrderEntity {
   final String pltNo;
   final DateTime workStartTime;
   final String selectedRackLevel;
   final String userId;
   final bool isWrapped;
 
-  const InboundRegistrationItem({
+  const InboundOrderEntity({
     required this.pltNo,
     required this.workStartTime,
     required this.selectedRackLevel,
@@ -13,14 +13,14 @@ class InboundRegistrationItem {
     required this.isWrapped,
   });
 
-  InboundRegistrationItem copyWith({
+  InboundOrderEntity copyWith({
     String? pltNo,
     DateTime? workStartTime,
     String? selectedRackLevel,
     String? userId,
     bool? isWrapped,
   }) {
-    return InboundRegistrationItem(
+    return InboundOrderEntity(
       pltNo: pltNo ?? this.pltNo,
       workStartTime: workStartTime ?? this.workStartTime,
       selectedRackLevel: selectedRackLevel ?? this.selectedRackLevel,
@@ -31,6 +31,6 @@ class InboundRegistrationItem {
 
   @override
   String toString() {
-    return 'InboundRegistrationItem(pltNo: $pltNo, workStartTime: $workStartTime, selectedRackLevel: $selectedRackLevel, userId: $userId)';
+    return 'InboundOrderEntity(pltNo: $pltNo, workStartTime: $workStartTime, selectedRackLevel: $selectedRackLevel, userId: $userId)';
   }
 }

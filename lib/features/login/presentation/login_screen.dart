@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
 import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,16 +10,19 @@ class OutboundPageState extends Equatable {
   final bool showOutboundPopup;
   final String? scannedDataForPopup;
 
-  const OutboundPageState({ // ✨ 이름 변경
+  const OutboundPageState({
+    // ✨ 이름 변경
     this.showOutboundPopup = false,
     this.scannedDataForPopup,
   });
 
-  OutboundPageState copyWith({ // ✨ 이름 변경
+  OutboundPageState copyWith({
+    // ✨ 이름 변경
     bool? showOutboundPopup,
     String? scannedDataForPopup,
   }) {
-    return OutboundPageState( // ✨ 이름 변경
+    return OutboundPageState(
+      // ✨ 이름 변경
       showOutboundPopup: showOutboundPopup ?? this.showOutboundPopup,
       scannedDataForPopup: scannedDataForPopup ?? this.scannedDataForPopup,
     );
@@ -32,7 +33,8 @@ class OutboundPageState extends Equatable {
 }
 
 // 2. ViewModel 클래스
-class OutboundPageVm extends StateNotifier<OutboundPageState> { // ✨ 이름 변경
+class OutboundPageVm extends StateNotifier<OutboundPageState> {
+  // ✨ 이름 변경
   final Ref _ref;
 
   OutboundPageVm(this._ref) : super(const OutboundPageState()); // ✨ 이름 변경
@@ -66,5 +68,5 @@ class OutboundPageVm extends StateNotifier<OutboundPageState> { // ✨ 이름 �
 // 3. Provider
 final outboundPageVMProvider =
     StateNotifierProvider<OutboundPageVm, OutboundPageState>((ref) {
-  return OutboundPageVm(ref);
-});
+      return OutboundPageVm(ref);
+    });

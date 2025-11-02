@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
-import '../providers/inbound_providers.dart';
+import '../providers/inbound_order_list_provider.dart';
 
 /// inbound_popup viewmodel에서 관리하는 상태 모음
 class InboundRegistrationPopupViewModel extends ChangeNotifier {
@@ -85,8 +85,8 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
     /// 상태 관리자에 항목 추가 요청
     try {
       await ref
-          .read(inboundRegistrationListProvider.notifier)
-          .addInboundItem(
+          .read(inboundOrderListProvider.notifier)
+          .addInboundOrder(
             pltNo: pltCodeController.text,
             workStartTime: DateTime.parse(workTimeController.text),
             userId: userIdController.text,

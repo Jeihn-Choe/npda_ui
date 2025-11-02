@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
 import 'package:npda_ui_flutter/core/domain/usecases/mqtt_message_router_usecase.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/entities/delete_missions_entity.dart';
 
 import '../entities/outbound_1f_mission_entity.dart';
 
@@ -70,9 +69,8 @@ class Outbound1FMissionUseCase {
 
     try {
       final payload = selectedMissionNos.map((no) => no.toString()).toList();
-      final deleteEntity = DeleteMissionsEntity(subMissionNos: payload);
 
-      await _missionRepository.deleteMissions(deleteEntity);
+      await _missionRepository.deleteMissions(payload);
 
       appLogger.d("[Outbound1F Mission UseCase] 아웃바운드 미션 삭제 성공");
       return Future.value(true);

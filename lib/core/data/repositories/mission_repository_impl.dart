@@ -2,20 +2,20 @@ import 'package:npda_ui_flutter/core/config/app_config.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
 import 'package:npda_ui_flutter/core/network/http/api_service.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/entities/delete_missions_entity.dart';
 
 import '../dtos/delete_missions_dto.dart';
 
-class MissionRepositoryImpl extends MissionRepository {
+class MissionRepositoryImpl implements MissionRepository { // ✨ 변경: extends -> implements
   final ApiService _apiService;
 
   MissionRepositoryImpl(this._apiService);
 
   @override
-  Future<void> deleteMissions(DeleteMissionsEntity entity) async {
+  // ✨ 변경: 파라미터를 List<String>으로 수정
+  Future<void> deleteMissions(List<String> missionNos) async {
     try {
-      /// repository의 책임 : entity --> dto 변환
-      final requestPayload = DeleteMissionsDto(payload: entity.subMissionNos);
+      // ✨ 변경: 파라미터로 받은 missionNos를 사용하여 DTO 생성
+      final requestPayload = DeleteMissionsDto(payload: missionNos);
 
       appLogger.d("[MissionRepositoryImpl] 미션 삭제 요청: $requestPayload");
 
