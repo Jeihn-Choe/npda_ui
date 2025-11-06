@@ -2,6 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/config/app_config.dart';
+import 'package:npda_ui_flutter/features/login/domain/entities/login_result.dart';
+import 'package:npda_ui_flutter/features/login/domain/repositories/login_repository.dart';
+import 'package:npda_ui_flutter/features/login/domain/usecase/login_usecase.dart';
+import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 
 import '../utils/logger.dart';
 
@@ -60,32 +65,63 @@ class SessionState {
 }
 
 class SessionManagerNotifier extends StateNotifier<SessionState> {
+  final LoginUseCase _loginUseCase;
+  final LoginRepository _loginRepository;
   Timer? _sessionTimer;
-  final Duration _sessionTimeout = const Duration(minutes: 30);
+  final Duration _sessionTimeout = const Duration(minutes: 15);
 
-  SessionManagerNotifier() : super(SessionState());
+  SessionManagerNotifier(this._loginUseCase, this._loginRepository)
+    : super(SessionState());
 
-  void login({
-    required String userId,
-    required String userName,
-    required int userCode,
-  }) {
-    state = state.copyWith(
-      status: SessionStatus.loggedIn,
-      userId: userId,
-      userName: userName,
-      userCode: userCode,
-    );
-    startSessionTimer();
+  /// 로그인 로직 수행 (UseCase 호출 포함)
+  Future<LoginResult> login(String userId, String password) async {
+    // UseCase 호출
+    final result = await _loginUseCase(userId, password);
+
+    if (result.isSuccess) {
+      // 세션 상태 업데이트
+      state = state.copyWith(
+        status: SessionStatus.loggedIn,
+        userId: result.userId!,
+        userName: result.userName!,
+        userCode: result.userCode!,
+      );
+      startSessionTimer();
+      appLogger.i('로그인 성공: ${result.userId}');
+    } else {
+      appLogger.w('로그인 실패: ${result.message}');
+    }
+
+    return result;
   }
 
-  void logout() {
+  /// 로그아웃 (서버에 로그아웃 알림)
+  Future<void> logout() async {
+    final userId = state.userId;
+
+    // 서버에 로그아웃 요청
+    if (userId != null && userId.isNotEmpty) {
+      await _loginRepository.logout(userId, 'logout', ApiConfig.logoutEndpoint);
+    }
+
     _sessionTimer?.cancel();
     state = SessionState(status: SessionStatus.loggedOut);
     appLogger.d('로그아웃 완료');
   }
 
-  void _expireSession() {
+  /// 세션 만료 (서버에 만료 알림)
+  Future<void> _expireSession() async {
+    final userId = state.userId;
+
+    // 서버에 세션 만료 알림
+    if (userId != null && userId.isNotEmpty) {
+      await _loginRepository.logout(
+        userId,
+        'sessionExpired',
+        ApiConfig.sessionExpiredEndpoint,
+      );
+    }
+
     _sessionTimer?.cancel();
     state = state.copyWith(status: SessionStatus.expired);
     appLogger.d('세션 타임아웃 / 상태 expired로 변경');
@@ -108,7 +144,16 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
   }
 }
 
+// ============================================================
+// SessionManager Provider
+// - LoginUseCase를 주입받아 로그인 로직 관리
+// - LoginRepository를 주입받아 로그아웃 처리
+// ============================================================
 final sessionManagerProvider =
     StateNotifierProvider<SessionManagerNotifier, SessionState>((ref) {
-      return SessionManagerNotifier();
+      // LoginUseCase를 주입받아 SessionManager 생성
+      // loginUseCaseProvider는 features/login/presentation/providers/login_providers.dart에 정의됨
+      final loginUseCase = ref.watch(loginUseCaseProvider);
+      final loginRepository = ref.watch(loginRepositoryProvider);
+      return SessionManagerNotifier(loginUseCase, loginRepository);
     });

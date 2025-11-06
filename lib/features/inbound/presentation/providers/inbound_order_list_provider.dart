@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_order_entity.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 
@@ -48,7 +47,6 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
     required String? selectedRackLevel,
   }) async {
     try {
-      logger('addInboundOrder 메서드 호출됨');
       if (pltNo == null || pltNo.isEmpty) throw ArgumentError('PltNo 누락');
       if (workStartTime == null) throw ArgumentError('WorkStartTime 누락');
       if (userId == null || userId.isEmpty) throw ArgumentError('UserId 누락');
@@ -70,7 +68,6 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
       final newOrderList = [...state.orders, newItem];
       state = state.copyWith(orders: newOrderList);
     } catch (e) {
-      logger('Error adding inbound order: $e');
       rethrow;
     }
   }
@@ -111,7 +108,6 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
         throw Exception(response.msg ?? '알 수 없는 오류가 발생했습니다.');
       }
     } catch (e) {
-      logger('Error requesting inbound work: $e');
       rethrow;
     } finally {
       state = state.copyWith(isLoading: false);

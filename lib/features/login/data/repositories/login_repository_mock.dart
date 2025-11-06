@@ -25,4 +25,10 @@ class LoginRepositoryMock implements LoginRepository {
       return LoginResult.failure('Mock: 아이디 또는 비밀번호가 일치하지 않습니다.');
     }
   }
+
+  @override
+  Future<bool> logout(String userId, String sessionExpired, String endpoint) {
+    // TODO: implement logout
+    throw UnimplementedError();
+  }
 }

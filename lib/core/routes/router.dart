@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-// 🚀 추가: 초기화할 Provider들을 import
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_page.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_order_list_provider.dart';

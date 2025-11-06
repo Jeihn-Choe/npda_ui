@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../providers/inbound_order_list_provider.dart';
 
@@ -75,10 +74,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
 
   /// 저장 로직 => 리스트에 담아서 상태 관리해야함 : inbound screen에서 상태에 접근해서 목록 드로잉
   Future<void> saveInboundRegistration(WidgetRef ref) async {
-    logger('saveInboundRegistration 호출됨');
-
     if (!isFormValid()) {
-      logger('폼이 유효하지 않음');
       return;
     }
 
@@ -92,17 +88,13 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
             userId: userIdController.text,
             selectedRackLevel: _selectedRackLevel,
           );
-      logger('입고 등록 항목이 성공적으로 추가됨');
 
       pltCodeController.clear();
       _selectedRackLevel = null;
       final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
       workTimeController.text = currentTime.toString().substring(0, 19);
       notifyListeners();
-
-      logger('폼 초기화 완료');
     } catch (e) {
-      logger('입고 등록 항목 추가 중 오류 발생: $e');
       // 에러 처리 (예: 사용자에게 오류 메시지 표시)
     }
   }

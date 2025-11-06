@@ -7,11 +7,11 @@ import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outb
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_order_list_provider.dart';
 
 import '../../../core/constants/colors.dart';
+import '../../../core/state/session_manager.dart';
 import '../../../presentation/main_shell.dart';
 import '../../../presentation/widgets/form_card_layout.dart';
 import '../../../presentation/widgets/info_field_widget.dart';
 import 'outbound_1f_vm.dart';
-import '../../../core/state/session_manager.dart';
 
 class Outbound1FPage extends ConsumerStatefulWidget {
   const Outbound1FPage({super.key});
@@ -506,12 +506,9 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
           fontWeight: FontWeight.bold,
           color: Colors.black,
         ),
-        dataTextStyle: const TextStyle(
-          fontSize: 12,
-          color: Colors.black87,
-        ),
+        dataTextStyle: const TextStyle(fontSize: 12, color: Colors.black87),
         columns: const [
-          DataColumn(label: Text('No.')),
+          // DataColumn(label: Text('No.')),
           DataColumn(label: Text('PltNo.')),
           DataColumn(label: Text('출발지')),
           DataColumn(label: Text('목적지')),
@@ -558,7 +555,7 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
               }
             },
             cells: [
-              buildTappableCell(Text(mission.subMissionNo.toString())),
+              // buildTappableCell(Text(mission.subMissionNo.toString())),
               buildTappableCell(Text(mission.pltNo)),
               buildTappableCell(Text(mission.sourceBin)),
               buildTappableCell(Text(mission.destinationBin)),

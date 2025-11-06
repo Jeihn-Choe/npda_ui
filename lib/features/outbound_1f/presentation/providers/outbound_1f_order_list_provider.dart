@@ -138,7 +138,6 @@ class Outbound1FOrderListNotifier
         clearOrders();
       }
     } catch (e) {
-      logger('Error requesting outbound 1F work: $e');
     } finally {
       state = state.copyWith(isLoading: false);
     }

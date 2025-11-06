@@ -28,13 +28,14 @@ class InboundMissionEntity {
       missionNo: sm.missionNo,
       subMissionNo: sm.subMissionNo,
       missionType: sm.missionType,
-      pltNo: sm.pltNo,
+      pltNo: sm.huId,
+      // SmEntity는 pltNo 대신 huId를 사용
       startTime: sm.startTime,
       targetRackLevel: sm.targetRackLevel,
       sourceBin: sm.sourceBin,
       destinationBin: sm.destinationBin,
       isWrapped: sm.isWrapped,
-      subMissionStatus: sm.subMissionStatus,
+      subMissionStatus: sm.subMissionStatus ?? 0, // null일 수 있으므로 기본값 설정
     );
   }
 }

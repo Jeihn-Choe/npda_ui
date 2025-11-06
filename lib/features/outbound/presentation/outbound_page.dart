@@ -123,7 +123,6 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
 
                       if (!currentOutboundState.showOutboundPopup) {
                         FocusScope.of(context).requestFocus(_scannerFocusNode);
-                        logger("포커스 다시 가져옴");
                       }
                     },
                   ),
@@ -623,7 +622,7 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         color: Colors.black87,
                       ),
                       columns: const [
-                        DataColumn(label: Text('No.')),
+                        // DataColumn(label: Text('No.')),
                         DataColumn(label: Text('PltNo.')),
                         DataColumn(label: Text('출발지')),
                         DataColumn(label: Text('목적지')),
@@ -690,11 +689,11 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                               : null,
 
                           cells: [
+                            // buildTappableCell(
+                            //   Text(mission.missionNo.toString()),
+                            // ),
                             buildTappableCell(
-                              Text(mission.missionNo.toString()),
-                            ),
-                            buildTappableCell(
-                              Text(mission.doNo ?? mission.sourceBin ?? "-"),
+                              Text(mission.pltNo ?? mission.sourceBin ?? "-"),
                             ),
                             buildTappableCell(Text(mission.sourceBin)),
                             buildTappableCell(Text(mission.destinationBin)),

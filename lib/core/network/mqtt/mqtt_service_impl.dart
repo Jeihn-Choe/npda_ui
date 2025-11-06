@@ -45,21 +45,14 @@ class MqttServiceImpl implements MqttService {
   // }
 
   void _onDisconnected() {
-    logger('MQTT::Client Disconnected');
     _connectionStateController.add(MqttState.disconnected);
   }
 
-  void _onSubscribed(String topic) {
-    logger('MQTT::Subscription confirmed for topic $topic');
-  }
+  void _onSubscribed(String topic) {}
 
-  void _onUnsubscribed(String? topic) {
-    logger('MQTT::Unsubscribed from topic $topic');
-  }
+  void _onUnsubscribed(String? topic) {}
 
-  void _onSubscribeFail(String topic) {
-    logger('MQTT::Failed to subscribe $topic');
-  }
+  void _onSubscribeFail(String topic) {}
 
   void _pong() {
     appLogger.d('MQTT::Ping response client callback invoked');
@@ -107,25 +100,20 @@ class MqttServiceImpl implements MqttService {
   Future<void> connect() async {
     _connectionStateController.add(MqttState.connecting);
     try {
-      logger("MQTT::Connecting to MQTT broker...");
       await _client.connect();
     } on NoConnectionException catch (e) {
-      logger('MQTT::Client exception - $e');
       _client.disconnect();
       _connectionStateController.add(MqttState.error);
     } on SocketException catch (e) {
-      logger('MQTT::Socket exception - $e');
       _client.disconnect();
       _connectionStateController.add(MqttState.error);
     } catch (e) {
-      logger('MQTT::Unexpected exception - $e');
       _client.disconnect();
       _connectionStateController.add(MqttState.error);
     }
 
     // 연결 상태 확인
     if (_client.connectionStatus!.state == MqttConnectionState.connected) {
-      logger("MQTT::Connected to MQTT broker");
       _connectionStateController.add(MqttState.connected);
 
       // 연결 성공 후 message stream 리스너 설정 및 토픽 구독
@@ -134,9 +122,6 @@ class MqttServiceImpl implements MqttService {
         subscribe(topic);
       }
     } else {
-      logger(
-        "MQTT::ERROR: MQTT client connection failed - disconnecting, status is ${_client.connectionStatus}",
-      );
       _client.disconnect();
       _connectionStateController.add(MqttState.error);
     }
@@ -147,12 +132,8 @@ class MqttServiceImpl implements MqttService {
 
   @override
   void subscribe(String topic) {
-    logger("MQTT::Subscribing to topic $topic");
-
     if (_client.connectionStatus!.state == MqttConnectionState.connected) {
       _client.subscribe(topic, MqttQos.atMostOnce);
-    } else {
-      logger("MQTT::Cannot subscribe, client not connected");
     }
   }
 
@@ -168,8 +149,6 @@ class MqttServiceImpl implements MqttService {
       // appLogger.d("MQTT::메시지 퍼블리싱 [topic : $topic] [Msg : $message]");
 
       _client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
-    } else {
-      logger("MQTT:: 발행 실패");
-    }
+    } else {}
   }
 }

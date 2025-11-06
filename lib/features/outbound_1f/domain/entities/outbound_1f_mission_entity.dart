@@ -28,7 +28,7 @@ class Outbound1FMissionEntity {
     return Outbound1FMissionEntity(
       missionNo: smEntity.missionNo,
       subMissionNo: smEntity.subMissionNo,
-      pltNo: smEntity.pltNo,
+      pltNo: smEntity.huId,
       sourceBin: smEntity.sourceBin,
       destinationBin: smEntity.destinationBin,
       subMissionStatus: smEntity.subMissionStatus,

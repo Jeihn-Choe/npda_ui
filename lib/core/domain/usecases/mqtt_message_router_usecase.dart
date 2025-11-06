@@ -43,19 +43,19 @@ class MqttMessageRouterUseCase {
           }
 
           break;
-        case 'SB':
-          try {
-            final sbEntities = _parseSbPayload(message.payload);
-            appLogger.d("파싱된 SB 엔티티 개수: ${sbEntities.length}");
-            _sbStreamController.add(sbEntities);
-          } catch (e) {
-            appLogger.e("SB 페이로드 파싱 오류: $e");
-          }
-
-          break;
-        default:
-          appLogger.d("정의되지 않은 cmdId : ${message.cmdId}");
-          break;
+        // case 'SB':
+        //   try {
+        //     final sbEntities = _parseSbPayload(message.payload);
+        //     appLogger.d("파싱된 SB 엔티티 개수: ${sbEntities.length}");
+        //     _sbStreamController.add(sbEntities);
+        //   } catch (e) {
+        //     appLogger.e("SB 페이로드 파싱 오류: $e");
+        //   }
+        //
+        //   break;
+        // default:
+        //   appLogger.d("정의되지 않은 cmdId : ${message.cmdId}");
+        //   break;
       }
     });
   }

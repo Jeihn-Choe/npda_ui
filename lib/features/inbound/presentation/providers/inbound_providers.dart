@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
+import 'package:npda_ui_flutter/core/providers/usecase_providers.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/usecases/inbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart';
 
@@ -28,17 +29,20 @@ final inboundRegistrationPopupViewModelProvider =
 
 /// UseCase
 final inboundMissionUseCaseProvider = Provider<InboundMissionUseCase>((ref) {
-  final useCase = InboundMissionUseCase(ref);
+  final mqttMessageRouterUseCase = ref.watch(mqttMessageRouterUseCaseProvider);
+  final missionRepository = ref.watch(missionRepositoryProvider);
 
-  // 3. MQTT 메시지 스트림에 대한 리스닝을 시작합니다.
+  final useCase = InboundMissionUseCase(
+    mqttMessageRouterUseCase,
+    missionRepository,
+  );
+
   useCase.startListening();
 
-  // 4. 프로바이더가 소멸될 때 useCase의 리소스를 해제하도록 설정합니다.
   ref.onDispose(() {
     useCase.dispose();
   });
 
-  // 5. 생성된 useCase 인스턴스를 반환합니다.
   return useCase;
 });
 

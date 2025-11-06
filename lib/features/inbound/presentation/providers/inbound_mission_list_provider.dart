@@ -1,11 +1,11 @@
 import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_mission_entity.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/usecases/inbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
+import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_mission_entity.dart';
+import 'package:npda_ui_flutter/features/inbound/domain/usecases/inbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 
 // 1. State 클래스
@@ -51,18 +51,19 @@ class InboundMissionListState extends Equatable {
 
   @override
   List<Object?> get props => [
-        missions,
-        isLoading,
-        errorMessage,
-        selectedMissionNos,
-        selectedMission,
-        isSelectionModeActive,
-        isDeleting
-      ];
+    missions,
+    isLoading,
+    errorMessage,
+    selectedMissionNos,
+    selectedMission,
+    isSelectionModeActive,
+    isDeleting,
+  ];
 }
 
 // 2. Notifier 클래스
-class InboundMissionListNotifier extends StateNotifier<InboundMissionListState> {
+class InboundMissionListNotifier
+    extends StateNotifier<InboundMissionListState> {
   final InboundMissionUseCase _getInboundMissionsUseCase;
   final MissionRepository _missionRepository;
   StreamSubscription? _missionSubscription;
@@ -70,30 +71,34 @@ class InboundMissionListNotifier extends StateNotifier<InboundMissionListState> 
   InboundMissionListNotifier({
     required InboundMissionUseCase getInboundMissionsUseCase,
     required MissionRepository missionRepository,
-  })  : _getInboundMissionsUseCase = getInboundMissionsUseCase,
-        _missionRepository = missionRepository,
-        super(const InboundMissionListState()) {
+  }) : _getInboundMissionsUseCase = getInboundMissionsUseCase,
+       _missionRepository = missionRepository,
+       super(const InboundMissionListState()) {
     _listenToInboundMissions();
   }
 
   void _listenToInboundMissions() {
     state = state.copyWith(isLoading: true);
-    _missionSubscription = _getInboundMissionsUseCase.inboundMissionStream.listen(
-      (missions) {
-        state = state.copyWith(
-          missions: missions,
-          isLoading: false,
-          errorMessage: null,
+
+    _getInboundMissionsUseCase.startListening();
+
+    _missionSubscription = _getInboundMissionsUseCase.inboundMissionStream
+        .listen(
+          (missions) {
+            state = state.copyWith(
+              missions: missions,
+              isLoading: false,
+              errorMessage: null,
+            );
+          },
+          onError: (error) {
+            state = state.copyWith(
+              errorMessage: error.toString(),
+              isLoading: false,
+              missions: [],
+            );
+          },
         );
-      },
-      onError: (error) {
-        state = state.copyWith(
-          errorMessage: error.toString(),
-          isLoading: false,
-          missions: [],
-        );
-      },
-    );
   }
 
   void selectMission(InboundMissionEntity mission) {
@@ -134,7 +139,9 @@ class InboundMissionListNotifier extends StateNotifier<InboundMissionListState> 
     }
     state = state.copyWith(isDeleting: true);
     try {
-      final List<String> missionNosToDelete = state.selectedMissionNos.map((e) => e.toString()).toList();
+      final List<String> missionNosToDelete = state.selectedMissionNos
+          .map((e) => e.toString())
+          .toList();
       await _missionRepository.deleteMissions(missionNosToDelete);
       state = state.copyWith(
         isDeleting: false,
@@ -144,7 +151,6 @@ class InboundMissionListNotifier extends StateNotifier<InboundMissionListState> 
       );
       return true;
     } catch (e) {
-      logger("미션 삭제 중 오류 발생: $e");
       state = state.copyWith(
         isDeleting: false,
         errorMessage: "미션 삭제 중 오류가 발생했습니다: $e",
@@ -162,11 +168,15 @@ class InboundMissionListNotifier extends StateNotifier<InboundMissionListState> 
 
 // 3. Provider
 final inboundMissionListProvider =
-    StateNotifierProvider<InboundMissionListNotifier, InboundMissionListState>((ref) {
-  final getInboundMissionsUseCase = ref.watch(inboundMissionUseCaseProvider);
-  final missionRepository = ref.watch(missionRepositoryProvider);
-  return InboundMissionListNotifier(
-    getInboundMissionsUseCase: getInboundMissionsUseCase,
-    missionRepository: missionRepository,
-  );
-});
+    StateNotifierProvider<InboundMissionListNotifier, InboundMissionListState>((
+      ref,
+    ) {
+      final getInboundMissionsUseCase = ref.watch(
+        inboundMissionUseCaseProvider,
+      );
+      final missionRepository = ref.watch(missionRepositoryProvider);
+      return InboundMissionListNotifier(
+        getInboundMissionsUseCase: getInboundMissionsUseCase,
+        missionRepository: missionRepository,
+      );
+    });

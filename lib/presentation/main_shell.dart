@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
+import 'package:npda_ui_flutter/core/routes/router.dart';
 // 🚀 삭제: import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 // 🚀 추가: SessionManagerNotifier import
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
-import 'package:npda_ui_flutter/core/routes/router.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../core/state/scanner_viewmodel.dart';
 
@@ -174,10 +173,6 @@ class _MainShellState extends ConsumerState<MainShell> {
                             ref
                                 .read(scannerViewModelProvider.notifier)
                                 .toggleScannerMode();
-
-                            logger(
-                              "스캐너모드 토글상태 : ${ref.read(scannerViewModelProvider)}",
-                            );
                           },
                         ),
                       ),

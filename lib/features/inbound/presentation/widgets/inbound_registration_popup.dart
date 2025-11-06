@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../../../../presentation/widgets/form_field_widget.dart';
 import '../providers/inbound_providers.dart';
@@ -71,8 +70,6 @@ class _InboundRegistrationPopupState
         ),
         ElevatedButton(
           onPressed: () async {
-            logger('저장 버튼 클릭됨');
-
             try {
               await viewModel.saveInboundRegistration(ref);
 
@@ -83,8 +80,6 @@ class _InboundRegistrationPopupState
             } catch (e) {
               // 에러 발생 시 다이얼로그로 알림
               if (mounted) {
-                logger(e.toString());
-
                 showDialog(
                   context: context,
                   builder: (context) => AlertDialog(

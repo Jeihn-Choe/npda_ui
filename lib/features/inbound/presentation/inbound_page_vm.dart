@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 // 1. State 클래스 (UI 상태만 남김)
 class InboundPageState extends Equatable {
@@ -34,7 +33,6 @@ class InboundPageVm extends StateNotifier<InboundPageState> {
   InboundPageVm(this._ref) : super(const InboundPageState());
 
   void handleScannedData(String scannedData) {
-    logger("인바운드 viewmodel handleScannedData 호출: $scannedData");
     final isScannerModeActive = _ref.read(scannerViewModelProvider);
     if (isScannerModeActive) {
       state = state.copyWith(

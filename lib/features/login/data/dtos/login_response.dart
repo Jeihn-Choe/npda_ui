@@ -1,35 +1,63 @@
-import 'package:npda_ui_flutter/core/utils/logger.dart';
-
 class LoginResponseDTO {
-  final String status;
+  final String cmdId;
   final String userId;
-  final String userName;
-  // 🚀 추가: userCode 필드
-  final int userCode;
+  final String name;
+  final int code;
   final String result;
   final String msg;
 
   LoginResponseDTO({
-    required this.status,
+    required this.cmdId,
     required this.userId,
-    required this.userName,
-    // 🚀 추가: userCode 필드
-    required this.userCode,
+    required this.name,
+    required this.code,
     required this.result,
     required this.msg,
   });
 
   factory LoginResponseDTO.fromJson(Map<String, dynamic> json) {
-    logger("============== login Json 변환중==============");
-
     return LoginResponseDTO(
-      status: json['status'] as String,
-      userId: json['userId'] as String,
-      userName: json['userName'] as String,
-      // 🚀 추가: userCode 파싱
-      userCode: json['userCode'] as int,
-      result: json['result'] as String,
-      msg: json['msg'] as String,
+      // null-safe 파싱: 대소문자 두 가지 모두 시도
+      cmdId: json['cmdId']?.toString() ?? json['CmdId']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? json['UserId']?.toString() ?? '',
+      name: json['name']?.toString() ?? json['Name']?.toString() ?? '',
+      
+      // code: int 파싱 (기본값: 1 = guest)
+      code: _parseCode(json['code'] ?? json['Code']),
+      
+      // result: String 파싱 (기본값: 'F' = 실패)
+      result: json['result']?.toString() ?? json['Result']?.toString() ?? 'F',
+      
+      // msg: String 파싱 (기본값: 빈 문자열)
+      msg: json['msg']?.toString() ?? json['Msg']?.toString() ?? '',
     );
+  }
+  
+  /// code 필드를 안전하게 int로 변환
+  static int _parseCode(dynamic value) {
+    if (value == null) return 1; // 기본값: guest
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 1;
+    return 1;
+  }
+  
+  /// 성공 여부 판단 (result가 'S' 또는 '0'이면 성공)
+  bool get isSuccess => result == 'S' || result == '0';
+  
+  /// 관리자 여부 (code가 0이면 관리자)
+  bool get isAdmin => code == 0;
+  
+  @override
+  String toString() {
+    return 'LoginResponseDTO('
+        'cmdId: $cmdId, '
+        'userId: $userId, '
+        'name: $name, '
+        'code: $code, '
+        'result: $result, '
+        'msg: $msg, '
+        'isSuccess: $isSuccess, '
+        'isAdmin: $isAdmin'
+        ')';
   }
 }
