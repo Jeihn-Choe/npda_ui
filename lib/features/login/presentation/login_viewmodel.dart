@@ -10,8 +10,8 @@ class LoginViewModel extends StateNotifier<LoginState> {
   final SessionManagerNotifier _sessionManager;
 
   /// controller 선언해줌.
-  final TextEditingController _userIdController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _userIdController = TextEditingController(text: 'test');
+  final TextEditingController _passwordController = TextEditingController(text: '1234');
 
   LoginViewModel(this._sessionManager) : super(LoginState());
 

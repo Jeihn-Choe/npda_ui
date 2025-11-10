@@ -34,7 +34,7 @@ class Outbound1FMissionEntity {
       subMissionStatus: smEntity.subMissionStatus,
       startTime: smEntity.startTime,
       missionType: smEntity.missionType,
-      isWrapped: smEntity.isWrapped,
+      isWrapped: smEntity.isWrapped ?? false,
     );
   }
 }

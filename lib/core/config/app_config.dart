@@ -1,5 +1,5 @@
 class ApiConfig {
-  static const String baseUrl = "http://192.168.191.217:5000/api";
+  static const String baseUrl = "http://10.30.248.185:5000/api";
 
   // test
   static const String test = "/users";
@@ -18,7 +18,7 @@ class ApiConfig {
 }
 
 class MqttConfig {
-  static const String broker = "192.168.191.217";
+  static const String broker = "10.30.248.185";
   static const int port = 1883;
   static const String clientId = "npda_client_flutter";
 

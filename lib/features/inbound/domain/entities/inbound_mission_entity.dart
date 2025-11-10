@@ -9,6 +9,7 @@ class InboundMissionEntity {
   final String destinationBin;
   final bool isWrapped;
   final int subMissionStatus;
+  final String robotName;
 
   InboundMissionEntity({
     required this.missionNo,
@@ -21,6 +22,7 @@ class InboundMissionEntity {
     required this.destinationBin,
     required this.isWrapped,
     required this.subMissionStatus,
+    required this.robotName,
   });
 
   factory InboundMissionEntity.fromSmEntity(sm) {
@@ -35,7 +37,9 @@ class InboundMissionEntity {
       sourceBin: sm.sourceBin,
       destinationBin: sm.destinationBin,
       isWrapped: sm.isWrapped,
-      subMissionStatus: sm.subMissionStatus ?? 0, // null일 수 있으므로 기본값 설정
+      subMissionStatus: sm.subMissionStatus ?? 0,
+      // null일 수 있으므로 기본값 설정
+      robotName: sm.robotName ?? '', // null일 수 있으므로 기본값 설정
     );
   }
 }

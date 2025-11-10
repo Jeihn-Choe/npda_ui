@@ -14,13 +14,17 @@ class Outbound1FPopup extends ConsumerStatefulWidget {
 }
 
 class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
+  // TODO: 스캔 기능을 위해 컴트롤러 유지
   late final TextEditingController _doNoController;
   late final TextEditingController _savedBinNoController;
   late final TextEditingController _startTimeController;
   late final TextEditingController _userIdController;
+  late final TextEditingController _quantityController;
 
+  // TODO: 스캔 기능을 위해 리스너 유지
   late final VoidCallback _doNoListener;
   late final VoidCallback _savedBinNoListener;
+  late final VoidCallback _quantityListener;
 
   @override
   void initState() {
@@ -30,25 +34,38 @@ class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
     _savedBinNoController = TextEditingController();
     _startTimeController = TextEditingController();
     _userIdController = TextEditingController();
+    _quantityController = TextEditingController(text: '1');
 
-    _doNoListener = () {
-      if (ref.read(outbound1FPopupVMProvider).doNo != _doNoController.text) {
+    // TODO: 스캔 기능이 추가될 때 주석 해제
+    // _doNoListener = () {
+    //   if (ref.read(outbound1FPopupVMProvider).sourceArea != _doNoController.text) {
+    //     ref
+    //         .read(outbound1FPopupVMProvider.notifier)
+    //         .onSourceAreaChanged(_doNoController.text);
+    //   }
+    // };
+    // _savedBinNoListener = () {
+    //   if (ref.read(outbound1FPopupVMProvider).destinationArea !=
+    //       _savedBinNoController.text) {
+    //     ref
+    //         .read(outbound1FPopupVMProvider.notifier)
+    //         .onDestinationAreaChanged(_savedBinNoController.text);
+    //   }
+    // };
+
+    // 수량 입력 리스너
+    _quantityListener = () {
+      final quantity = int.tryParse(_quantityController.text) ?? 1;
+      if (ref.read(outbound1FPopupVMProvider).quantity != quantity) {
         ref
             .read(outbound1FPopupVMProvider.notifier)
-            .onDoNoChanged(_doNoController.text);
-      }
-    };
-    _savedBinNoListener = () {
-      if (ref.read(outbound1FPopupVMProvider).savedBinNo !=
-          _savedBinNoController.text) {
-        ref
-            .read(outbound1FPopupVMProvider.notifier)
-            .onSavedBinNoChanged(_savedBinNoController.text);
+            .onQuantityChanged(quantity);
       }
     };
 
-    _doNoController.addListener(_doNoListener);
-    _savedBinNoController.addListener(_savedBinNoListener);
+    // _doNoController.addListener(_doNoListener);
+    // _savedBinNoController.addListener(_savedBinNoListener);
+    _quantityController.addListener(_quantityListener);
 
     Future.microtask(
       () => ref
@@ -59,31 +76,42 @@ class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
 
   @override
   void dispose() {
-    _doNoController.removeListener(_doNoListener);
-    _savedBinNoController.removeListener(_savedBinNoListener);
+    // TODO: 스캔 기능이 추가될 때 주석 해제
+    // _doNoController.removeListener(_doNoListener);
+    // _savedBinNoController.removeListener(_savedBinNoListener);
+    _quantityController.removeListener(_quantityListener);
 
     _doNoController.dispose();
     _savedBinNoController.dispose();
     _startTimeController.dispose();
     _userIdController.dispose();
+    _quantityController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<Outbound1FPopupState>(outbound1FPopupVMProvider, (previous, next) {
-      if (next.doNo != _doNoController.text) {
-        _doNoController.text = next.doNo;
-      }
-      if (next.savedBinNo != _savedBinNoController.text) {
-        _savedBinNoController.text = next.savedBinNo;
-      }
+    ref.listen<Outbound1FPopupState>(outbound1FPopupVMProvider, (
+      previous,
+      next,
+    ) {
+      // TODO: 스캔 기능이 추가될 때 주석 해제
+      // if (next.startArea != _doNoController.text) {
+      //   _doNoController.text = next.startArea;
+      // }
+      // if (next.destinationArea != _savedBinNoController.text) {
+      //   _savedBinNoController.text = next.destinationArea;
+      // }
+
       final formattedTime = next.startTime?.toString().substring(0, 19) ?? '';
       if (formattedTime != _startTimeController.text) {
         _startTimeController.text = formattedTime;
       }
       if (next.userId != null && next.userId != _userIdController.text) {
         _userIdController.text = next.userId!;
+      }
+      if (next.quantity.toString() != _quantityController.text) {
+        _quantityController.text = next.quantity.toString();
       }
       if (next.error != null && next.error != previous?.error) {
         ScaffoldMessenger.of(context)
@@ -148,20 +176,46 @@ class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
   }
 
   Widget _buildFormFields() {
+    final state = ref.watch(outbound1FPopupVMProvider);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        FormFieldWidget(
-          controller: _doNoController,
-          label: 'DO No.',
-          hintText: 'DO No.를 입력하거나 스캔하세요.',
+        // 출발지역 드롭다운
+        _buildDropdownField(
+          label: '출발지역',
+          value: state.sourceArea.isEmpty ? null : state.sourceArea,
+          items: state.availableSourceAreas,
+          onChanged: (value) {
+            if (value != null) {
+              ref
+                  .read(outbound1FPopupVMProvider.notifier)
+                  .onSourceAreaChanged(value);
+            }
+          },
         ),
         const SizedBox(height: 12),
+        // 목적지역 드롭다운
+        _buildDropdownField(
+          label: '목적지역',
+          value: state.destinationArea.isEmpty ? null : state.destinationArea,
+          items: state.availableDestinationAreas,
+          onChanged: (value) {
+            if (value != null) {
+              ref
+                  .read(outbound1FPopupVMProvider.notifier)
+                  .onDestinationAreaChanged(value);
+            }
+          },
+        ),
+        const SizedBox(height: 12),
+        // 수량 입력
         FormFieldWidget(
-          controller: _savedBinNoController,
-          label: '저장빈',
-          hintText: '저장빈을 입력하거나 스캔하세요.',
+          controller: _quantityController,
+          label: '수량',
+          hintText: '이동할 수량을 입력하세요',
+          keyboardType: TextInputType.number,
         ),
         const SizedBox(height: 12),
         FormFieldWidget(
@@ -174,6 +228,47 @@ class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
           controller: _userIdController,
           label: '사번',
           enabled: false,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required String? value,
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: value,
+              hint: Text('${label}을 선택하세요'),
+              isExpanded: true,
+              items: items.map((String item) {
+                return DropdownMenuItem<String>(value: item, child: Text(item));
+              }).toList(),
+              onChanged: onChanged,
+            ),
+          ),
         ),
       ],
     );

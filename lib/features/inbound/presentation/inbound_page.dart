@@ -194,6 +194,10 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
                                 foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
                               ),
                               child: missionState.isDeleting
                                   ? const CircularProgressIndicator(
@@ -214,6 +218,10 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.orange,
                                 foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 10,
+                                ),
                               ),
                               child: Text(
                                 '요청 항목 삭제 (${selectedOrderPltNos.length})',
@@ -231,6 +239,10 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.lightBlueAccent,
                               foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                             ),
                             child: const Text('취소'),
                           ),
@@ -244,6 +256,10 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                             ),
                             child: const Text('삭제'),
                           ),
@@ -308,6 +324,10 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.celltrionGreen,
                               foregroundColor: AppColors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8),
                               ),
@@ -324,12 +344,18 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade500,
                               foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 10,
+                              ),
                             ),
                             child: const Text('생성'),
                           ),
                         ],
                       ),
               ),
+
+              /// ------------ 입고 요청 리스트 --------------
               const SizedBox(height: 4),
               if (inboundOrderItems.isNotEmpty)
                 Container(
@@ -375,9 +401,9 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                           color: Colors.black87,
                         ),
                         columns: const [
-                          DataColumn(label: Text('PLT No.')),
-                          DataColumn(label: Text('제품랙단수')),
-                          DataColumn(label: Text('요청시간')),
+                          DataColumn(label: Center(child: Text('HU ID'))),
+                          DataColumn(label: Center(child: Text('제품랙단수'))),
+                          DataColumn(label: Center(child: Text('최종위치'))),
                         ],
                         rows: inboundOrderItems.map((item) {
                           DataCell buildTappableCellForRegistration(
@@ -414,14 +440,17 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                                 : null,
                             cells: [
                               buildTappableCellForRegistration(
-                                Text(item.pltNo),
+                                Center(child: Text(item.pltNo)),
                               ),
                               buildTappableCellForRegistration(
-                                Text(item.selectedRackLevel),
+                                Center(child: Text(item.selectedRackLevel)),
                               ),
                               buildTappableCellForRegistration(
-                                Text(formatter.format(item.workStartTime)),
+                                Center(child: Text(item.destinationArea ?? '')),
                               ),
+                              // buildTappableCellForRegistration(
+                              //   Text(formatter.format(item.workStartTime)),
+                              // ),
                             ],
                           );
                         }).toList(),
@@ -470,6 +499,37 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                 ),
               ),
               const SizedBox(height: 8),
+              const SizedBox(height: 8),
+              Builder(
+                builder: (context) {
+                  final missionTypeZeroCount = inboundMissions
+                      .where((m) => m.missionType == 0)
+                      .length;
+
+                  return RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: const TextStyle(
+                        // 기본 스타일 (검정, 15, bold)
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87, // 기본 색상 지정
+                      ),
+                      children: <TextSpan>[
+                        const TextSpan(text: '입고 미션 List '), // 첫 번째 부분
+                        TextSpan(
+                          text: '(총 $missionTypeZeroCount건)', // 색상을 변경할 두 번째 부분
+                          style: const TextStyle(
+                            color: AppColors.celltrionGreen, // 원하는 색상으로 변경
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
               if (isLoadingMissions)
                 const Center(
                   child: Padding(
@@ -507,7 +567,7 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                         color: Colors.black87,
                       ),
                       columns: const [
-                        // DataColumn(label: Text('No.')),
+                        DataColumn(label: Text('No.')),
                         DataColumn(label: Text('PltNo.')),
                         DataColumn(label: Text('출발지')),
                         DataColumn(label: Text('목적지')),
@@ -541,6 +601,21 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                         }
 
                         return DataRow(
+                          color: switch ((
+                            mission.subMissionStatus,
+                            mission?.robotName,
+                          )) {
+                            (1, "Forklift") => WidgetStateProperty.all(
+                              Colors.orange.shade200,
+                            ),
+                            (1, "PLTTruck_1F") => WidgetStateProperty.all(
+                              Colors.lightGreen.shade200,
+                            ),
+                            (1, "PLTTruck_3F") => WidgetStateProperty.all(
+                              Colors.lightBlue.shade200,
+                            ),
+                            _ => null,
+                          },
                           selected:
                               isMissionSelectionMode &&
                               selectedMissionNos.contains(mission.missionNo),
@@ -554,7 +629,9 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                                 }
                               : null,
                           cells: [
-                            // buildTappableCell(Text(mission.missionNo.toString())),
+                            buildTappableCell(
+                              Text(mission.robotName.toString()),
+                            ),
                             buildTappableCell(Text(mission.pltNo)),
                             buildTappableCell(Text(mission.sourceBin)),
                             buildTappableCell(Text(mission.destinationBin)),

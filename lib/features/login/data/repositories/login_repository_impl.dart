@@ -30,7 +30,7 @@ class LoginRepositoryImpl implements LoginRepository {
       final responseDTO = LoginResponseDTO.fromJson(responseJson.data);
 
       // 인터페이스 정의서 기준: result가 'S' 또는 '0'이면 성공
-      if (responseDTO.isSuccess && responseDTO.userId.isNotEmpty) {
+      if (responseDTO.result == "S" && responseDTO.userId.isNotEmpty) {
         return LoginResult.success(
           userId: responseDTO.userId, // 서버에서 받은 userId 사용
           userName: responseDTO.name,

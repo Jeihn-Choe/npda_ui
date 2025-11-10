@@ -75,7 +75,7 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
 
   /// 로그인 로직 수행 (UseCase 호출 포함)
   Future<LoginResult> login(String userId, String password) async {
-    // UseCase 호출
+    /// UseCase 호출
     final result = await _loginUseCase(userId, password);
 
     if (result.isSuccess) {

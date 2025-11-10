@@ -96,6 +96,8 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
             children: [
               Opacity(
                 opacity: 0.0,
+
+                /// 보이지 않는 텍스트필드로 스캐너 입력
                 child: SizedBox(
                   width: 0.0,
                   height: 0.0,
@@ -134,19 +136,16 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                   horizontal: 12,
                   vertical: 4,
                 ),
-                // ✨ Mission 관련 상태 참조를 ViewModel -> Provider로 변경
                 child: missionListState.isMissionSelectionModeActive
                     ? Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
                             onPressed:
-                                // ✨ 상태 참조 변경
                                 missionListState.selectedMissionNos.isEmpty ||
                                     missionListState.isMissionDeleting
                                 ? null
                                 : () async {
-                                    // ✨ 메소드 호출 변경
                                     final success = await ref
                                         .read(
                                           outboundMissionListProvider.notifier,
@@ -178,7 +177,6 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                                     );
 
                                     if (success) {
-                                      // ✨ 메소드 호출 변경
                                       ref
                                           .read(
                                             outboundMissionListProvider
@@ -195,9 +193,7 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                                 vertical: 10,
                               ),
                             ),
-                            child:
-                                // ✨ 상태 참조 변경
-                                missionListState.isMissionDeleting
+                            child: missionListState.isMissionDeleting
                                 ? const CircularProgressIndicator(
                                     color: Colors.white,
                                     strokeWidth: 2,
@@ -226,7 +222,9 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         ],
                       )
                     : orderListState.isOrderSelectionModeActive
-                    ? Row(
+                    ?
+                      /// Order 선택 모드일 때
+                      Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
                           ElevatedButton(
@@ -297,8 +295,6 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                                     orderListState.isLoading
                                 ? null
                                 : () async {
-                                    // ✨ async 추가
-                                    // ✨ 변경: try-catch 블록으로 감싸 에러 처리
                                     try {
                                       final count = await ref
                                           .read(
@@ -392,6 +388,7 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
 
               const SizedBox(height: 4),
 
+              /// ---------------- 오더 목록 표시 창 ------------------
               if (orderListState.orders.isNotEmpty)
                 Container(
                   margin: const EdgeInsets.symmetric(
@@ -485,8 +482,10 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                                     alignment: Alignment.centerLeft,
                                     width: double.infinity,
                                     height: double.infinity,
-                                    child: Text(
-                                      order.savedBinNo ?? order.doNo ?? "-",
+                                    child: Center(
+                                      child: Text(
+                                        order.savedBinNo ?? order.doNo ?? "-",
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -519,10 +518,12 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                                     alignment: Alignment.centerLeft,
                                     width: double.infinity,
                                     height: double.infinity,
-                                    child: Text(
-                                      DateFormat(
-                                        'yyyy-MM-dd HH:mm:ss',
-                                      ).format(order.startTime),
+                                    child: Center(
+                                      child: Text(
+                                        DateFormat(
+                                          'yyyy-MM-dd HH:mm:ss',
+                                        ).format(order.startTime),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -535,7 +536,6 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                   ),
                 ),
 
-              // ✨ Mission 상세 정보 표시도 Provider 상태를 사용
               FormCardLayout(
                 contentPadding: 12,
                 verticalMargin: 4,
@@ -583,6 +583,37 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                 ),
               ),
               const SizedBox(height: 8),
+              const SizedBox(height: 8),
+              Builder(
+                builder: (context) {
+                  final missionTypeZeroCount = missionListState.missions
+                      .where((m) => m.missionType == 1)
+                      .length;
+
+                  return RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: const TextStyle(
+                        // 기본 스타일 (검정, 15, bold)
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87, // 기본 색상 지정
+                      ),
+                      children: <TextSpan>[
+                        const TextSpan(text: '출고 미션 List '), // 첫 번째 부분
+                        TextSpan(
+                          text: '(총 $missionTypeZeroCount건)', // 색상을 변경할 두 번째 부분
+                          style: const TextStyle(
+                            color: AppColors.celltrionGreen, // 원하는 색상으로 변경
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
 
               // ✨ Mission 목록 로딩 상태도 Provider 상태를 사용
               if (missionListState.isLoading)
@@ -622,7 +653,7 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         color: Colors.black87,
                       ),
                       columns: const [
-                        // DataColumn(label: Text('No.')),
+                        DataColumn(label: Text('No.')),
                         DataColumn(label: Text('PltNo.')),
                         DataColumn(label: Text('출발지')),
                         DataColumn(label: Text('목적지')),
@@ -634,16 +665,13 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                             GestureDetector(
                               behavior: HitTestBehavior.opaque,
                               onLongPress: () {
-                                // ✨ 메소드 호출 변경
                                 ref
                                     .read(outboundMissionListProvider.notifier)
                                     .enableSelectionMode(mission.missionNo);
                               },
                               onTap: () {
-                                // ✨ 상태 참조 변경
                                 if (missionListState
                                     .isMissionSelectionModeActive) {
-                                  // ✨ 메소드 호출 변경
                                   ref
                                       .read(
                                         outboundMissionListProvider.notifier,
@@ -652,7 +680,6 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                                         mission.missionNo,
                                       );
                                 } else {
-                                  // ✨ 메소드 호출 변경
                                   ref
                                       .read(
                                         outboundMissionListProvider.notifier,
@@ -666,7 +693,11 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         }
 
                         return DataRow(
-                          // ✨ 상태 참조 변경
+                          color: mission.subMissionStatus == 1
+                              ? WidgetStateProperty.all(
+                                  Colors.green.withAlpha(30),
+                                )
+                              : null,
                           selected:
                               missionListState.isMissionSelectionModeActive &&
                               missionListState.selectedMissionNos.contains(
@@ -674,10 +705,8 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                               ),
 
                           onSelectChanged:
-                              // ✨ 상태 참조 변경
                               missionListState.isMissionSelectionModeActive
                               ? (isSelected) {
-                                  // ✨ 메소드 호출 변경
                                   ref
                                       .read(
                                         outboundMissionListProvider.notifier,
@@ -689,12 +718,10 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                               : null,
 
                           cells: [
-                            // buildTappableCell(
-                            //   Text(mission.missionNo.toString()),
-                            // ),
                             buildTappableCell(
-                              Text(mission.pltNo ?? mission.sourceBin ?? "-"),
+                              Text(mission.subMissionStatus.toString()),
                             ),
+                            buildTappableCell(Text(mission.pltNo)),
                             buildTappableCell(Text(mission.sourceBin)),
                             buildTappableCell(Text(mission.destinationBin)),
                           ],

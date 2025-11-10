@@ -20,6 +20,10 @@ class Outbound1FOrderUseCase {
           (entity) => WorkItem(
             missionType: entity.missionType,
             employeeId: entity.userId,
+            startTime: entity.startTime,
+            sourceBin: entity.sourceBin,
+            destinationBin: entity.destinationBin,
+            pltQty: entity.pltQty,
           ),
         )
         .toList();

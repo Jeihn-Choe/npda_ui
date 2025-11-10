@@ -55,7 +55,7 @@ class _InboundRegistrationPopupState
     return AlertDialog(
       title: const Text(
         '입고 등록',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         textAlign: TextAlign.center,
       ),
       content: SizedBox(
@@ -119,17 +119,59 @@ class _InboundRegistrationPopupState
           label: 'PLT Number',
           hintText: '바코드를 스캔하세요.',
         ),
-        const SizedBox(height: 12),
-        FormFieldWidget<DateTime>(
-          controller: viewModel.workTimeController,
-          label: '작업시간',
-          initialValue: DateTime.now().toUtc().add(const Duration(hours: 9)),
-          keyboardType: TextInputType.datetime,
-          readOnly: true,
-          onTap: () => _selectDateTime(context),
-          valueToString: (dateTime) => dateTime.toString().substring(0, 19),
+
+        // 124라인의 SizedBox 대신 추가
+        Padding(
+          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '목적지 구역',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.darkGrey,
+                ),
+              ),
+              Row(
+                children: [
+                  Row(
+                    children: [
+                      Radio<String>(
+                        value: '3층지정구역',
+                        groupValue: viewModel.destinationArea,
+                        onChanged: (String? value) {
+                          setState(() {
+                            viewModel.setDestinationArea(value);
+                          });
+                        },
+                        activeColor: AppColors.celltrionGreen,
+                      ),
+                      const Text('3층 지정구역'),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Radio<String>(
+                        value: '3층랙',
+                        groupValue: viewModel.destinationArea,
+                        onChanged: (String? value) {
+                          setState(() {
+                            viewModel.setDestinationArea(value);
+                          });
+                        },
+                        activeColor: AppColors.celltrionGreen,
+                      ),
+                      const Text('3층 랙'),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
-        const SizedBox(height: 12),
+
         Padding(
           padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
           child: Column(
@@ -156,7 +198,7 @@ class _InboundRegistrationPopupState
                     viewModel.setSelectedRackLevel(newValue);
                   });
                 },
-                items: <String>['1단 - 001', '2단 - 002', '3단 - 003', '기준없음']
+                items: <String>['기준없음', '1단 - 001', '2단 - 002', '3단 - 003']
                     .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
@@ -195,7 +237,18 @@ class _InboundRegistrationPopupState
           ),
         ),
 
-        const SizedBox(height: 12),
+        const SizedBox(height: 4),
+        FormFieldWidget<DateTime>(
+          controller: viewModel.workTimeController,
+          label: '작업시간',
+          initialValue: DateTime.now().toUtc().add(const Duration(hours: 9)),
+          keyboardType: TextInputType.datetime,
+          readOnly: true,
+          onTap: () => _selectDateTime(context),
+          valueToString: (dateTime) => dateTime.toString().substring(0, 19),
+        ),
+
+        const SizedBox(height: 4),
         FormFieldWidget(
           controller: viewModel.userIdController,
           label: '사번',

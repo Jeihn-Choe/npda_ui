@@ -365,7 +365,8 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
             dataRowMaxHeight: 40,
             showCheckboxColumn: orderListState.isOrderSelectionModeActive,
             columns: const [
-              DataColumn(label: Text('피킹/언로드 Area')),
+              DataColumn(label: Text('출발구역')),
+              DataColumn(label: Text('도착구역')),
               DataColumn(label: Text('요청시간')),
             ],
             rows: orderListState.orders.map((order) {
@@ -400,9 +401,30 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
                         alignment: Alignment.centerLeft,
                         width: double.infinity,
                         height: double.infinity,
-                        child: Text(
-                          order.pickingArea ?? order.unloadArea ?? "-",
-                        ),
+                        child: Center(child: Text(order.sourceBin ?? "-")),
+                      ),
+                    ),
+                  ),
+                  DataCell(
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onLongPress: () {
+                        ref
+                            .read(outbound1FOrderListProvider.notifier)
+                            .enableOrderSelectionMode(order.orderNo);
+                      },
+                      onTap: () {
+                        if (orderListState.isOrderSelectionModeActive) {
+                          ref
+                              .read(outbound1FOrderListProvider.notifier)
+                              .toggleOrderForDeletion(order.orderNo);
+                        }
+                      },
+                      child: Container(
+                        alignment: Alignment.centerLeft,
+                        width: double.infinity,
+                        height: double.infinity,
+                        child: Center(child: Text(order.destinationBin ?? "-")),
                       ),
                     ),
                   ),

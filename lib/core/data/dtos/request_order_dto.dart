@@ -36,6 +36,7 @@ class WorkItem {
   final String? destinationBin;
   final bool? isWrapped;
   final int? destinationArea;
+  final int? pltQty;
 
   WorkItem({
     required this.missionType,
@@ -48,6 +49,7 @@ class WorkItem {
     this.destinationBin,
     this.isWrapped,
     this.destinationArea,
+    this.pltQty,
   });
 
   factory WorkItem.fromJson(Map<String, dynamic> json) {
@@ -64,6 +66,7 @@ class WorkItem {
       destinationBin: json['destinationBin'] as String?,
       isWrapped: json['isWrapped'] as bool?,
       destinationArea: json['destinationArea'] as int?,
+      pltQty: json['pltQty'] as int?,
     );
   }
 
@@ -80,6 +83,7 @@ class WorkItem {
       'destinationBin': destinationBin,
       'isWrapped': isWrapped,
       'destinationArea': destinationArea,
+      'pltQty': pltQty,
     };
   }
 }

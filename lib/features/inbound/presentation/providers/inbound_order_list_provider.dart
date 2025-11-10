@@ -44,6 +44,7 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
     required String? pltNo,
     required DateTime? workStartTime,
     required String? userId,
+    required String? destinationArea,
     required String? selectedRackLevel,
   }) async {
     try {
@@ -62,6 +63,7 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
         workStartTime: workStartTime,
         userId: userId,
         selectedRackLevel: selectedRackLevel,
+        destinationArea: destinationArea ?? '',
         isWrapped: false,
       );
 

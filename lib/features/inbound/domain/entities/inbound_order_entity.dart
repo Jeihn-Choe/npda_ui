@@ -3,6 +3,7 @@ class InboundOrderEntity {
   final DateTime workStartTime;
   final String selectedRackLevel;
   final String userId;
+  final String destinationArea;
   final bool isWrapped;
 
   const InboundOrderEntity({
@@ -10,6 +11,7 @@ class InboundOrderEntity {
     required this.workStartTime,
     required this.selectedRackLevel,
     required this.userId,
+    required this.destinationArea,
     required this.isWrapped,
   });
 
@@ -18,6 +20,7 @@ class InboundOrderEntity {
     DateTime? workStartTime,
     String? selectedRackLevel,
     String? userId,
+    String? destinationArea,
     bool? isWrapped,
   }) {
     return InboundOrderEntity(
@@ -25,12 +28,13 @@ class InboundOrderEntity {
       workStartTime: workStartTime ?? this.workStartTime,
       selectedRackLevel: selectedRackLevel ?? this.selectedRackLevel,
       userId: userId ?? this.userId,
+      destinationArea: destinationArea ?? this.destinationArea,
       isWrapped: isWrapped ?? false,
     );
   }
 
   @override
   String toString() {
-    return 'InboundOrderEntity(pltNo: $pltNo, workStartTime: $workStartTime, selectedRackLevel: $selectedRackLevel, userId: $userId)';
+    return 'InboundOrderEntity(pltNo: $pltNo, workStartTime: $workStartTime, selectedRackLevel: $selectedRackLevel, userId: $userId, destinationArea: $destinationArea, isWrapped: $isWrapped)';
   }
 }

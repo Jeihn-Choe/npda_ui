@@ -4,7 +4,7 @@ import 'package:npda_ui_flutter/features/login/domain/usecase/login_usecase.dart
 import 'package:npda_ui_flutter/features/login/presentation/login_viewmodel.dart';
 
 import '../../../../core/network/http/api_provider.dart';
-import '../../data/repositories/login_repository_impl.dart';
+import '../../data/repositories/login_repository_mock.dart';
 import '../../domain/repositories/login_repository.dart';
 import '../state/login_state.dart';
 
@@ -18,9 +18,9 @@ import '../state/login_state.dart';
 /// 로그인 repository IMPL/MOCK 변경
 final loginRepositoryProvider = Provider<LoginRepository>((ref) {
   final apiService = ref.watch(apiServiceProvider);
-  return LoginRepositoryImpl(apiService);
+  // return LoginRepositoryImpl(apiService);
 
-  // return LoginRepositoryMock();
+  return LoginRepositoryMock();
 });
 
 // 2. UseCase Provider
@@ -34,6 +34,6 @@ final loginUseCaseProvider = Provider<LoginUseCase>((ref) {
 // Presentation계층의 LoginViewModel 생성 및 SessionManager 주입
 final loginViewModelProvider =
     StateNotifierProvider<LoginViewModel, LoginState>((ref) {
-  final sessionManager = ref.watch(sessionManagerProvider.notifier);
-  return LoginViewModel(sessionManager);
-});
+      final sessionManager = ref.watch(sessionManagerProvider.notifier);
+      return LoginViewModel(sessionManager);
+    });

@@ -12,11 +12,12 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   final TextEditingController userIdController = TextEditingController();
 
   String? _selectedRackLevel;
+  String? destinationArea;
 
   String? get selectedRackLevel => _selectedRackLevel;
 
   /// 랙 레벨 목록
-  final List<String> rackLevels = ['1단 - 001', '2단 - 002', '3단 - 003', '기준없음'];
+  final List<String> rackLevels = ['기준없음', '1단 - 001', '2단 - 002', '3단 - 003'];
 
   final Ref _ref;
 
@@ -39,6 +40,12 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
     _selectedRackLevel = rackLevels[0];
 
     notifyListeners();
+  }
+
+  /// Destination Area 지정
+  void setDestinationArea(String? area) {
+    destinationArea = area;
+    notifyListeners(); // 또는 상태 업데이트 방식에 맞게
   }
 
   /// 랙 레벨 선택 변경
@@ -86,6 +93,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
             pltNo: pltCodeController.text,
             workStartTime: DateTime.parse(workTimeController.text),
             userId: userIdController.text,
+            destinationArea: destinationArea,
             selectedRackLevel: _selectedRackLevel,
           );
 
