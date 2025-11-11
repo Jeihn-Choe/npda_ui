@@ -11,6 +11,7 @@ class OutboundMissionEntity {
   final String? startTime;
   final int missionType;
   final bool isWrapped;
+  final String? robotName;
 
   const OutboundMissionEntity({
     required this.missionNo,
@@ -23,6 +24,7 @@ class OutboundMissionEntity {
     this.startTime,
     required this.missionType,
     required this.isWrapped,
+    this.robotName,
   });
 
   // SmEntity로부터 OutboundMissionEntity를 생성하는 팩토리 생성자
@@ -38,6 +40,7 @@ class OutboundMissionEntity {
       startTime: smEntity.startTime,
       missionType: smEntity.missionType,
       isWrapped: smEntity.isWrapped ?? false,
+      robotName: smEntity.robotName,
     );
   }
 }

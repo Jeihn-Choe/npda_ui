@@ -11,6 +11,7 @@ import '../../../core/state/session_manager.dart';
 import '../../../presentation/main_shell.dart';
 import '../../../presentation/widgets/form_card_layout.dart';
 import '../../../presentation/widgets/info_field_widget.dart';
+import '../../../presentation/widgets/robot_button.dart';
 import 'outbound_1f_vm.dart';
 
 class Outbound1FPage extends ConsumerStatefulWidget {
@@ -134,7 +135,9 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
                 verticalMargin: 4,
                 child: _buildMissionDetails(vmState),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
+              _buildMissionHeader(missionListState),
+              const SizedBox(height: 4),
               if (missionListState.isMissionListLoading)
                 const Center(
                   child: Padding(
@@ -489,7 +492,11 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
             children: [
               InfoFieldWidget(
                 fieldName: '시간',
-                fieldValue: vmState.selectedMission?.startTime,
+                fieldValue: vmState.selectedMission != null
+                    ? vmState.selectedMission!.startTime.toString().split(
+                        '.',
+                      )[0]
+                    : null,
               ),
               InfoFieldWidget(
                 fieldName: '목적지',
@@ -565,6 +572,18 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
           }
 
           return DataRow(
+            color: switch ((mission.subMissionStatus, mission?.robotName)) {
+              (1, "Forklift") => WidgetStateProperty.all(
+                Colors.orange.shade200,
+              ),
+              (1, "PLTTruck_1F") => WidgetStateProperty.all(
+                Colors.lightGreen.shade200,
+              ),
+              (1, "PLTTruck_3F") => WidgetStateProperty.all(
+                Colors.lightBlue.shade200,
+              ),
+              _ => null,
+            },
             selected: missionListState.selectedMissionNos.contains(
               mission.subMissionNo,
             ),
@@ -584,6 +603,69 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
             ],
           );
         }).toList(),
+      ),
+    );
+  }
+
+  // ✨ 6. Mission Header 빌더 (제목 + 로봇 버튼들)
+  Widget _buildMissionHeader(Outbound1FMissionListState missionListState) {
+    final missionCount = missionListState.missions.length;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // 왼쪽: 제목
+          RichText(
+            text: TextSpan(
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+              children: <TextSpan>[
+                const TextSpan(text: '1층 출고 List '),
+                TextSpan(
+                  text: '(총 $missionCount건)',
+                  style: const TextStyle(
+                    color: AppColors.celltrionGreen,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 오른쪽: 로봇 버튼들
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              RobotButton(
+                text: 'Forklift',
+                backgroundColor: Colors.orange,
+                onPressed: () {
+                  // TODO: Forklift pause/resume 로직
+                },
+              ),
+              const SizedBox(width: 4),
+              RobotButton(
+                text: 'PLT_1F',
+                backgroundColor: Colors.lightGreen,
+                onPressed: () {
+                  // TODO: PLT_1F pause/resume 로직
+                },
+              ),
+              const SizedBox(width: 4),
+              RobotButton(
+                text: 'PLT_3F',
+                backgroundColor: Colors.lightBlue,
+                onPressed: () {
+                  // TODO: PLT_3F pause/resume 로직
+                },
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

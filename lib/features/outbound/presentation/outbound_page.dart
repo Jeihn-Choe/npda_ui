@@ -11,6 +11,7 @@ import '../../../core/state/session_manager.dart';
 import '../../../presentation/main_shell.dart';
 import '../../../presentation/widgets/form_card_layout.dart';
 import '../../../presentation/widgets/info_field_widget.dart';
+import '../../../presentation/widgets/robot_button.dart';
 import 'outbound_page_vm.dart';
 
 class OutboundPage extends ConsumerStatefulWidget {
@@ -564,10 +565,11 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         children: [
                           InfoFieldWidget(
                             fieldName: '시간',
-                            fieldValue: missionListState
-                                .selectedMission
-                                ?.startTime
-                                .toString(),
+                            fieldValue: missionListState.selectedMission != null
+                                ? missionListState.selectedMission!.startTime
+                                      .toString()
+                                      .split('.')[0]
+                                : null,
                           ),
                           InfoFieldWidget(
                             fieldName: '목적지',
@@ -582,38 +584,78 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 8),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
               Builder(
                 builder: (context) {
                   final missionTypeZeroCount = missionListState.missions
                       .where((m) => m.missionType == 1)
                       .length;
 
-                  return RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: const TextStyle(
-                        // 기본 스타일 (검정, 15, bold)
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87, // 기본 색상 지정
-                      ),
-                      children: <TextSpan>[
-                        const TextSpan(text: '출고 미션 List '), // 첫 번째 부분
-                        TextSpan(
-                          text: '(총 $missionTypeZeroCount건)', // 색상을 변경할 두 번째 부분
-                          style: const TextStyle(
-                            color: AppColors.celltrionGreen, // 원하는 색상으로 변경
-                            fontWeight: FontWeight.bold,
-                          ),
+                  return Column(
+                    children: [
+                      // 제목과 버튼들을 포함하는 Row
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // 왼쪽: 제목
+                            RichText(
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                                children: <TextSpan>[
+                                  const TextSpan(text: '출고 미션 List '),
+                                  TextSpan(
+                                    text: '(총 $missionTypeZeroCount건)',
+                                    style: const TextStyle(
+                                      color: AppColors.celltrionGreen,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            // 오른쪽: 로봇 버튼들
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                RobotButton(
+                                  text: 'Forklift',
+                                  backgroundColor: Colors.orange,
+                                  onPressed: () {
+                                    // TODO: Forklift pause/resume 로직
+                                  },
+                                ),
+                                const SizedBox(width: 4),
+                                RobotButton(
+                                  text: 'PLT_1F',
+                                  backgroundColor: Colors.lightGreen,
+                                  onPressed: () {
+                                    // TODO: PLT_1F pause/resume 로직
+                                  },
+                                ),
+                                const SizedBox(width: 4),
+                                RobotButton(
+                                  text: 'PLT_3F',
+                                  backgroundColor: Colors.lightBlue,
+                                  onPressed: () {
+                                    // TODO: PLT_3F pause/resume 로직
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   );
                 },
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 4),
 
               // ✨ Mission 목록 로딩 상태도 Provider 상태를 사용
               if (missionListState.isLoading)
@@ -653,7 +695,7 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         color: Colors.black87,
                       ),
                       columns: const [
-                        DataColumn(label: Text('No.')),
+                        // DataColumn(label: Text('No.')),
                         DataColumn(label: Text('PltNo.')),
                         DataColumn(label: Text('출발지')),
                         DataColumn(label: Text('목적지')),
@@ -693,11 +735,21 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         }
 
                         return DataRow(
-                          color: mission.subMissionStatus == 1
-                              ? WidgetStateProperty.all(
-                                  Colors.green.withAlpha(30),
-                                )
-                              : null,
+                          color: switch ((
+                            mission.subMissionStatus,
+                            mission?.robotName,
+                          )) {
+                            (1, "Forklift") => WidgetStateProperty.all(
+                              Colors.orange.shade200,
+                            ),
+                            (1, "PLTTruck_1F") => WidgetStateProperty.all(
+                              Colors.lightGreen.shade200,
+                            ),
+                            (1, "PLTTruck_3F") => WidgetStateProperty.all(
+                              Colors.lightBlue.shade200,
+                            ),
+                            _ => null,
+                          },
                           selected:
                               missionListState.isMissionSelectionModeActive &&
                               missionListState.selectedMissionNos.contains(
@@ -718,9 +770,9 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                               : null,
 
                           cells: [
-                            buildTappableCell(
-                              Text(mission.subMissionStatus.toString()),
-                            ),
+                            // buildTappableCell(
+                            //   Text(mission.subMissionStatus.toString()),
+                            // ),
                             buildTappableCell(Text(mission.pltNo)),
                             buildTappableCell(Text(mission.sourceBin)),
                             buildTappableCell(Text(mission.destinationBin)),

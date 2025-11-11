@@ -39,7 +39,7 @@ class InfoFieldWidget extends StatelessWidget {
               textAlign: TextAlign.center,
               fieldValue ?? '-',
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.normal,
                 color: AppColors.black,
               ),

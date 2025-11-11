@@ -10,6 +10,7 @@ class Outbound1FMissionEntity {
   final String? startTime;
   final int missionType; // outbound 미션 필터링에 사용될 수 있음
   final bool isWrapped;
+  final String? robotName;
 
   const Outbound1FMissionEntity({
     required this.missionNo,
@@ -21,6 +22,7 @@ class Outbound1FMissionEntity {
     this.startTime,
     required this.missionType,
     required this.isWrapped,
+    this.robotName,
   });
 
   // SmEntity로부터 OutboundMissionEntity를 생성하는 팩토리 생성자
@@ -35,6 +37,7 @@ class Outbound1FMissionEntity {
       startTime: smEntity.startTime,
       missionType: smEntity.missionType,
       isWrapped: smEntity.isWrapped ?? false,
+      robotName: smEntity.robotName,
     );
   }
 }
