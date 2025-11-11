@@ -42,7 +42,7 @@ class FormFieldWidget<T> extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+      padding: const EdgeInsets.fromLTRB(4, 2, 4, 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -55,7 +55,7 @@ class FormFieldWidget<T> extends StatelessWidget {
               color: AppColors.darkGrey,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           // TextField with decoration copied from CustomTextField for visual consistency
           TextField(
             controller: controller,
@@ -90,8 +90,8 @@ class FormFieldWidget<T> extends StatelessWidget {
               filled: true,
               fillColor: AppColors.grey100,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
+                horizontal: 12,
+                vertical: 8,
               ),
             ),
           ),

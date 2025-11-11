@@ -460,8 +460,8 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                   ),
                 ),
               FormCardLayout(
-                contentPadding: 12,
-                verticalMargin: 4,
+                contentPadding: 8,
+                verticalMargin: 2,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -481,7 +481,7 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Column(
                         children: [

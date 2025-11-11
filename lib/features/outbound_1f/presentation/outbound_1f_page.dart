@@ -131,8 +131,8 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
               if (orderListState.orders.isNotEmpty)
                 _buildOrderList(orderListState),
               FormCardLayout(
-                contentPadding: 12,
-                verticalMargin: 4,
+                contentPadding: 8,
+                verticalMargin: 2,
                 child: _buildMissionDetails(vmState),
               ),
               const SizedBox(height: 4),
@@ -486,7 +486,7 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
             ],
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             children: [

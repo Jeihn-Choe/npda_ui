@@ -14,22 +14,22 @@ class InfoFieldWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 1, horizontal: 2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '$fieldName: ',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               color: AppColors.darkGrey,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
               color: AppColors.grey100,
               border: Border.all(color: AppColors.grey300),

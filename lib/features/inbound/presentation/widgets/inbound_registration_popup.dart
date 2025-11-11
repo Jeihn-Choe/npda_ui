@@ -22,14 +22,17 @@ class _InboundRegistrationPopupState
   void initState() {
     super.initState();
 
-    // 팝업 처음 생성될 때, 전달받은 scannedData가 있으면 그 값으로 초기화
-    if (widget.scannedData != null && widget.scannedData!.isNotEmpty) {
-      Future.microtask(() {
-        final viewModel = ref.read(inboundRegistrationPopupViewModelProvider);
+    // ViewModel 초기화 및 scannedData 설정
+    Future.microtask(() {
+      final viewModel = ref.read(inboundRegistrationPopupViewModelProvider);
+      viewModel.initialize(); // ViewModel 초기화 호출
+
+      // 팝업 처음 생성될 때, 전달받은 scannedData가 있으면 그 값으로 초기화
+      if (widget.scannedData != null && widget.scannedData!.isNotEmpty) {
         viewModel.pltCodeController.text = widget.scannedData!;
         viewModel.setPltCode(widget.scannedData);
-      });
-    }
+      }
+    });
   }
 
   @override
@@ -41,17 +44,6 @@ class _InboundRegistrationPopupState
   Widget build(BuildContext context) {
     final viewModel = ref.watch(inboundRegistrationPopupViewModelProvider);
 
-    // widget.scannedData 가 null이 아니면 viewModel에 세팅
-    // ref.listen을 사용하여 상태 변화 감지
-    // ref.listen<InboundRegistrationPopupViewModel>(
-    //   inboundRegistrationPopupViewModelProvider,
-    //   (previous, next) {
-    //     if (widget.scannedData != null && widget.scannedData!.isNotEmpty) {
-    //       next.setPltCode(widget.scannedData);
-    //     }
-    //   },
-    // );
-
     return AlertDialog(
       title: const Text(
         '입고 등록',
@@ -59,9 +51,12 @@ class _InboundRegistrationPopupState
         textAlign: TextAlign.center,
       ),
       content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.75,
-        height: MediaQuery.of(context).size.height * 0.65,
-        child: SingleChildScrollView(child: _buildFormFields(viewModel)),
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: _buildFormFields(viewModel),
+        ),
       ),
       actions: [
         TextButton(
@@ -71,7 +66,7 @@ class _InboundRegistrationPopupState
         ElevatedButton(
           onPressed: () async {
             try {
-              await viewModel.saveInboundRegistration(ref);
+              await viewModel.saveInboundRegistration(ref, context);
 
               // 저장 후 팝업 닫기
               if (mounted) {
@@ -82,9 +77,10 @@ class _InboundRegistrationPopupState
               if (mounted) {
                 showDialog(
                   context: context,
+                  barrierDismissible: false,
                   builder: (context) => AlertDialog(
-                    title: const Text('오류'),
-                    content: Text(e.toString()),
+                    title: const Text('입력 확인'),
+                    content: Text(e.toString().replaceFirst('Exception: ', '')),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(context).pop(),
@@ -100,11 +96,11 @@ class _InboundRegistrationPopupState
         ),
       ],
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      titlePadding: const EdgeInsets.fromLTRB(12.0, 24.0, 12.0, 0.0),
-      contentPadding: const EdgeInsets.all(12.0),
+      titlePadding: const EdgeInsets.fromLTRB(12.0, 16.0, 12.0, 0.0),
+      contentPadding: const EdgeInsets.all(8.0),
       actionsPadding: const EdgeInsets.symmetric(
-        horizontal: 24.0,
-        vertical: 16.0,
+        horizontal: 16.0,
+        vertical: 8.0,
       ),
     );
   }
@@ -116,13 +112,19 @@ class _InboundRegistrationPopupState
       children: [
         FormFieldWidget(
           controller: viewModel.pltCodeController,
-          label: 'PLT Number',
+          label: 'HU Number',
+          hintText: '바코드를 스캔하세요.',
+        ),
+        const SizedBox(height: 8),
+        FormFieldWidget(
+          controller: viewModel.sourceBinController,
+          label: '출발지 가상빈 Number',
           hintText: '바코드를 스캔하세요.',
         ),
 
-        // 124라인의 SizedBox 대신 추가
+        const SizedBox(height: 12),
         Padding(
-          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+          padding: const EdgeInsets.fromLTRB(4, 1, 4, 1),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -134,6 +136,7 @@ class _InboundRegistrationPopupState
                   color: AppColors.darkGrey,
                 ),
               ),
+              const SizedBox(height: 3),
               Row(
                 children: [
                   Row(
@@ -142,24 +145,21 @@ class _InboundRegistrationPopupState
                         value: '3층지정구역',
                         groupValue: viewModel.destinationArea,
                         onChanged: (String? value) {
-                          setState(() {
-                            viewModel.setDestinationArea(value);
-                          });
+                          viewModel.setDestinationArea(value);
                         },
                         activeColor: AppColors.celltrionGreen,
                       ),
                       const Text('3층 지정구역'),
                     ],
                   ),
+                  const SizedBox(width: 8),
                   Row(
                     children: [
                       Radio<String>(
                         value: '3층랙',
                         groupValue: viewModel.destinationArea,
                         onChanged: (String? value) {
-                          setState(() {
-                            viewModel.setDestinationArea(value);
-                          });
+                          viewModel.setDestinationArea(value);
                         },
                         activeColor: AppColors.celltrionGreen,
                       ),
@@ -172,8 +172,9 @@ class _InboundRegistrationPopupState
           ),
         ),
 
+        const SizedBox(height: 12),
         Padding(
-          padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+          padding: const EdgeInsets.fromLTRB(4, 1, 4, 1),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -186,7 +187,7 @@ class _InboundRegistrationPopupState
                   color: AppColors.darkGrey,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               DropdownButtonFormField<String>(
                 value: viewModel.selectedRackLevel,
                 hint: const Text(
@@ -194,9 +195,7 @@ class _InboundRegistrationPopupState
                   style: TextStyle(fontSize: 14, color: AppColors.grey600),
                 ),
                 onChanged: (String? newValue) {
-                  setState(() {
-                    viewModel.setSelectedRackLevel(newValue);
-                  });
+                  viewModel.setSelectedRackLevel(newValue);
                 },
                 items: <String>['기준없음', '1단 - 001', '2단 - 002', '3단 - 003']
                     .map<DropdownMenuItem<String>>((String value) {
@@ -237,7 +236,7 @@ class _InboundRegistrationPopupState
           ),
         ),
 
-        const SizedBox(height: 4),
+        const SizedBox(height: 12),
         FormFieldWidget<DateTime>(
           controller: viewModel.workTimeController,
           label: '작업시간',
@@ -248,7 +247,7 @@ class _InboundRegistrationPopupState
           valueToString: (dateTime) => dateTime.toString().substring(0, 19),
         ),
 
-        const SizedBox(height: 4),
+        const SizedBox(height: 12),
         FormFieldWidget(
           controller: viewModel.userIdController,
           label: '사번',

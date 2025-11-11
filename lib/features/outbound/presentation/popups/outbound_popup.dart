@@ -85,13 +85,6 @@ class _OutboundPopupState extends ConsumerState<OutboundPopup> {
       if (next.userId != null && next.userId != _userIdController.text) {
         _userIdController.text = next.userId!;
       }
-      if (next.error != null && next.error != previous?.error) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
-          );
-      }
     });
 
     final isLoading = ref.watch(
@@ -105,11 +98,14 @@ class _OutboundPopupState extends ConsumerState<OutboundPopup> {
         textAlign: TextAlign.center,
       ),
       content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.75,
-        height: MediaQuery.of(context).size.height * 0.65,
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.8,
         child: Stack(
           children: [
-            SingleChildScrollView(child: _buildFormFields()),
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: _buildFormFields(),
+            ),
             if (isLoading)
               Container(
                 color: Colors.black.withOpacity(0.1),
@@ -127,11 +123,31 @@ class _OutboundPopupState extends ConsumerState<OutboundPopup> {
           onPressed: isLoading
               ? null
               : () async {
-                  final success = await ref
-                      .read(outboundPopupVMProvider.notifier)
-                      .saveOrder();
-                  if (success && mounted) {
-                    Navigator.of(context).pop();
+                  try {
+                    final success = await ref
+                        .read(outboundPopupVMProvider.notifier)
+                        .saveOrder();
+                    if (success && mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  } catch (e) {
+                    // 에러 발생 시 다이얼로그로 알림
+                    if (mounted) {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => AlertDialog(
+                          title: const Text('입력 확인'),
+                          content: Text(e.toString().replaceFirst('Exception: ', '')),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('확인'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                   }
                 },
           child: const Text('저장', style: TextStyle(fontSize: 14)),

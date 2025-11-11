@@ -85,9 +85,14 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
   }
 
   Future<bool> saveOrder() async {
-    if (state.doNo.isEmpty && state.savedBinNo.isEmpty) {
-      state = state.copyWith(error: 'DO No. 또는 저장빈을 입력해주세요.');
-      return false;
+    // 유효성 검사
+    List<String> missingFields = [];
+    if (state.doNo.isEmpty) missingFields.add('DO No.');
+    if (state.savedBinNo.isEmpty) missingFields.add('저장빈');
+
+    if (missingFields.isNotEmpty) {
+      appLogger.w('누락된 필드: $missingFields');
+      throw Exception('다음 필드를 입력해주세요:\n${missingFields.join(', ')}');
     }
 
     state = state.copyWith(isLoading: true, resetError: true);

@@ -113,13 +113,6 @@ class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
       if (next.quantity.toString() != _quantityController.text) {
         _quantityController.text = next.quantity.toString();
       }
-      if (next.error != null && next.error != previous?.error) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(next.error!), backgroundColor: Colors.red),
-          );
-      }
     });
 
     final isLoading = ref.watch(
@@ -133,11 +126,14 @@ class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
         textAlign: TextAlign.center,
       ),
       content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.75,
-        height: MediaQuery.of(context).size.height * 0.65,
+        width: MediaQuery.of(context).size.width * 0.9,
+        height: MediaQuery.of(context).size.height * 0.8,
         child: Stack(
           children: [
-            SingleChildScrollView(child: _buildFormFields()),
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: _buildFormFields(),
+            ),
             if (isLoading)
               Container(
                 color: Colors.black.withOpacity(0.1),
@@ -155,11 +151,31 @@ class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
           onPressed: isLoading
               ? null
               : () async {
-                  final success = await ref
-                      .read(outbound1FPopupVMProvider.notifier)
-                      .saveOrder();
-                  if (success && mounted) {
-                    Navigator.of(context).pop();
+                  try {
+                    final success = await ref
+                        .read(outbound1FPopupVMProvider.notifier)
+                        .saveOrder();
+                    if (success && mounted) {
+                      Navigator.of(context).pop();
+                    }
+                  } catch (e) {
+                    // 에러 발생 시 다이얼로그로 알림
+                    if (mounted) {
+                      showDialog(
+                        context: context,
+                        barrierDismissible: false,
+                        builder: (context) => AlertDialog(
+                          title: const Text('입력 확인'),
+                          content: Text(e.toString().replaceFirst('Exception: ', '')),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(),
+                              child: const Text('확인'),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
                   }
                 },
           child: const Text('저장', style: TextStyle(fontSize: 14)),
@@ -246,11 +262,11 @@ class _Outbound1FPopupState extends ConsumerState<Outbound1FPopup> {
           label,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.bold,
             color: Colors.black87,
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 3),
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12),

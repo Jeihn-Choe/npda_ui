@@ -538,8 +538,8 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                 ),
 
               FormCardLayout(
-                contentPadding: 12,
-                verticalMargin: 4,
+                contentPadding: 8,
+                verticalMargin: 2,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -548,7 +548,7 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         children: [
                           InfoFieldWidget(
                             fieldName: 'No.',
-                            fieldValue: missionListState.selectedMission?.doNo
+                            fieldValue: missionListState.selectedMission?.pltNo
                                 .toString(),
                           ),
                           InfoFieldWidget(
@@ -559,7 +559,7 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Expanded(
                       child: Column(
                         children: [

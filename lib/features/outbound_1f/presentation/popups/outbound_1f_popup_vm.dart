@@ -115,14 +115,15 @@ class Outbound1FPopupVM extends StateNotifier<Outbound1FPopupState> {
   }
 
   Future<bool> saveOrder() async {
-    if (state.sourceArea.isEmpty || state.destinationArea.isEmpty) {
-      state = state.copyWith(error: '출발지역과 목적지역을 모두 선택해주세요.');
-      return false;
-    }
+    // 유효성 검사
+    List<String> missingFields = [];
+    if (state.sourceArea.isEmpty) missingFields.add('출발지역');
+    if (state.destinationArea.isEmpty) missingFields.add('목적지역');
+    if (state.quantity <= 0) missingFields.add('수량 (1 이상)');
 
-    if (state.quantity <= 0) {
-      state = state.copyWith(error: '수량은 1 이상이어야 합니다.');
-      return false;
+    if (missingFields.isNotEmpty) {
+      appLogger.w('누락된 필드: $missingFields');
+      throw Exception('다음 필드를 확인해주세요:\n${missingFields.join(', ')}');
     }
 
     state = state.copyWith(isLoading: true, resetError: true);
