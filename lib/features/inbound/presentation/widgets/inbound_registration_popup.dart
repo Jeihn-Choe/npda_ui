@@ -27,10 +27,9 @@ class _InboundRegistrationPopupState
       final viewModel = ref.read(inboundRegistrationPopupViewModelProvider);
       viewModel.initialize(); // ViewModel 초기화 호출
 
-      // 팝업 처음 생성될 때, 전달받은 scannedData가 있으면 그 값으로 초기화
+      // scannedData가 있을 때만 적용 (수동 팝업 열기의 경우 null)
       if (widget.scannedData != null && widget.scannedData!.isNotEmpty) {
-        viewModel.pltCodeController.text = widget.scannedData!;
-        viewModel.setPltCode(widget.scannedData);
+        viewModel.applyScannedData(widget.scannedData!);
       }
     });
   }

@@ -9,9 +9,9 @@ import '../providers/inbound_order_list_provider.dart';
 class InboundRegistrationPopupViewModel extends ChangeNotifier {
   /// 텍스트 컨트롤러
   final TextEditingController pltCodeController = TextEditingController();
+  final TextEditingController sourceBinController = TextEditingController();
   final TextEditingController workTimeController = TextEditingController();
   final TextEditingController userIdController = TextEditingController();
-  final TextEditingController sourceBinController = TextEditingController();
 
   String? _selectedRackLevel;
   String? destinationArea;
@@ -20,6 +20,25 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   String? get selectedRackLevel => _selectedRackLevel;
 
   String? get errorMessage => _errorMessage;
+
+  /// 스캔데이터 HU / 저장빈 구분 => 필드에 채워줌
+  void applyScannedData(String scannedData) {
+    // 시작이 P 이면 HU
+    if (scannedData.startsWith('P')) {
+      pltCodeController.text = scannedData;
+    }
+    // 시작이 2A 이면 출발 저장빈
+    if (scannedData.startsWith('2A')) {
+      sourceBinController.text = scannedData;
+    }
+    notifyListeners();
+  }
+
+  /// 두 필드가 모두 채워졌는지 확인
+  bool areBothFieldsFilled() {
+    return pltCodeController.text.isNotEmpty &&
+        sourceBinController.text.isNotEmpty;
+  }
 
   /// 랙 레벨 목록
   final List<String> rackLevels = ['기준없음', '1단 - 001', '2단 - 002', '3단 - 003'];

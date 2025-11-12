@@ -41,6 +41,13 @@ class _InboundPageState extends ConsumerState<InboundPage> {
     super.dispose();
   }
 
+  /// 2025-11-12 최제인
+  /// ======= 포커스 강제로직 = 무작위 스캔이벤트를 받을 수 있도록 하는 상태로 만드는 로직 =======
+  /// 발동조건
+  /// - 세션 로그인 상태
+  /// - 메인탭이 인바운드 탭일때
+  /// - 입고 : HU Id 스캔 && 출발지 저장빈 스캔 --> 둘 다 만족하는 경우
+  /// 해제하려면
   void _onFocusChange() {
     final sessionStatus = ref.read(sessionManagerProvider).status;
     if (sessionStatus != SessionStatus.loggedIn) return;
@@ -49,7 +56,25 @@ class _InboundPageState extends ConsumerState<InboundPage> {
     if (currentTabIndex != 0) return;
 
     final pageState = ref.read(inboundPageVMProvider);
-    if (!pageState.showInboundPopup && !_scannerFocusNode.hasFocus) {
+
+    // 팝업이 열려있으면 두 필드가 모두 채워졌는지 확인
+    if (pageState.showInboundPopup) {
+      final popupViewModel = ref.read(inboundRegistrationPopupViewModelProvider);
+
+      // 두 필드가 모두 채워지면 포커스를 주지 않음 (사용자가 팝업 수정 가능)
+      if (popupViewModel.areBothFieldsFilled()) {
+        return;
+      }
+
+      // 아직 하나라도 비어있으면 포커스 유지 (스캔 대기)
+      if (!_scannerFocusNode.hasFocus) {
+        FocusScope.of(context).requestFocus(_scannerFocusNode);
+      }
+      return;
+    }
+
+    // 팝업이 닫혀있으면 포커스 유지
+    if (!_scannerFocusNode.hasFocus) {
       FocusScope.of(context).requestFocus(_scannerFocusNode);
     }
   }
@@ -76,34 +101,37 @@ class _InboundPageState extends ConsumerState<InboundPage> {
 
     // 3. PageViewModel의 팝업 상태 감지
     ref.listen<InboundPageState>(inboundPageVMProvider, (previous, next) {
+      // 팝업 오픈
       if (next.showInboundPopup && (previous?.showInboundPopup == false)) {
-        _scannerFocusNode.unfocus();
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (BuildContext dialogContext) {
             return MediaQuery(
               data: MediaQuery.of(
                 dialogContext,
               ).copyWith(viewInsets: EdgeInsets.zero),
               child: InboundRegistrationPopup(
-                scannedData: next.scannedDataForPopup,
+                scannedData: next.firstScannedData,
               ),
             );
           },
         ).then((_) {
           if (mounted) {
-            ref
-                .read(inboundPageVMProvider.notifier)
-                .setInboundPopupState(false);
-            ref.read(inboundRegistrationPopupViewModelProvider).resetForm();
             ref.read(inboundPageVMProvider.notifier).clearInboundPopup();
+            ref.read(inboundRegistrationPopupViewModelProvider).resetForm();
             ref.invalidate(inboundRegistrationPopupViewModelProvider);
             FocusScope.of(context).requestFocus(_scannerFocusNode);
           }
         });
       }
-    });
 
+      // 두 필드가 모두 채워졌을 때 포커스 해제
+      if (next.secondScannedData != null &&
+          previous?.secondScannedData != next.secondScannedData) {
+        _scannerFocusNode.unfocus();
+      }
+    });
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey.shade100,
@@ -123,18 +151,12 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                     controller: _scannerTextController,
                     autofocus: true,
                     keyboardType: TextInputType.none,
-                    enabled: !pageState.showInboundPopup,
+                    enabled: true,
                     onSubmitted: (value) {
-                      if (ref.read(inboundPageVMProvider).showInboundPopup) {
-                        return;
-                      }
                       ref
                           .read(inboundPageVMProvider.notifier)
                           .handleScannedData(value);
                       _scannerTextController.clear();
-                      if (!ref.read(inboundPageVMProvider).showInboundPopup) {
-                        FocusScope.of(context).requestFocus(_scannerFocusNode);
-                      }
                     },
                   ),
                 ),
@@ -337,10 +359,9 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              _scannerFocusNode.unfocus();
                               ref
                                   .read(inboundPageVMProvider.notifier)
-                                  .setInboundPopupState(true);
+                                  .openPopupManually();
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.blue.shade500,
