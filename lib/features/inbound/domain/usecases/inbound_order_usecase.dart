@@ -23,10 +23,10 @@ class InboundOrderUseCase {
         startTime: item.workStartTime,
         targetRackLevel: int.tryParse(item.selectedRackLevel.substring(0, 1)) ?? 0,
         employeeId: item.userId,
-        sourceBin: null,
+        sourceBin: item.sourceBin,
         destinationBin: null,
         isWrapped: item.isWrapped,
-        destinationArea: null,
+        destinationArea: item.destinationArea,
       );
     }).toList();
 

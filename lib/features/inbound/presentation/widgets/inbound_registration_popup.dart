@@ -140,10 +140,10 @@ class _InboundRegistrationPopupState
                 children: [
                   Row(
                     children: [
-                      Radio<String>(
-                        value: '3층지정구역',
+                      Radio<int>(
+                        value: 0,
                         groupValue: viewModel.destinationArea,
-                        onChanged: (String? value) {
+                        onChanged: (int? value) {
                           viewModel.setDestinationArea(value);
                         },
                         activeColor: AppColors.celltrionGreen,
@@ -154,10 +154,10 @@ class _InboundRegistrationPopupState
                   const SizedBox(width: 8),
                   Row(
                     children: [
-                      Radio<String>(
-                        value: '3층랙',
+                      Radio<int>(
+                        value: 1,
                         groupValue: viewModel.destinationArea,
-                        onChanged: (String? value) {
+                        onChanged: (int? value) {
                           viewModel.setDestinationArea(value);
                         },
                         activeColor: AppColors.celltrionGreen,
@@ -196,7 +196,7 @@ class _InboundRegistrationPopupState
                 onChanged: (String? newValue) {
                   viewModel.setSelectedRackLevel(newValue);
                 },
-                items: <String>['기준없음', '1단 - 001', '2단 - 002', '3단 - 003']
+                items: viewModel.rackLevels
                     .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,

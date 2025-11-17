@@ -42,36 +42,24 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
 
   Future<void> addInboundOrder({
     required String? pltNo,
+    required String? sourceBin,
     required DateTime? workStartTime,
     required String? userId,
-    required String? destinationArea,
+    required int? destinationArea,
     required String? selectedRackLevel,
   }) async {
-    try {
-      if (pltNo == null || pltNo.isEmpty) throw ArgumentError('PltNo 누락');
-      if (workStartTime == null) throw ArgumentError('WorkStartTime 누락');
-      if (userId == null || userId.isEmpty) throw ArgumentError('UserId 누락');
-      if (selectedRackLevel == null || selectedRackLevel.isEmpty)
-        throw ArgumentError('SelectedRackLevel 누락');
+    final newItem = InboundOrderEntity(
+      pltNo: pltNo!,
+      sourceBin: sourceBin!,
+      workStartTime: workStartTime!,
+      userId: userId!,
+      selectedRackLevel: selectedRackLevel!,
+      destinationArea: destinationArea!,
+      isWrapped: false,
+    );
 
-      if (state.orders.any((item) => item.pltNo == pltNo)) {
-        throw Exception('Plt Number 중복입니다.');
-      }
-
-      final newItem = InboundOrderEntity(
-        pltNo: pltNo,
-        workStartTime: workStartTime,
-        userId: userId,
-        selectedRackLevel: selectedRackLevel,
-        destinationArea: destinationArea ?? '',
-        isWrapped: false,
-      );
-
-      final newOrderList = [...state.orders, newItem];
-      state = state.copyWith(orders: newOrderList);
-    } catch (e) {
-      rethrow;
-    }
+    final newOrderList = [...state.orders, newItem];
+    state = state.copyWith(orders: newOrderList);
   }
 
   void toggleOrderSelection(String pltNo) {

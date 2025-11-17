@@ -14,7 +14,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   final TextEditingController userIdController = TextEditingController();
 
   String? _selectedRackLevel;
-  String? destinationArea;
+  int? destinationArea;
   String? _errorMessage;
 
   String? get selectedRackLevel => _selectedRackLevel;
@@ -23,13 +23,15 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
 
   /// 스캔데이터 HU / 저장빈 구분 => 필드에 채워줌
   void applyScannedData(String scannedData) {
-    // 시작이 P 이면 HU
-    if (scannedData.startsWith('P')) {
-      pltCodeController.text = scannedData;
-    }
-    // 시작이 2A 이면 출발 저장빈
-    if (scannedData.startsWith('2A')) {
+    if (scannedData.isEmpty) return;
+
+    // 숫자로 시작하면 출발 저장빈
+    if (RegExp(r'^\d').hasMatch(scannedData)) {
       sourceBinController.text = scannedData;
+    }
+    // 문자로 시작하면 HU
+    else if (RegExp(r'^[a-zA-Z]').hasMatch(scannedData)) {
+      pltCodeController.text = scannedData;
     }
     notifyListeners();
   }
@@ -41,7 +43,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   }
 
   /// 랙 레벨 목록
-  final List<String> rackLevels = ['기준없음', '1단 - 001', '2단 - 002', '3단 - 003'];
+  final List<String> rackLevels = ['기준없음', '1단-001', '2단-002', '3단-003'];
 
   final Ref _ref;
 
@@ -71,7 +73,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   }
 
   /// Destination Area 지정
-  void setDestinationArea(String? area) {
+  void setDestinationArea(int? area) {
     destinationArea = area;
     notifyListeners();
   }
@@ -143,28 +145,38 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
       throw Exception('다음 필드를 입력해주세요:\n${missingFields.join(', ')}');
     }
 
+    // HuId 중복체크
+    final existingOrders = ref.read(inboundOrderListProvider).orders;
+    if (existingOrders.any((item) => item.pltNo == pltCodeController.text)) {
+      throw Exception('이미 등록된 PLT 입니다.');
+    }
+
+    // SourceBin 중복체크
+    if (existingOrders.any(
+      (item) => item.sourceBin == sourceBinController.text,
+    )) {
+      throw Exception('이미 등록된 가상빈 입니다.');
+    }
+
     setErrorMessage(null);
 
     /// 상태 관리자에 항목 추가 요청
-    try {
-      await ref
-          .read(inboundOrderListProvider.notifier)
-          .addInboundOrder(
-            pltNo: pltCodeController.text,
-            workStartTime: DateTime.parse(workTimeController.text),
-            userId: userIdController.text,
-            destinationArea: destinationArea,
-            selectedRackLevel: _selectedRackLevel,
-          );
+    await ref
+        .read(inboundOrderListProvider.notifier)
+        .addInboundOrder(
+          pltNo: pltCodeController.text,
+          sourceBin: sourceBinController.text,
+          workStartTime: DateTime.parse(workTimeController.text),
+          userId: userIdController.text,
+          destinationArea: destinationArea,
+          selectedRackLevel: _selectedRackLevel,
+        );
 
-      pltCodeController.clear();
-      _selectedRackLevel = null;
-      final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
-      workTimeController.text = currentTime.toString().substring(0, 19);
-      notifyListeners();
-    } catch (e) {
-      // 에러 처리 (예: 사용자에게 오류 메시지 표시)
-    }
+    pltCodeController.clear();
+    _selectedRackLevel = null;
+    final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
+    workTimeController.text = currentTime.toString().substring(0, 19);
+    notifyListeners();
   }
 
   /// 폼 초기화

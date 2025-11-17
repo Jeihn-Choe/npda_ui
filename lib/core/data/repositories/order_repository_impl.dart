@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:npda_ui_flutter/core/data/dtos/request_order_dto.dart';
 import 'package:npda_ui_flutter/core/utils/logger.dart';
 
@@ -13,11 +15,19 @@ class OrderRepositoryImpl extends OrderRepository {
 
   @override
   Future<ResponseOrderEntity> requestOrder(RequestOrderDto order) async {
-    appLogger.i({order.toString(), 'Order 요청 시도'});
+    // API 송신 전 최종 데이터 로그
+    final orderJson = order.toJson();
+    final prettyJson = JsonEncoder.withIndent('  ').convert(orderJson);
+
+    appLogger.i('========== API 송신 전 최종 데이터 ==========');
+    appLogger.i('Endpoint: ${ApiConfig.createOrderEndpoint}');
+    appLogger.i('Request Body:\n$prettyJson');
+    appLogger.i('==========================================');
+
     try {
       final response = await _apiService.post(
         ApiConfig.createOrderEndpoint,
-        data: order.toJson(),
+        data: orderJson,
       );
 
       final bool isSuccess = response['isSuccess'] ?? false;

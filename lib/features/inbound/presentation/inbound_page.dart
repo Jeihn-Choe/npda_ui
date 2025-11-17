@@ -59,7 +59,9 @@ class _InboundPageState extends ConsumerState<InboundPage> {
 
     // 팝업이 열려있으면 두 필드가 모두 채워졌는지 확인
     if (pageState.showInboundPopup) {
-      final popupViewModel = ref.read(inboundRegistrationPopupViewModelProvider);
+      final popupViewModel = ref.read(
+        inboundRegistrationPopupViewModelProvider,
+      );
 
       // 두 필드가 모두 채워지면 포커스를 주지 않음 (사용자가 팝업 수정 가능)
       if (popupViewModel.areBothFieldsFilled()) {
@@ -377,7 +379,7 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                       ),
               ),
 
-              /// ------------ 입고 요청 리스트 --------------
+              /// ------------ 입고 오더 요청 리스트 --------------
               const SizedBox(height: 4),
               if (inboundOrderItems.isNotEmpty)
                 Container(
@@ -424,7 +426,8 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                         ),
                         columns: const [
                           DataColumn(label: Center(child: Text('HU ID'))),
-                          DataColumn(label: Center(child: Text('제품랙단수'))),
+                          DataColumn(label: Center(child: Text('출발지'))),
+                          DataColumn(label: Center(child: Text('랙'))),
                           DataColumn(label: Center(child: Text('최종위치'))),
                         ],
                         rows: inboundOrderItems.map((item) {
@@ -465,10 +468,17 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                                 Center(child: Text(item.pltNo)),
                               ),
                               buildTappableCellForRegistration(
+                                Center(child: Text(item.sourceBin)),
+                              ),
+                              buildTappableCellForRegistration(
                                 Center(child: Text(item.selectedRackLevel)),
                               ),
                               buildTappableCellForRegistration(
-                                Center(child: Text(item.destinationArea ?? '')),
+                                Center(
+                                  child: Text(
+                                    item.destinationArea == 0 ? '지정구역' : '랙',
+                                  ),
+                                ),
                               ),
                               // buildTappableCellForRegistration(
                               //   Text(formatter.format(item.workStartTime)),
