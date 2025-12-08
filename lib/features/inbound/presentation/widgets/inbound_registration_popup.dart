@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
@@ -78,7 +77,7 @@ class _InboundRegistrationPopupState
                   context: context,
                   barrierDismissible: false,
                   builder: (context) => AlertDialog(
-                    title: const Text('입력 확인'),
+                    title: const Text('Error'),
                     content: Text(e.toString().replaceFirst('Exception: ', '')),
                     actions: [
                       TextButton(
@@ -196,17 +195,14 @@ class _InboundRegistrationPopupState
                 onChanged: (String? newValue) {
                   viewModel.setSelectedRackLevel(newValue);
                 },
-                items: viewModel.rackLevels
-                    .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(
-                          value,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      );
-                    })
-                    .toList(),
+                items: viewModel.rackLevels.map<DropdownMenuItem<String>>((
+                  String value,
+                ) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value, style: const TextStyle(fontSize: 14)),
+                  );
+                }).toList(),
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -236,15 +232,6 @@ class _InboundRegistrationPopupState
         ),
 
         const SizedBox(height: 12),
-        FormFieldWidget<DateTime>(
-          controller: viewModel.workTimeController,
-          label: '작업시간',
-          initialValue: DateTime.now().toUtc().add(const Duration(hours: 9)),
-          keyboardType: TextInputType.datetime,
-          readOnly: true,
-          onTap: () => _selectDateTime(context),
-          valueToString: (dateTime) => dateTime.toString().substring(0, 19),
-        ),
 
         const SizedBox(height: 12),
         FormFieldWidget(
@@ -253,26 +240,6 @@ class _InboundRegistrationPopupState
           enabled: false,
         ),
       ],
-    );
-  }
-
-  Future<void> _selectDateTime(BuildContext context) async {
-    DateTime selectedDate = DateTime.now().toUtc().add(
-      const Duration(hours: 9),
-    );
-
-    await showModalBottomSheet(
-      context: context,
-      builder: (context) => SizedBox(
-        height: 250,
-        child: CupertinoDatePicker(
-          mode: CupertinoDatePickerMode.dateAndTime,
-          initialDateTime: selectedDate,
-          onDateTimeChanged: (DateTime newDate) {
-            selectedDate = newDate;
-          },
-        ),
-      ),
     );
   }
 }

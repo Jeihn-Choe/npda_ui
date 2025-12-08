@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:npda_ui_flutter/core/config/app_config.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import 'mqtt_service.dart';
 
@@ -55,7 +54,6 @@ class MqttServiceImpl implements MqttService {
   void _onSubscribeFail(String topic) {}
 
   void _pong() {
-    appLogger.d('MQTT::Ping response client callback invoked');
   }
 
   void _onMessageReceived(List<MqttReceivedMessage<MqttMessage?>>? c) {
@@ -65,12 +63,9 @@ class MqttServiceImpl implements MqttService {
       pubMess.payload.message,
     );
 
-    // appLogger.d("MQTT::New message received on topic ${recMess.topic}");
-
     _messageController.add(
       RawMqttMessage(topic: recMess.topic, payload: payload),
     );
-    appLogger.d("=== [MQTT_Service_impl] :: 메시지 스트림 브로드캐스트 완료 ===");
   }
 
   @override
@@ -145,8 +140,6 @@ class MqttServiceImpl implements MqttService {
     if (_client.connectionStatus!.state == MqttConnectionState.connected) {
       final builder = MqttClientPayloadBuilder();
       builder.addString(message);
-
-      // appLogger.d("MQTT::메시지 퍼블리싱 [topic : $topic] [Msg : $message]");
 
       _client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
     } else {}

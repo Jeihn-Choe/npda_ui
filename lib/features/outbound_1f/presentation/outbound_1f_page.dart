@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/popups/outbound_1f_popup.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_mission_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_order_list_provider.dart';
@@ -44,7 +43,6 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
     final vmState = ref.read(outbound1FVMProvider);
     if (!_scannerFocusNode.hasFocus && !vmState.showOutboundPopup) {
       FocusScope.of(context).requestFocus(_scannerFocusNode);
-      appLogger.d("포커스 다시 가져옴");
     }
   }
 
@@ -77,7 +75,6 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
           if (mounted) {
             ref.read(outbound1FVMProvider.notifier).closeCreationPopup();
             FocusScope.of(context).requestFocus(_scannerFocusNode);
-            appLogger.d("팝업 닫힘 - 포커스 다시 가져옴");
           }
         });
       }

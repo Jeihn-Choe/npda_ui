@@ -11,8 +11,8 @@ final dioProvider = Provider<Dio>((ref) {
   // 2. Dio 생성 시 BaseOptions 설정
   final options = BaseOptions(
     baseUrl: ApiConfig.baseUrl, //ApiConfig 에서 baseUrl 가져오기
-    connectTimeout: const Duration(seconds: 10), // 연결 타임아웃 설정
-    receiveTimeout: const Duration(seconds: 10), // 응답 타임아웃 설정
+    connectTimeout: const Duration(seconds: 60), // 연결 타임아웃 설정
+    receiveTimeout: const Duration(seconds: 60), // 응답 타임아웃 설정
   );
   final dio = Dio(options);
 

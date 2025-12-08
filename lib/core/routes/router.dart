@@ -17,6 +17,7 @@ import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outb
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_order_list_provider.dart';
 
 import '../../features/splash/presentation/splash_screen.dart';
+import '../../features/status/presentation/status_page.dart';
 import '../../presentation/main_shell.dart';
 import '../state/session_manager.dart';
 
@@ -78,6 +79,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const SplashScreen(),
       ),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
+      GoRoute(path: '/status', builder: (context, state) => const StatusPage()),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
           return MainShell(navigationShell: navigationShell);

@@ -504,7 +504,7 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                             fieldValue: selectedMission?.pltNo.toString(),
                           ),
                           InfoFieldWidget(
-                            fieldName: '제품',
+                            fieldName: '적재단수',
                             fieldValue: selectedMission != null
                                 ? "${selectedMission.targetRackLevel.toString()}단 - 00${selectedMission.targetRackLevel.toString()}"
                                 : "-",

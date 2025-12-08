@@ -16,7 +16,6 @@ class OutboundPopup extends ConsumerStatefulWidget {
 class _OutboundPopupState extends ConsumerState<OutboundPopup> {
   late final TextEditingController _doNoController;
   late final TextEditingController _savedBinNoController;
-  late final TextEditingController _startTimeController;
   late final TextEditingController _userIdController;
 
   late final VoidCallback _doNoListener;
@@ -28,7 +27,6 @@ class _OutboundPopupState extends ConsumerState<OutboundPopup> {
 
     _doNoController = TextEditingController();
     _savedBinNoController = TextEditingController();
-    _startTimeController = TextEditingController();
     _userIdController = TextEditingController();
 
     _doNoListener = () {
@@ -64,7 +62,6 @@ class _OutboundPopupState extends ConsumerState<OutboundPopup> {
 
     _doNoController.dispose();
     _savedBinNoController.dispose();
-    _startTimeController.dispose();
     _userIdController.dispose();
     super.dispose();
   }
@@ -77,10 +74,6 @@ class _OutboundPopupState extends ConsumerState<OutboundPopup> {
       }
       if (next.savedBinNo != _savedBinNoController.text) {
         _savedBinNoController.text = next.savedBinNo;
-      }
-      final formattedTime = next.startTime?.toString().substring(0, 19) ?? '';
-      if (formattedTime != _startTimeController.text) {
-        _startTimeController.text = formattedTime;
       }
       if (next.userId != null && next.userId != _userIdController.text) {
         _userIdController.text = next.userId!;
@@ -138,7 +131,9 @@ class _OutboundPopupState extends ConsumerState<OutboundPopup> {
                         barrierDismissible: false,
                         builder: (context) => AlertDialog(
                           title: const Text('입력 확인'),
-                          content: Text(e.toString().replaceFirst('Exception: ', '')),
+                          content: Text(
+                            e.toString().replaceFirst('Exception: ', ''),
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
@@ -179,12 +174,7 @@ class _OutboundPopupState extends ConsumerState<OutboundPopup> {
           label: '저장빈',
           hintText: '저장빈을 입력하거나 스캔하세요.',
         ),
-        const SizedBox(height: 12),
-        FormFieldWidget(
-          controller: _startTimeController,
-          label: '작업시간',
-          readOnly: true,
-        ),
+
         const SizedBox(height: 12),
         FormFieldWidget(
           controller: _userIdController,

@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../../domain/entities/outbound_1f_order_entity.dart';
 import '../providers/outbound_1f_order_list_provider.dart';
@@ -20,11 +19,7 @@ class Outbound1FPopupState {
     this.sourceArea = '',
     this.destinationArea = '',
     this.quantity = 1,
-    this.availableSourceAreas = const [
-      '2A20-AMR-01',
-      '2A20-AMR-02',
-      '2A20-AMR-03',
-    ],
+    this.availableSourceAreas = const ['2A20-AMR-01', '2A20-12', '2A20-11'],
     this.availableDestinationAreas = const [
       '2A10-AMR-01',
       '2A10-AMR-02',
@@ -79,7 +74,8 @@ class Outbound1FPopupVM extends StateNotifier<Outbound1FPopupState> {
 
     final sessionState = _ref.watch(sessionManagerProvider);
 
-    // TODO: 스캔 기능은 나중에 추가될 예정
+    // 프로세스 상 1층출고는 스캔 필요 X
+
     // if (scannedData != null && scannedData.isNotEmpty) {
     //   if (scannedData.startsWith('2A20')) {
     //     initialSourceArea = scannedData;
@@ -91,8 +87,6 @@ class Outbound1FPopupVM extends StateNotifier<Outbound1FPopupState> {
     state = state.copyWith(
       sourceArea: initialSourceArea,
       destinationArea: initialDestinationArea,
-      quantity: 1,
-      // 기본값으로 1 설정
       startTime: DateTime.now().toUtc().add(const Duration(hours: 9)),
       userId: sessionState.userId!,
       isLoading: false,
@@ -122,7 +116,6 @@ class Outbound1FPopupVM extends StateNotifier<Outbound1FPopupState> {
     if (state.quantity <= 0) missingFields.add('수량 (1 이상)');
 
     if (missingFields.isNotEmpty) {
-      appLogger.w('누락된 필드: $missingFields');
       throw Exception('다음 필드를 확인해주세요:\n${missingFields.join(', ')}');
     }
 
@@ -152,11 +145,9 @@ class Outbound1FPopupVM extends StateNotifier<Outbound1FPopupState> {
 
       _ref.read(outbound1FOrderListProvider.notifier).addOrderToList(newOrder);
 
-      appLogger.i('출고(1F) 오더가 리스트에 추가됨 - 수량: ${state.quantity}');
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
-      appLogger.e('Error saving order: $e');
       state = state.copyWith(isLoading: false, error: '오더 저장 중 오류가 발생했습니다.');
       return false;
     } finally {

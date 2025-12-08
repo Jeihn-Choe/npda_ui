@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/popups/outbound_popup.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_mission_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_order_list_provider.dart';
@@ -45,7 +44,6 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
     final outboundState = ref.read(outboundPageVMProvider);
     if (!_scannerFocusNode.hasFocus && !outboundState.showOutboundPopup) {
       FocusScope.of(context).requestFocus(_scannerFocusNode);
-      appLogger.d("포커스 다시 가져옴");
     }
   }
 
@@ -80,7 +78,6 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
             ref.read(outboundPageVMProvider.notifier).closeCreationPopup();
 
             FocusScope.of(context).requestFocus(_scannerFocusNode);
-            appLogger.d("팝업 닫힘 - 포커스 다시 가져옴");
           }
         });
       }
@@ -113,16 +110,13 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         outboundPageVMProvider,
                       );
                       if (currentOutboundState.showOutboundPopup) {
-                        appLogger.d("팝업이 떠있는 상태에서 스캔 입력이 들어왔습니다. 무시합니다.");
                         _scannerTextController.clear();
                         return;
                       }
-                      appLogger.d("아웃바운드 화면 스캐너 입력 감지 : $value");
                       ref
                           .read(outboundPageVMProvider.notifier)
                           .handleScannedData(value);
                       _scannerTextController.clear();
-                      appLogger.d("텍스트필드 초기화");
 
                       if (!currentOutboundState.showOutboundPopup) {
                         FocusScope.of(context).requestFocus(_scannerFocusNode);

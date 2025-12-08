@@ -8,8 +8,6 @@ import 'package:npda_ui_flutter/features/login/domain/repositories/login_reposit
 import 'package:npda_ui_flutter/features/login/domain/usecase/login_usecase.dart';
 import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 
-import '../utils/logger.dart';
-
 enum SessionStatus {
   loggedOut, // 로그아웃 상태
   loggedIn, // 로그인 상태
@@ -68,7 +66,7 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
   final LoginUseCase _loginUseCase;
   final LoginRepository _loginRepository;
   Timer? _sessionTimer;
-  final Duration _sessionTimeout = const Duration(minutes: 15);
+  final Duration _sessionTimeout = const Duration(minutes: 1);
 
   SessionManagerNotifier(this._loginUseCase, this._loginRepository)
     : super(SessionState());
@@ -87,9 +85,6 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
         userCode: result.userCode!,
       );
       startSessionTimer();
-      appLogger.i('로그인 성공: ${result.userId}');
-    } else {
-      appLogger.w('로그인 실패: ${result.message}');
     }
 
     return result;
@@ -106,7 +101,6 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
 
     _sessionTimer?.cancel();
     state = SessionState(status: SessionStatus.loggedOut);
-    appLogger.d('로그아웃 완료');
   }
 
   /// 세션 만료 (서버에 만료 알림)
@@ -124,11 +118,9 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
 
     _sessionTimer?.cancel();
     state = state.copyWith(status: SessionStatus.expired);
-    appLogger.d('세션 타임아웃 / 상태 expired로 변경');
   }
 
   void startSessionTimer() {
-    appLogger.d('세션타이머 시작');
     _sessionTimer?.cancel();
     _sessionTimer = Timer(_sessionTimeout, _expireSession);
   }

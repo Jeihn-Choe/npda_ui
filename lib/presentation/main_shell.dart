@@ -84,17 +84,21 @@ class _MainShellState extends ConsumerState<MainShell> {
           Scaffold(
             appBar: AppBar(
               backgroundColor: AppColors.grey200,
-              toolbarHeight: 15,
+              toolbarHeight: 18,
               title: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    style: TextStyle(
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () {
+                      Scaffold.of(context).openDrawer();
+                    },
+                    icon: Icon(
+                      Icons.menu,
                       color: AppColors.celltrionBlack,
-                      fontWeight: FontWeight.normal,
-                      fontSize: 14,
+                      size: 20,
                     ),
-                    'RCS 연동 NPDA',
                   ),
                   Row(
                     children: [

@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/domain/entities/outbound_1f_order_entity.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/domain/usecases/outbound_1f_order_usecase.dart';
 
@@ -104,7 +103,6 @@ class Outbound1FOrderListNotifier
   // 🚀 선택된 주문 삭제 (기존 removeOrders 대체)
   void deleteSelectedOrders() {
     if (state.selectedOrderNos.isEmpty) {
-      appLogger.w("삭제할 주문이 선택되지 않았습니다.");
       return;
     }
     state = state.copyWith(isOrderDeleting: true);
@@ -118,12 +116,8 @@ class Outbound1FOrderListNotifier
         isOrderSelectionModeActive: false,
         selectedOrderNos: {},
       );
-      appLogger.d(
-        "Outbound1FOrderListProvider: ${state.selectedOrderNos.length}개의 주문을 목록에서 제거했습니다.",
-      );
     } catch (e) {
       state = state.copyWith(isOrderDeleting: false);
-      appLogger.e("주문 삭제 중 오류 발생", error: e);
     }
   }
 

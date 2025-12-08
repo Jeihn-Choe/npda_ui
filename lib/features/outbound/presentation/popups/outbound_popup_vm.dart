@@ -85,20 +85,36 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
   }
 
   Future<bool> saveOrder() async {
-    // 유효성 검사
-    List<String> missingFields = [];
-    if (state.doNo.isEmpty) missingFields.add('DO No.');
-    if (state.savedBinNo.isEmpty) missingFields.add('저장빈');
+    // 유효성 검사: DO No.와 저장빈 중 정확히 하나만 입력되어야 함
+    final bool doNoEmpty = state.doNo.isEmpty;
+    final bool savedBinNoEmpty = state.savedBinNo.isEmpty;
 
-    if (missingFields.isNotEmpty) {
-      appLogger.w('누락된 필드: $missingFields');
-      throw Exception('다음 필드를 입력해주세요:\n${missingFields.join(', ')}');
+    if (doNoEmpty && savedBinNoEmpty) {
+      throw Exception('DO No. 또는 저장빈 중 하나를 입력해주세요');
+    }
+
+    if (!doNoEmpty && !savedBinNoEmpty) {
+      throw Exception('DO No. 또는 저장빈 중 하나만 입력해주세요');
     }
 
     state = state.copyWith(isLoading: true, resetError: true);
 
+    // TODO : 중복 검사 구현
     try {
       final existingOrders = _ref.read(outboundOrderListProvider).orders;
+
+      appLogger.d("Existing outbound orders count: ${existingOrders.length}");
+      if (state.doNo.isNotEmpty) {
+        final duplicateOrder = existingOrders.firstWhere(
+          (order) => order.doNo == state.doNo,
+        );
+        appLogger.d(
+          "Checking for duplicate DO No.: ${state.doNo}, Found: $duplicateOrder",
+        );
+        if (duplicateOrder != null) {
+          throw Exception('DO No. 또는 저장빈 중 하나만 입력해주세요');
+        }
+      }
 
       final (newOrder, errorMessage) = _ref
           .read(outboundOrderUseCaseProvider)
@@ -117,11 +133,9 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
 
       _ref.read(outboundOrderListProvider.notifier).addOrderToList(newOrder);
 
-      appLogger.i('출고 오더가 리스트에 추가됨');
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
-      appLogger.e('Error saving order: $e');
       state = state.copyWith(isLoading: false, error: '오더 저장 중 오류가 발생했습니다.');
       return false;
     } finally {

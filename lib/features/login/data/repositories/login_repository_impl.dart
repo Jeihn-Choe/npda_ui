@@ -2,7 +2,6 @@ import 'package:npda_ui_flutter/features/login/domain/repositories/login_reposit
 
 import '../../../../core/config/app_config.dart';
 import '../../../../core/network/http/api_service.dart';
-import '../../../../core/utils/logger.dart';
 import '../../domain/entities/login_result.dart';
 import '../dtos/login_response.dart';
 
@@ -21,11 +20,6 @@ class LoginRepositoryImpl implements LoginRepository {
         data: {'userId': userId.trim(), 'password': password.trim()},
       );
 
-      // 로그인 API 응답 확인
-      appLogger.i('========== 로그인 API 응답 ==========');
-      appLogger.i('응답 데이터: ${responseJson.data}');
-      appLogger.i('=====================================');
-
       // 2. API 응답을 기반으로 LoginResult 생성 및 반환
       final responseDTO = LoginResponseDTO.fromJson(responseJson.data);
 
@@ -41,9 +35,8 @@ class LoginRepositoryImpl implements LoginRepository {
           responseDTO.msg.isNotEmpty ? responseDTO.msg : '로그인 실패',
         );
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       // 3. 오류 발생 시 실패 결과 반환
-      appLogger.e('로그인 에러 발생', error: e, stackTrace: stackTrace);
       return LoginResult.failure('로그인 실패: ${e.toString()}');
     }
   }
@@ -64,8 +57,7 @@ class LoginRepositoryImpl implements LoginRepository {
       await _apiService.post(endpoint, data: body);
 
       return true;
-    } catch (e, stackTrace) {
-      appLogger.e('로그아웃 에러 ($endpoint)', error: e, stackTrace: stackTrace);
+    } catch (e) {
       return false;
     }
   }

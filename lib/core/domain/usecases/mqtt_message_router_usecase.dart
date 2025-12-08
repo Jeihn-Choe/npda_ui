@@ -3,7 +3,6 @@ import 'dart:convert';
 
 import 'package:npda_ui_flutter/core/domain/entities/sb_entity.dart';
 import 'package:npda_ui_flutter/core/domain/entities/sm_entity.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../repositories/mqtt_message_repository.dart';
 
@@ -30,31 +29,24 @@ class MqttMessageRouterUseCase {
     _mqttSubscription ??= _mqttMessageRepository.mqttMessageDtoStream.listen((
       message,
     ) {
-      appLogger.d("UseCase에서 mqttMessageDtoStream 수신");
-      appLogger.d(message.toString());
       switch (message.cmdId) {
         case 'SM':
           try {
             final smEntities = _parseSmPayload(message.payload);
-            appLogger.d("파싱된 SM 엔티티 개수: ${smEntities.length}");
             _smStreamController.add(smEntities);
           } catch (e) {
-            appLogger.e("SM 페이로드 파싱 오류: $e");
           }
 
           break;
         // case 'SB':
         //   try {
         //     final sbEntities = _parseSbPayload(message.payload);
-        //     appLogger.d("파싱된 SB 엔티티 개수: ${sbEntities.length}");
         //     _sbStreamController.add(sbEntities);
         //   } catch (e) {
-        //     appLogger.e("SB 페이로드 파싱 오류: $e");
         //   }
         //
         //   break;
         // default:
-        //   appLogger.d("정의되지 않은 cmdId : ${message.cmdId}");
         //   break;
       }
     });
@@ -77,7 +69,6 @@ class MqttMessageRouterUseCase {
             .map((item) => SmEntity.fromJson(item as Map<String, dynamic>))
             .toList();
       } catch (e) {
-        appLogger.d("SM 페이로드 파싱 중 오류 발생: $e");
         return [];
       }
     } else {

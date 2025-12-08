@@ -6,7 +6,6 @@ import 'package:npda_ui_flutter/core/network/mqtt/mqtt_provider.dart';
 
 import '../data/repositories/mission_repository_impl.dart';
 import '../data/repositories/mqtt_message_repository_impl.dart';
-import '../data/repositories/order_repository_impl.dart';
 import '../data/repositories/order_repository_mock.dart';
 import '../domain/repositories/order_repository.dart';
 import '../network/http/api_provider.dart';
@@ -39,9 +38,9 @@ final mqttMessageDtoStreamProvider = StreamProvider<ReceivedMqttMessageDto>((
 /// 앱 전역에서 OrderRepository를 제공하는 Provider
 final orderRepositoryProvider = Provider<OrderRepository>((ref) {
   // ✨ 변경: 실제 API 사용 (Impl)
-  final apiService = ref.watch(apiServiceProvider);
-  return OrderRepositoryImpl(apiService);
+  // final apiService = ref.watch(apiServiceProvider);
+  // return OrderRepositoryImpl(apiService);
 
   // ✨ 변경: Mock 사용 시 아래 코드로 전환
-  // return OrderRepositoryMock();
+  return OrderRepositoryMock();
 });

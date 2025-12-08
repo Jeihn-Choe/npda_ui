@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/domain/entities/outbound_1f_mission_entity.dart';
 
 class Outbound1FState extends Equatable {
@@ -56,15 +55,12 @@ class Outbound1FVM extends StateNotifier<Outbound1FState> {
   Outbound1FVM(this._ref) : super(const Outbound1FState());
 
   void handleScannedData(String scannedData) {
-    appLogger.d("아웃바운드(1F) ViewModel handleScannedData 호출: $scannedData");
     final isScannerModeActive = _ref.read(scannerViewModelProvider);
     if (isScannerModeActive) {
       state = state.copyWith(
         showOutboundPopup: true,
         scannedDataForPopup: scannedData,
       );
-    } else {
-      appLogger.d("스캐너 모드가 비활성화되어 스캔 입력을 무시합니다.");
     }
   }
 

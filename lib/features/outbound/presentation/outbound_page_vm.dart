@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 // 1. State 클래스
 @immutable
@@ -41,8 +40,6 @@ class OutboundPageVm extends StateNotifier<OutboundPageState> {
 
   // 스캔된 데이터 처리/ 팝업 호출 메서드
   void handleScannedData(String scannedData) {
-    appLogger.d("아웃바운드 ViewModel handleScannedData 호출: $scannedData");
-
     final isScannerModeActive = _ref.read(scannerViewModelProvider);
 
     if (isScannerModeActive) {
@@ -50,8 +47,6 @@ class OutboundPageVm extends StateNotifier<OutboundPageState> {
         showOutboundPopup: true,
         scannedDataForPopup: scannedData,
       );
-    } else {
-      appLogger.d("스캐너 모드가 비활성화되어 스캔 입력을 무시합니다.");
     }
   }
 

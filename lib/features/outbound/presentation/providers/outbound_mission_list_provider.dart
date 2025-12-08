@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart'; // 🚀 Equatable import 추가
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart'; // 🚀 Logger import 추가
 import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_mission_entity.dart';
 
 import '../../domain/usecases/outbound_mission_usecase.dart';
@@ -133,7 +132,6 @@ class OutboundMissionListNotifier
 
   Future<bool> deleteSelectedOutboundMissions() async {
     if (state.selectedMissionNos.isEmpty) {
-      appLogger.w("삭제할 미션이 선택되지 않았습니다.");
       return false;
     }
 

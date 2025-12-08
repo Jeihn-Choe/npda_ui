@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/data/dtos/order_validation_req_dto.dart';
+import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../providers/inbound_order_list_provider.dart';
 
@@ -16,10 +17,13 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   String? _selectedRackLevel;
   int? destinationArea;
   String? _errorMessage;
+  bool _isReserved = false; // 예약 여부
 
   String? get selectedRackLevel => _selectedRackLevel;
 
   String? get errorMessage => _errorMessage;
+
+  bool get isReserved => _isReserved;
 
   /// 스캔데이터 HU / 저장빈 구분 => 필드에 채워줌
   void applyScannedData(String scannedData) {
@@ -65,6 +69,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
     // pltCodeController.text = 'P180047852-020001';
     _selectedRackLevel = rackLevels[0];
     destinationArea = null; // 초기화 시 null로 설정
+    _isReserved = false; // 기본값 false
 
     /// 에러 메시지 클리어
     _errorMessage = null;
@@ -90,6 +95,19 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 예약 상태 토글
+  void toggleReservation(bool? value) {
+    _isReserved = value ?? false;
+
+    // 예약 해제 시 현재시간으로 리셋
+    if (!_isReserved) {
+      final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
+      workTimeController.text = currentTime.toString().substring(0, 19);
+    }
+
+    notifyListeners();
+  }
+
   /// 작업시간 업데이트
   void updateWorkTime(DateTime selectedDateTime) {
     workTimeController.text = selectedDateTime.toString().substring(0, 19);
@@ -109,26 +127,32 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
 
   /// 폼 유효성 검사
   bool isFormValid() {
-    return pltCodeController.text.isNotEmpty &&
+    bool baseValid =
+        pltCodeController.text.isNotEmpty &&
         sourceBinController.text.isNotEmpty &&
         _selectedRackLevel != null &&
-        workTimeController.text.isNotEmpty &&
         userIdController.text.isNotEmpty &&
         destinationArea != null;
+
+    // 예약인 경우에만 작업시간 검증
+    if (_isReserved) {
+      return baseValid && workTimeController.text.isNotEmpty;
+    }
+
+    return baseValid;
   }
+
+  bool _isSaving = false; // 저장 중 상태
+  bool get isSaving => _isSaving;
 
   /// 저장 로직 => 리스트에 담아서 상태 관리해야함 : inbound screen에서 상태에 접근해서 목록 드로잉
   Future<void> saveInboundRegistration(
     WidgetRef ref,
     BuildContext context,
   ) async {
-    appLogger.d('saveInboundRegistration 호출됨');
-    appLogger.d('isFormValid: ${isFormValid()}');
-    appLogger.d('destinationArea: $destinationArea');
-    appLogger.d('_selectedRackLevel: $_selectedRackLevel');
+    if (_isSaving) return; // 이미 저장 중이면 리턴
 
     if (!isFormValid()) {
-      appLogger.w('폼 유효성 검사 실패');
       // 어떤 필드가 비어있는지 확인
       List<String> missingFields = [];
 
@@ -139,50 +163,84 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
       if (workTimeController.text.isEmpty) missingFields.add('작업시간');
       if (userIdController.text.isEmpty) missingFields.add('사번');
 
-      appLogger.w('누락된 필드: $missingFields');
-
       // 에러가 있을 때 Exception을 throw해서 UI에서 처리하도록 함
       throw Exception('다음 필드를 입력해주세요:\n${missingFields.join(', ')}');
     }
 
-    // HuId 중복체크
-    final existingOrders = ref.read(inboundOrderListProvider).orders;
-    if (existingOrders.any((item) => item.pltNo == pltCodeController.text)) {
-      throw Exception('이미 등록된 PLT 입니다.');
-    }
+    _isSaving = true;
+    notifyListeners(); // 로딩 상태 알림
 
-    // SourceBin 중복체크
-    if (existingOrders.any(
-      (item) => item.sourceBin == sourceBinController.text,
-    )) {
-      throw Exception('이미 등록된 가상빈 입니다.');
-    }
+    try {
+      // HuId 중복체크
+      final existingOrders = ref.read(inboundOrderListProvider).orders;
+      if (existingOrders.any((item) => item.pltNo == pltCodeController.text)) {
+        throw Exception('이미 등록된 HU Number 입니다.');
+      }
 
-    setErrorMessage(null);
+      // SourceBin 중복체크
+      if (existingOrders.any(
+        (item) => item.sourceBin == sourceBinController.text,
+      )) {
+        throw Exception('이미 등록된 가상빈 입니다.');
+      }
 
-    /// 상태 관리자에 항목 추가 요청
-    await ref
-        .read(inboundOrderListProvider.notifier)
-        .addInboundOrder(
-          pltNo: pltCodeController.text,
-          sourceBin: sourceBinController.text,
-          workStartTime: DateTime.parse(workTimeController.text),
-          userId: userIdController.text,
-          destinationArea: destinationArea,
-          selectedRackLevel: _selectedRackLevel,
+      // 서버 유효성 검사 요청
+      final validationDto = OrderValidationReqDto(
+        huId: pltCodeController.text,
+        binId: sourceBinController.text,
+        employeeId: userIdController.text,
+      );
+
+      final repository = ref.read(orderRepositoryProvider);
+      final result = await repository.validateOrder(validationDto);
+
+      if (!result.isSuccess) {
+        // 유효성 검사 실패 시 에러 메시지 표시 및 중단
+        setErrorMessage(
+          "HU Number와 출발지 가상빈 정보가 일치하지 않습니다.\n"
+          "PLT의 가상빈 위치를 다시 확인해주세요",
         );
+        throw Exception(
+          "HU Number와 출발지 Bin 정보가 일치하지 않습니다.\n"
+          "PLT의 Bin 위치를 확인해주세요",
+        );
+      }
 
-    pltCodeController.clear();
-    _selectedRackLevel = null;
-    final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
-    workTimeController.text = currentTime.toString().substring(0, 19);
-    notifyListeners();
+      setErrorMessage(null);
+
+      /// 상태 관리자에 항목 추가 요청
+      await ref
+          .read(inboundOrderListProvider.notifier)
+          .addInboundOrder(
+            pltNo: pltCodeController.text,
+            sourceBin: sourceBinController.text,
+            workStartTime: DateTime.parse(workTimeController.text),
+            userId: userIdController.text,
+            destinationArea: destinationArea,
+            selectedRackLevel: _selectedRackLevel,
+          );
+
+      pltCodeController.clear();
+      _selectedRackLevel = null;
+      final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
+      workTimeController.text = currentTime.toString().substring(0, 19);
+    } catch (e) {
+      // 네트워크 에러 등 처리
+      if (e is! Exception) {
+        throw Exception('서버 통신 중 오류가 발생했습니다.');
+      }
+      rethrow;
+    } finally {
+      _isSaving = false;
+      notifyListeners(); // 저장 완료/실패 후 상태 복구
+    }
   }
 
   /// 폼 초기화
   void resetForm() {
     pltCodeController.clear();
     _selectedRackLevel = null;
+    _isReserved = false;
     final currentTime = DateTime.now().toUtc().add(const Duration(hours: 9));
     workTimeController.text = currentTime.toString().substring(0, 19);
     notifyListeners();

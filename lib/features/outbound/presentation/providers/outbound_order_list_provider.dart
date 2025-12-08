@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_order_entity.dart';
+
 // ✨ 삭제: UseCase 파일을 직접 import 하지 않음
 // import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_order_usecase.dart';
 // ✨ 추가: dependency_provider 파일을 import
@@ -46,21 +46,22 @@ class OutboundOrderListState extends Equatable {
       // ✨ copyWith 로직 추가
       selectedOrderNos: selectedOrderNos ?? this.selectedOrderNos,
       isOrderSelectionModeActive:
-          isOrderSelectionModeActive ?? this.isOrderSelectionModeActive,
+      isOrderSelectionModeActive ?? this.isOrderSelectionModeActive,
       isOrderDeleting: isOrderDeleting ?? this.isOrderDeleting,
     );
   }
 
   @override
-  List<Object?> get props => [
-    orders,
-    isLoading,
-    errorMessage,
-    // ✨ props에 추가
-    selectedOrderNos,
-    isOrderSelectionModeActive,
-    isOrderDeleting,
-  ];
+  List<Object?> get props =>
+      [
+        orders,
+        isLoading,
+        errorMessage,
+        // ✨ props에 추가
+        selectedOrderNos,
+        isOrderSelectionModeActive,
+        isOrderDeleting,
+      ];
 }
 
 // ✨ 2. Notifier에 선택 관련 로직 추가
@@ -68,7 +69,7 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
   final OutboundOrderUseCase _orderUseCase;
 
   OutboundOrderListNotifier(this._orderUseCase)
-    : super(const OutboundOrderListState());
+      : super(const OutboundOrderListState());
 
   void addOrderToList(OutboundOrderEntity newOrder) {
     state = state.copyWith(orders: [...state.orders, newOrder]);
@@ -108,7 +109,6 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
   // 🚀 선택된 주문 삭제 (기존 removeOrders 대체)
   void deleteSelectedOrders() {
     if (state.selectedOrderNos.isEmpty) {
-      appLogger.w("삭제할 주문이 선택되지 않았습니다.");
       return;
     }
     state = state.copyWith(isOrderDeleting: true);
@@ -122,12 +122,8 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
         isOrderSelectionModeActive: false,
         selectedOrderNos: {},
       );
-      appLogger.d(
-        "OutboundOrderListProvider: ${state.selectedOrderNos.length}개의 주문을 목록에서 제거했습니다.",
-      );
     } catch (e) {
       state = state.copyWith(isOrderDeleting: false);
-      appLogger.e("주문 삭제 중 오류 발생", error: e);
     }
   }
 
@@ -155,7 +151,6 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
         throw Exception(result.message);
       }
     } catch (e) {
-      appLogger.e('Error requesting outbound work: $e');
       // ✨ 변경: 에러를 다시 던져서 UI에서 처리하도록 함
       rethrow;
     } finally {
@@ -165,9 +160,8 @@ class OutboundOrderListNotifier extends StateNotifier<OutboundOrderListState> {
 }
 
 final outboundOrderListProvider =
-    StateNotifierProvider<OutboundOrderListNotifier, OutboundOrderListState>((
-      ref,
-    ) {
-      final orderUseCase = ref.watch(outboundOrderUseCaseProvider);
-      return OutboundOrderListNotifier(orderUseCase);
-    });
+StateNotifierProvider<OutboundOrderListNotifier, OutboundOrderListState>((
+    ref,) {
+  final orderUseCase = ref.watch(outboundOrderUseCaseProvider);
+  return OutboundOrderListNotifier(orderUseCase);
+});

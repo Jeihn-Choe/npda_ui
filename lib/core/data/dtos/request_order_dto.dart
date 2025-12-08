@@ -74,7 +74,7 @@ class WorkItem {
   Map<String, dynamic> toJson() {
     return {
       'missionType': missionType,
-      'pltNo': pltNo,
+      'huId': pltNo,
       'doNo': doNo,
       'startTime': startTime?.toIso8601String(),
       'targetRackLevel': targetRackLevel,
