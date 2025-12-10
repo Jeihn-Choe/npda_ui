@@ -1,17 +1,17 @@
-class OutboundMissionEntity {
+class OutboundSmEntity {
   final int missionNo;
   final int subMissionNo;
   final String pltNo;
   final String doNo;
   final String sourceBin;
   final String destinationBin;
-  final int? subMissionStatus; // `int?` 유지
-  final String? startTime; // `String?` 유지
+  final int? subMissionStatus;
+  final String? startTime;
   final int missionType;
   final bool isWrapped;
-  final String? robotName; // `String?` 유지
+  final String? robotName;
 
-  const OutboundMissionEntity({
+  const OutboundSmEntity({
     required this.missionNo,
     required this.subMissionNo,
     required this.pltNo,

@@ -24,6 +24,9 @@ class PoDto {
   /// DO 번호
   final String? doNo;
 
+  /// 고유 식별자
+  final String uid;
+
   PoDto({
     required this.missionType,
     this.huId,
@@ -33,20 +36,21 @@ class PoDto {
     required this.isWrapped,
     required this.destinationArea,
     this.doNo,
+    required this.uid,
   });
 
   /// JSON to DTO
   factory PoDto.fromJson(Map<String, dynamic> json) {
     return PoDto(
-      // Enum 변환 없이 정수 그대로 할당
-      missionType: json['missionType'] as int,
+      missionType: json['missionType'] as int? ?? 0,
       huId: json['huId'] as String?,
-      targetRackLevel: json['targetRackLevel'] as int,
-      sourceBin: json['sourceBin'] as String,
-      destinationBin: json['destinationBin'] as String,
-      isWrapped: json['isWrapped'] as bool,
-      destinationArea: json['destinationArea'] as int,
+      targetRackLevel: json['targetRackLevel'] as int? ?? 0,
+      sourceBin: json['sourceBin'] as String? ?? '',
+      destinationBin: json['destinationBin'] as String? ?? '',
+      isWrapped: json['isWrapped'] as bool? ?? false,
+      destinationArea: json['destinationArea'] as int? ?? 0,
       doNo: json['doNo'] as String?,
+      uid: json['uid'] as String? ?? '',
     );
   }
 
@@ -61,6 +65,7 @@ class PoDto {
       'isWrapped': isWrapped,
       'destinationArea': destinationArea,
       'doNo': doNo,
+      'uid': uid,
     };
   }
 
@@ -74,6 +79,7 @@ class PoDto {
     bool? isWrapped,
     int? destinationArea,
     String? doNo,
+    String? uid,
   }) {
     return PoDto(
       missionType: missionType ?? this.missionType,
@@ -84,6 +90,7 @@ class PoDto {
       isWrapped: isWrapped ?? this.isWrapped,
       destinationArea: destinationArea ?? this.destinationArea,
       doNo: doNo ?? this.doNo,
+      uid: uid ?? this.uid,
     );
   }
 }

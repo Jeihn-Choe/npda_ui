@@ -1,3 +1,5 @@
+import '../entities/inbound_po_entity.dart';
 
-
-class InboundPoRepository {}
+abstract class InboundPoRepository {
+  Stream<List<InboundPoEntity>> get inboundPoStream;
+}

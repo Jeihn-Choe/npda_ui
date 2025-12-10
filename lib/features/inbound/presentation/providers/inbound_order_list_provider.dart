@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_order_entity.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_dependency_provider.dart';
 
 import '../../domain/usecases/inbound_order_usecase.dart';
 
@@ -41,7 +41,7 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
     : super(const InboundOrderListState());
 
   Future<void> addInboundOrder({
-    required String? pltNo,
+    required String? huId,
     required String? sourceBin,
     required DateTime? workStartTime,
     required String? userId,
@@ -49,7 +49,7 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
     required String? selectedRackLevel,
   }) async {
     final newItem = InboundOrderEntity(
-      pltNo: pltNo!,
+      huId: huId!,
       sourceBin: sourceBin!,
       workStartTime: workStartTime!,
       userId: userId!,
@@ -74,7 +74,7 @@ class InboundOrderListNotifier extends StateNotifier<InboundOrderListState> {
 
   void deleteSelectedOrders() {
     final newOrders = state.orders
-        .where((order) => !state.selectedPltNos.contains(order.pltNo))
+        .where((order) => !state.selectedPltNos.contains(order.huId))
         .toList();
     state = state.copyWith(orders: newOrders, selectedPltNos: {});
   }

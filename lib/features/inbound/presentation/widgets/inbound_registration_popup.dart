@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
 
 import '../../../../presentation/widgets/form_field_widget.dart';
-import '../providers/inbound_providers.dart';
+import 'inbound_registration_popup_viewmodel.dart';
 
 class InboundRegistrationPopup extends ConsumerStatefulWidget {
   final String? scannedData;

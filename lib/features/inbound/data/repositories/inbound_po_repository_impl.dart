@@ -5,10 +5,11 @@ import '../../domain/entities/inbound_po_entity.dart';
 import '../../domain/repositories/inbound_po_repository.dart';
 
 class InboundPoRepositoryImpl implements InboundPoRepository {
-  MqttStreamRepository _mqttStreamRepository;
+  final MqttStreamRepository _mqttStreamRepository;
 
   InboundPoRepositoryImpl(this._mqttStreamRepository);
 
+  @override
   Stream<List<InboundPoEntity>> get inboundPoStream =>
       _mqttStreamRepository.poStream.map((poDtoList) {
         return poDtoList
@@ -19,7 +20,7 @@ class InboundPoRepositoryImpl implements InboundPoRepository {
 
   InboundPoEntity _mapToEntity(PoDto dto) {
     return InboundPoEntity(
-      missionType: dto.missionType ?? 0,
+      missionType: dto.missionType,
       huId: dto.huId ?? '',
       targetRackLevel: dto.targetRackLevel,
       sourceBin: dto.sourceBin,

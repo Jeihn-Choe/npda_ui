@@ -10,18 +10,15 @@ class OutboundPageState extends Equatable {
   final String? scannedDataForPopup;
 
   const OutboundPageState({
-    // ✨ 이름 변경
     this.showOutboundPopup = false,
     this.scannedDataForPopup,
   });
 
   OutboundPageState copyWith({
-    // ✨ 이름 변경
     bool? showOutboundPopup,
     String? scannedDataForPopup,
   }) {
     return OutboundPageState(
-      // ✨ 이름 변경
       showOutboundPopup: showOutboundPopup ?? this.showOutboundPopup,
       scannedDataForPopup: scannedDataForPopup ?? this.scannedDataForPopup,
     );
@@ -33,10 +30,9 @@ class OutboundPageState extends Equatable {
 
 // 2. ViewModel 클래스
 class OutboundPageVm extends StateNotifier<OutboundPageState> {
-  // ✨ 이름 변경
   final Ref _ref;
 
-  OutboundPageVm(this._ref) : super(const OutboundPageState()); // ✨ 이름 변경
+  OutboundPageVm(this._ref) : super(const OutboundPageState());
 
   // 스캔된 데이터 처리/ 팝업 호출 메서드
   void handleScannedData(String scannedData) {

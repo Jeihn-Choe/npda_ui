@@ -4,25 +4,24 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart'; // ✨ 추가: MissionRepository 임포트
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart'; // ✨ 추가: repository_providers 임포트
-import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_mission_entity.dart';
 
 // ✨ 제거: UseCase 임포트 삭제
 // import '../../domain/usecases/outbound_mission_usecase.dart';
+import '../../domain/entities/outbound_sm_entity.dart';
+import '../../domain/repositories/outbound_sm_repository.dart';
 import 'outbound_dependency_provider.dart'; // outboundMissionRepositoryProvider를 가져오기 위해 필요
 
 // ✨ 추가: OutboundMissionRepository 임포트
-import '../../domain/repositories/outbound_mission_repository.dart';
-
 
 // 1. State 클래스 확장 및 Equatable 상속
 class OutboundMissionListState extends Equatable {
   final bool isLoading;
   final String? errorMessage;
-  final List<OutboundMissionEntity> missions;
+  final List<OutboundSmEntity> missions;
 
   // ✨ 미션 선택 관련 상태 추가
   final Set<int> selectedMissionNos;
-  final OutboundMissionEntity? selectedMission;
+  final OutboundSmEntity? selectedMission;
   final bool isMissionSelectionModeActive;
   final bool isMissionDeleting;
 
@@ -40,10 +39,9 @@ class OutboundMissionListState extends Equatable {
   OutboundMissionListState copyWith({
     bool? isLoading,
     String? errorMessage,
-    List<OutboundMissionEntity>? missions,
-    // ✨ copyWith 파라미터 추가
+    List<OutboundSmEntity>? missions,
     Set<int>? selectedMissionNos,
-    OutboundMissionEntity? selectedMission,
+    OutboundSmEntity? selectedMission,
     bool? isMissionSelectionModeActive,
     bool? isMissionDeleting,
   }) {
@@ -76,15 +74,12 @@ class OutboundMissionListState extends Equatable {
 // ✨ 2. Notifier에 로직 메소드 추가
 class OutboundMissionListNotifier
     extends StateNotifier<OutboundMissionListState> {
-  // ✨ 변경: UseCase 대신 Repository 사용 (읽기 전용)
-  final OutboundMissionRepository _outboundMissionRepository;
-  // ✨ 추가: Core MissionRepository 사용 (삭제 전용)
+  final OutboundSmRepository _outboundMissionRepository;
   final MissionRepository _missionRepository;
   StreamSubscription? _missionSubscription;
 
   OutboundMissionListNotifier({
-    // ✨ 변경: 파라미터 타입 변경
-    required OutboundMissionRepository outboundMissionRepository,
+    required OutboundSmRepository outboundMissionRepository,
     required MissionRepository missionRepository,
   }) : _outboundMissionRepository = outboundMissionRepository,
        _missionRepository = missionRepository,
@@ -96,7 +91,7 @@ class OutboundMissionListNotifier
     state = state.copyWith(isLoading: true);
 
     // ✨ 변경: Repository 스트림 구독
-    _missionSubscription = _outboundMissionRepository.outboundMissionStream.listen(
+    _missionSubscription = _outboundMissionRepository.outboundSmStream.listen(
       (missions) {
         state = state.copyWith(
           missions: missions,
@@ -113,8 +108,7 @@ class OutboundMissionListNotifier
     );
   }
 
-  // 🚀 이하 ViewModel에서 가져온 메소드들
-  void selectMission(OutboundMissionEntity mission) {
+  void selectMission(OutboundSmEntity mission) {
     state = state.copyWith(
       selectedMission: mission,
       isMissionSelectionModeActive: false,
@@ -154,10 +148,10 @@ class OutboundMissionListNotifier
     state = state.copyWith(isMissionDeleting: true);
 
     try {
-      var selectedMissions = state.selectedMissionNos.map((e) => e.toString()).toList();
-      await _missionRepository.deleteMissions(
-        selectedMissions,
-      );
+      var selectedMissions = state.selectedMissionNos
+          .map((e) => e.toString())
+          .toList();
+      await _missionRepository.deleteMissions(selectedMissions);
 
       state = state.copyWith(
         isMissionDeleting: false,
@@ -188,14 +182,13 @@ final outboundMissionListProvider =
       OutboundMissionListNotifier,
       OutboundMissionListState
     >((ref) {
-      // ✨ 변경: outboundMissionRepositoryProvider watch
-      final outboundMissionRepository = ref.watch(outboundMissionRepositoryProvider);
-      final missionRepository = ref.watch(missionRepositoryProvider); // ✨ 추가: MissionRepository watch
+      final outboundMissionRepository = ref.watch(outboundSmRepositoryProvider);
+      final missionRepository = ref.watch(
+        missionRepositoryProvider,
+      ); // ✨ 추가: MissionRepository watch
 
       return OutboundMissionListNotifier(
-        // ✨ 변경: 파라미터 이름 변경
         outboundMissionRepository: outboundMissionRepository,
         missionRepository: missionRepository,
       );
     });
-

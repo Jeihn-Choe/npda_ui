@@ -1,5 +1,5 @@
 class InboundOrderEntity {
-  final String pltNo;
+  final String huId;
   final String sourceBin;
   final DateTime workStartTime;
   final String selectedRackLevel;
@@ -8,7 +8,7 @@ class InboundOrderEntity {
   final bool isWrapped;
 
   const InboundOrderEntity({
-    required this.pltNo,
+    required this.huId,
     required this.sourceBin,
     required this.workStartTime,
     required this.selectedRackLevel,
@@ -18,7 +18,7 @@ class InboundOrderEntity {
   });
 
   InboundOrderEntity copyWith({
-    String? pltNo,
+    String? huId,
     String? sourceBin,
     DateTime? workStartTime,
     String? selectedRackLevel,
@@ -27,7 +27,7 @@ class InboundOrderEntity {
     bool? isWrapped,
   }) {
     return InboundOrderEntity(
-      pltNo: pltNo ?? this.pltNo,
+      huId: huId ?? this.huId,
       sourceBin: sourceBin ?? this.sourceBin,
       workStartTime: workStartTime ?? this.workStartTime,
       selectedRackLevel: selectedRackLevel ?? this.selectedRackLevel,
@@ -39,6 +39,6 @@ class InboundOrderEntity {
 
   @override
   String toString() {
-    return 'InboundOrderEntity(pltNo: $pltNo, sourceBin: $sourceBin, workStartTime: $workStartTime, selectedRackLevel: $selectedRackLevel, userId: $userId, destinationArea: $destinationArea, isWrapped: $isWrapped)';
+    return 'InboundOrderEntity(pltNo: $huId, sourceBin: $sourceBin, workStartTime: $workStartTime, selectedRackLevel: $selectedRackLevel, userId: $userId, destinationArea: $destinationArea, isWrapped: $isWrapped)';
   }
 }

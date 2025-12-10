@@ -19,9 +19,10 @@ class InboundOrderUseCase {
     final workItems = items.map((item) {
       return WorkItem(
         missionType: 0,
-        pltNo: item.pltNo,
+        pltNo: item.huId,
         startTime: item.workStartTime,
-        targetRackLevel: int.tryParse(item.selectedRackLevel.substring(0, 1)) ?? 0,
+        targetRackLevel:
+            int.tryParse(item.selectedRackLevel.substring(0, 1)) ?? 0,
         employeeId: item.userId,
         sourceBin: item.sourceBin,
         destinationBin: null,

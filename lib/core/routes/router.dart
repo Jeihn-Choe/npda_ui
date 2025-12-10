@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_page.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_order_list_provider.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/inbound_page_vm.dart';
 import 'package:npda_ui_flutter/features/login/presentation/login_screen.dart';
 import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/outbound_page.dart';

@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_dependency_provider.dart';
 
 import '../../domain/entities/inbound_sm_entity.dart';
 import '../../domain/repositories/inbound_sm_repository.dart';
@@ -85,9 +85,6 @@ class InboundMissionListNotifier
   void _listenToInboundMissions() {
     state = state.copyWith(isLoading: true);
 
-    // ✨ 제거: UseCase의 startListening 호출 제거
-
-    // ✨ 변경: Repository 스트림 구독
     _missionSubscription = _inboundMissionRepository.inboundMissionStream
         .listen(
           (missions) {

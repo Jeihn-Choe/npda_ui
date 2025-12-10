@@ -5,8 +5,8 @@ import 'package:npda_ui_flutter/core/constants/colors.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_page_vm.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_mission_list_provider.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_order_list_provider.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart'; // Specific import for popup VM
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 import 'package:npda_ui_flutter/presentation/widgets/info_field_widget.dart';
 import 'package:npda_ui_flutter/presentation/widgets/robot_button.dart';
@@ -440,13 +440,13 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                                 onLongPress: () {
                                   ref
                                       .read(inboundOrderListProvider.notifier)
-                                      .toggleOrderSelection(item.pltNo);
+                                      .toggleOrderSelection(item.huId);
                                 },
                                 onTap: () {
                                   if (isOrderSelectionMode) {
                                     ref
                                         .read(inboundOrderListProvider.notifier)
-                                        .toggleOrderSelection(item.pltNo);
+                                        .toggleOrderSelection(item.huId);
                                   }
                                 },
                                 child: child,
@@ -455,17 +455,17 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                           }
 
                           return DataRow(
-                            selected: selectedOrderPltNos.contains(item.pltNo),
+                            selected: selectedOrderPltNos.contains(item.huId),
                             onSelectChanged: isOrderSelectionMode
                                 ? (isSelected) {
                                     ref
                                         .read(inboundOrderListProvider.notifier)
-                                        .toggleOrderSelection(item.pltNo);
+                                        .toggleOrderSelection(item.huId);
                                   }
                                 : null,
                             cells: [
                               buildTappableCellForRegistration(
-                                Center(child: Text(item.pltNo)),
+                                Center(child: Text(item.huId)),
                               ),
                               buildTappableCellForRegistration(
                                 Center(child: Text(item.sourceBin)),

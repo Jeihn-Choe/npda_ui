@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
+import 'package:npda_ui_flutter/features/status/presentation/status_page_vm.dart';
 
 class StatusPage extends ConsumerWidget {
   const StatusPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // ✨ [수정] VM을 통해 데이터 접근
+    final statusState = ref.watch(statusPageVMProvider);
+    final inboundPoList = statusState.inboundPoList;
+
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.85,
       child: Column(
@@ -34,18 +39,18 @@ class StatusPage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
 
-                  // 1) 입고 테이블
+                  // 1) 입고 테이블 ✨ [수정] PO 데이터 사용
                   _buildSubHeader('입고', const Color(0xFF8BC34A)),
                   _buildTable(
                     columns: ['HuId', '출발지', '목적구역', '제품규격/단수'],
-                    rows: [
-                      [
-                        'P180010102-040001',
-                        '2A10-AMR-01-21',
-                        '3F 랙',
-                        '1단 - 001',
-                      ],
-                    ],
+                    rows: inboundPoList.map((po) {
+                      return [
+                        po.huId ?? '-', // null 처리
+                        po.sourceBin,
+                        po.destinationArea == 0 ? '지정구역' : '랙', // Enum or string based on entity
+                        '${po.targetRackLevel}단', // Adjust based on actual entity field for "제품규격/단수"
+                      ];
+                    }).toList(),
                   ),
                   const SizedBox(height: 20),
 
@@ -341,3 +346,4 @@ class StatusPage extends ConsumerWidget {
     );
   }
 }
+

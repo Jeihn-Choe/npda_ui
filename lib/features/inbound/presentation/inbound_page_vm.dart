@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart'; // import 경로 수정
 
 /// State ---> UI 상태만
 class InboundPageState extends Equatable {
@@ -86,3 +86,8 @@ class InboundPageVm extends StateNotifier<InboundPageState> {
     state = state.copyWith(showInboundPopup: isShowing);
   }
 }
+
+final inboundPageVMProvider =
+    StateNotifierProvider<InboundPageVm, InboundPageState>((ref) {
+      return InboundPageVm(ref);
+    });

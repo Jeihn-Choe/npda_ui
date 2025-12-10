@@ -6,7 +6,8 @@ import 'package:npda_ui_flutter/core/state/session_manager.dart';
 
 import '../providers/inbound_order_list_provider.dart';
 
-/// inbound_popup viewmodel에서 관리하는 상태 모음
+enum InputField { huId, sourceBin }
+
 class InboundRegistrationPopupViewModel extends ChangeNotifier {
   /// 텍스트 컨트롤러
   final TextEditingController pltCodeController = TextEditingController();
@@ -173,7 +174,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
     try {
       // HuId 중복체크
       final existingOrders = ref.read(inboundOrderListProvider).orders;
-      if (existingOrders.any((item) => item.pltNo == pltCodeController.text)) {
+      if (existingOrders.any((item) => item.huId == pltCodeController.text)) {
         throw Exception('이미 등록된 HU Number 입니다.');
       }
 
@@ -212,7 +213,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
       await ref
           .read(inboundOrderListProvider.notifier)
           .addInboundOrder(
-            pltNo: pltCodeController.text,
+            huId: pltCodeController.text,
             sourceBin: sourceBinController.text,
             workStartTime: DateTime.parse(workTimeController.text),
             userId: userIdController.text,
@@ -255,3 +256,13 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
     super.dispose();
   }
 }
+
+// ✨ [추가] ViewModel Provider 위치 이동
+final inboundRegistrationPopupViewModelProvider =
+    ChangeNotifierProvider.autoDispose<InboundRegistrationPopupViewModel>((
+      ref,
+    ) {
+      final popupViewModel = InboundRegistrationPopupViewModel(ref);
+      popupViewModel.initialize();
+      return popupViewModel;
+    });
