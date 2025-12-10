@@ -1,147 +1,161 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
-import 'package:npda_ui_flutter/core/config/app_config.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import 'mqtt_service.dart';
 
 class MqttServiceImpl implements MqttService {
-  late MqttServerClient _client;
+  MqttServerClient? _client;
+
+  ///Record 사용
+  final _messageController = StreamController<(String, String)>.broadcast();
   final _connectionStateController = StreamController<MqttState>.broadcast();
-  final _messageController = StreamController<RawMqttMessage>.broadcast();
-  final List<String> _topics = [MqttConfig.mwTopic];
 
-  MqttServiceImpl() {
-    // MQTT 클라이언트 초기화
-    _client = MqttServerClient(MqttConfig.broker, MqttConfig.clientId);
-    _client.port = MqttConfig.port;
-
-    // 클라이언트 ID 설정
-    final clientId = MqttConfig.clientId;
-    _client.clientIdentifier = clientId;
-
-    // 연결 상태 관련 콜백 함수 설정.
-    // _client.onConnected = _onConnected;
-    _client.onDisconnected = _onDisconnected;
-    _client.onSubscribed = _onSubscribed;
-    _client.onUnsubscribed = _onUnsubscribed;
-    _client.onSubscribeFail = _onSubscribeFail;
-
-    //pong 메시지 수신 설정 (연결 유지 확인)
-    _client.pongCallback = _pong;
-
-    // 메시지 수신 콜백 함수 설정
-    _client.updates?.listen(_onMessageReceived);
-  }
-
-  // void _onConnected() {
-  //   logger('MQTT::Client Connection Success');
-  //   _connectionStateController.add(MqttState.connected);
-  //
-  //   _client.updates!.listen(_onMessageReceived);
-  // }
-
-  void _onDisconnected() {
-    _connectionStateController.add(MqttState.disconnected);
-  }
-
-  void _onSubscribed(String topic) {}
-
-  void _onUnsubscribed(String? topic) {}
-
-  void _onSubscribeFail(String topic) {}
-
-  void _pong() {
-  }
-
-  void _onMessageReceived(List<MqttReceivedMessage<MqttMessage?>>? c) {
-    final recMess = c![0];
-    final pubMess = recMess.payload as MqttPublishMessage;
-    final payload = MqttPublishPayload.bytesToStringAsString(
-      pubMess.payload.message,
-    );
-
-    _messageController.add(
-      RawMqttMessage(topic: recMess.topic, payload: payload),
-    );
-  }
-
-  @override
-  MqttState get connectionState {
-    switch (_client.connectionStatus?.state) {
-      case MqttConnectionState.connected:
-        return MqttState.connected;
-      case MqttConnectionState.connecting:
-        return MqttState.connecting;
-      case MqttConnectionState.disconnecting:
-      case MqttConnectionState.disconnected:
-      case MqttConnectionState.faulted:
-        return MqttState.disconnected;
-      default:
-        return MqttState.error;
-    }
-  }
+  MqttServiceImpl();
 
   @override
   Stream<MqttState> get connectionStateStream =>
       _connectionStateController.stream;
 
   @override
-  Stream<RawMqttMessage> get rawMqttMessageStream => _messageController.stream;
+  Stream<(String, String)> get mqttMessageStream => _messageController.stream;
 
   @override
-  Future<void> connect() async {
-    _connectionStateController.add(MqttState.connecting);
-    try {
-      await _client.connect();
-    } on NoConnectionException catch (e) {
-      _client.disconnect();
-      _connectionStateController.add(MqttState.error);
-    } on SocketException catch (e) {
-      _client.disconnect();
-      _connectionStateController.add(MqttState.error);
-    } catch (e) {
-      _client.disconnect();
-      _connectionStateController.add(MqttState.error);
-    }
+  MqttState get connectionState {
+    if (_client == null) return MqttState.disconnected;
 
-    // 연결 상태 확인
-    if (_client.connectionStatus!.state == MqttConnectionState.connected) {
-      _connectionStateController.add(MqttState.connected);
-
-      // 연결 성공 후 message stream 리스너 설정 및 토픽 구독
-      _client.updates!.listen(_onMessageReceived);
-      for (final topic in _topics) {
-        subscribe(topic);
-      }
-    } else {
-      _client.disconnect();
-      _connectionStateController.add(MqttState.error);
+    switch (_client!.connectionStatus?.state) {
+      case MqttConnectionState.connected:
+        return MqttState.connected;
+      case MqttConnectionState.connecting:
+        return MqttState.connecting;
+      case MqttConnectionState.disconnected:
+        return MqttState.disconnected;
+      case MqttConnectionState.faulted:
+        return MqttState.error;
+      default:
+        return MqttState.disconnected;
     }
   }
 
   @override
-  void disconnect() {}
+  Future<void> connect({
+    required String clientId,
+    required String broker,
+    required int port,
+  }) async {
+    ///이미 연결되어있으면 끊고 다시 연결
+    if (_client != null &&
+        _client!.connectionStatus?.state == MqttConnectionState.connected) {
+      disconnect();
+    }
+
+    /// 연결 시도 중 상태 알림
+    _connectionStateController.add(MqttState.connecting);
+
+    /// 클라이언트 생성 및 기본 설정
+    _client = MqttServerClient(broker, clientId);
+    _client!.port = port;
+    _client!.keepAlivePeriod = 20;
+
+    /// 콜백 함수 연결
+    _client!.onDisconnected = _onDisconnected;
+    _client!.onConnected = _onConnected;
+    _client!.onSubscribed = _onSubscribed;
+
+    /// 연결 옵션 설정 (Clean Session)
+    final connMessage = MqttConnectMessage()
+        .withClientIdentifier(clientId)
+        .startClean()
+        .withWillQos(MqttQos.atLeastOnce);
+    _client!.connectionMessage = connMessage;
+
+    /// 연결 시도
+    try {
+      await _client!.connect();
+    } catch (e) {
+      appLogger.e('MQTT::클라이언트 예외 - $e');
+      _client!.disconnect();
+    }
+
+    if (_client?.connectionStatus?.state == MqttConnectionState.connected) {
+      _connectionStateController.add(MqttState.connected);
+
+      _client!.updates!.listen(_onMessageReceived);
+    } else {
+      appLogger.e('MQTT::연결실패 - status: ${_client?.connectionStatus}');
+      _connectionStateController.add(MqttState.error);
+      disconnect();
+    }
+  }
+
+  @override
+  void disconnect() {
+    _client?.disconnect();
+  }
 
   @override
   void subscribe(String topic) {
-    if (_client.connectionStatus!.state == MqttConnectionState.connected) {
-      _client.subscribe(topic, MqttQos.atMostOnce);
+    if (_client?.connectionStatus?.state == MqttConnectionState.connected) {
+      _client!.subscribe(topic, MqttQos.atLeastOnce);
+    } else {
+      appLogger.w('MQTT::구독 실패 - 클라이언트가 연결되어 있지 않음');
     }
   }
 
   @override
-  void unsubscribe(String topic) {}
+  void unsubscribe(String topic) {
+    if (_client?.connectionStatus?.state == MqttConnectionState.connected) {
+      _client!.unsubscribe(topic);
+    }
+  }
 
   @override
   void publish(String topic, String message) {
-    if (_client.connectionStatus!.state == MqttConnectionState.connected) {
+    if (_client?.connectionStatus?.state == MqttConnectionState.connected) {
       final builder = MqttClientPayloadBuilder();
       builder.addString(message);
+      _client!.publishMessage(topic, MqttQos.atLeastOnce, builder.payload!);
+    } else {
+      appLogger.w('MQTT::발행 실패 - 클라이언트가 연결되어 있지 않음');
+    }
+  }
 
-      _client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
-    } else {}
+  void _onConnected() {
+    appLogger.i('MQTT::연결됨');
+    _connectionStateController.add(MqttState.connected);
+  }
+
+  void _onDisconnected() {
+    appLogger.i('MQTT::연결 해제됨');
+    if (!_connectionStateController.isClosed) {
+      _connectionStateController.add(MqttState.disconnected);
+    }
+  }
+
+  void _onSubscribed(String topic) {
+    appLogger.i('MQTT::구독됨 - topic: $topic');
+  }
+
+  void _onMessageReceived(List<MqttReceivedMessage<MqttMessage?>>? c) {
+    if (c == null || c.isEmpty) return;
+
+    final recMess = c[0];
+    final pubMess = recMess.payload as MqttPublishMessage;
+
+    final payload = MqttPublishPayload.bytesToStringAsString(
+      pubMess.payload.message,
+    );
+
+    _messageController.add((recMess.topic, payload));
+
+    appLogger.i('MQTT::메시지 수신 - topic: ${recMess.topic} , payload: $payload');
+  }
+
+  void dispose() {
+    _messageController.close();
+    _connectionStateController.close();
   }
 }

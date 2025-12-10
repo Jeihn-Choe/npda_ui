@@ -2,10 +2,17 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart'; // ✨ 추가: MissionRepository 임포트
+import 'package:npda_ui_flutter/core/providers/repository_providers.dart'; // ✨ 추가: repository_providers 임포트
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_dependency_provider.dart';
 
 import '../../domain/entities/outbound_1f_mission_entity.dart';
-import '../../domain/usecases/outbound_1f_mission_usecase.dart';
+// ✨ 제거: UseCase 임포트 삭제
+// import '../../domain/usecases/outbound_1f_mission_usecase.dart';
+
+// ✨ 추가: Outbound1FMissionRepository 임포트
+import '../../domain/repositories/outbound_1f_mission_repository.dart';
+
 
 // ✨ 1. 상태 클래스 필드명 변경 및 타입 수정
 class Outbound1FMissionListState extends Equatable {
@@ -55,18 +62,27 @@ class Outbound1FMissionListState extends Equatable {
 // ✨ 2. Notifier 로직 통합 및 수정
 class Outbound1FMissionListNotifier
     extends StateNotifier<Outbound1FMissionListState> {
-  final Outbound1FMissionUseCase _missionUseCase;
+  // ✨ 변경: UseCase 대신 Repository 사용 (읽기 전용)
+  final Outbound1FMissionRepository _outbound1FMissionRepository;
+  // ✨ 추가: Core MissionRepository 사용 (삭제 전용)
+  final MissionRepository _missionRepository;
   StreamSubscription? _missionSubscription;
 
-  Outbound1FMissionListNotifier(this._missionUseCase)
-      : super(const Outbound1FMissionListState()) {
+  Outbound1FMissionListNotifier({
+    // ✨ 변경: 파라미터 타입 변경
+    required Outbound1FMissionRepository outbound1FMissionRepository,
+    required MissionRepository missionRepository,
+  }) : _outbound1FMissionRepository = outbound1FMissionRepository,
+       _missionRepository = missionRepository,
+       super(const Outbound1FMissionListState()) {
     listenToMissions();
   }
 
   void listenToMissions() {
     state = state.copyWith(isMissionListLoading: true);
 
-    _missionSubscription = _missionUseCase.outbound1FMissionStream.listen(
+    // ✨ 변경: Repository 스트림 구독
+    _missionSubscription = _outbound1FMissionRepository.outbound1fMissionStream.listen(
       (missions) {
         state = state.copyWith(
           missions: missions,
@@ -113,8 +129,8 @@ class Outbound1FMissionListNotifier
     state = state.copyWith(isMissionDeleting: true);
 
     try {
-      await _missionUseCase.deleteSelectedOutbound1FMissions(
-        selectedMissionNos: state.selectedMissionNos.toList(),
+      await _missionRepository.deleteMissions(
+        state.selectedMissionNos.map((e) => e.toString()).toList(),
       );
       state = state.copyWith(
         isMissionDeleting: false,
@@ -138,6 +154,12 @@ class Outbound1FMissionListNotifier
 final outbound1FMissionListProvider =
     StateNotifierProvider<Outbound1FMissionListNotifier, Outbound1FMissionListState>(
         (ref) {
-  final missionUseCase = ref.watch(outbound1FMissionUseCaseProvider);
-  return Outbound1FMissionListNotifier(missionUseCase);
+  // ✨ 변경: outbound1FMissionRepositoryProvider watch
+  final outbound1FMissionRepository = ref.watch(outbound1fMissionRepositoryProvider);
+  final missionRepository = ref.watch(missionRepositoryProvider); // ✨ 추가: MissionRepository watch
+  return Outbound1FMissionListNotifier(
+    // ✨ 변경: 파라미터 이름 변경
+    outbound1FMissionRepository: outbound1FMissionRepository,
+    missionRepository: missionRepository,
+  );
 });

@@ -683,10 +683,10 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                             (1, "Forklift") => WidgetStateProperty.all(
                               Colors.orange.shade200,
                             ),
-                            (1, "PLTTruck_1F") => WidgetStateProperty.all(
+                            (1, "PLT_1F") => WidgetStateProperty.all(
                               Colors.lightGreen.shade200,
                             ),
-                            (1, "PLTTruck_3F") => WidgetStateProperty.all(
+                            (1, "PLT_3F") => WidgetStateProperty.all(
                               Colors.lightBlue.shade200,
                             ),
                             _ => null,

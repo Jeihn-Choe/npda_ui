@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/providers/usecase_providers.dart';
+// ✨ 제거: 불필요한 import 제거
 
 final initializeAppProvider = FutureProvider<void>((ref) async {
-  ref.read(mqttMessageRouterUseCaseProvider);
+  // ✨ 제거: mqttMessageRouterUseCaseProvider 참조 제거
+  // ref.read(mqttMessageRouterUseCaseProvider);
 });

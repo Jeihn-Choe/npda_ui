@@ -1,5 +1,3 @@
-import '../../../../core/domain/entities/sm_entity.dart';
-
 class OutboundMissionEntity {
   final int missionNo;
   final int subMissionNo;
@@ -7,11 +5,11 @@ class OutboundMissionEntity {
   final String doNo;
   final String sourceBin;
   final String destinationBin;
-  final int? subMissionStatus;
-  final String? startTime;
+  final int? subMissionStatus; // `int?` 유지
+  final String? startTime; // `String?` 유지
   final int missionType;
   final bool isWrapped;
-  final String? robotName;
+  final String? robotName; // `String?` 유지
 
   const OutboundMissionEntity({
     required this.missionNo,
@@ -26,21 +24,4 @@ class OutboundMissionEntity {
     required this.isWrapped,
     this.robotName,
   });
-
-  // SmEntity로부터 OutboundMissionEntity를 생성하는 팩토리 생성자
-  factory OutboundMissionEntity.fromSmEntity(SmEntity smEntity) {
-    return OutboundMissionEntity(
-      missionNo: smEntity.missionNo,
-      subMissionNo: smEntity.subMissionNo,
-      pltNo: smEntity.huId ?? '',
-      doNo: smEntity.doNo ?? '',
-      sourceBin: smEntity.sourceBin,
-      destinationBin: smEntity.destinationBin,
-      subMissionStatus: smEntity.subMissionStatus,
-      startTime: smEntity.startTime,
-      missionType: smEntity.missionType,
-      isWrapped: smEntity.isWrapped ?? false,
-      robotName: smEntity.robotName,
-    );
-  }
 }

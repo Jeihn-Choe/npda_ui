@@ -26,4 +26,9 @@ class MqttConfig {
   //Topic 모음
   static const String mwTopic = "MW.NPDA";
   static const String npdaTopic = "NPDA.MW";
+
+  // 로봇 상태 토픽
+  static const String ssrStatusTopic = "mid.sol/8100";
+  static const String spt1FStatusTopic = "mid.sol/8101";
+  static const String spt3FStatusTopic = "mid.sol/8102";
 }

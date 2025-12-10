@@ -3,9 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
 import 'package:npda_ui_flutter/core/routes/router.dart';
-// 🚀 삭제: import 'package:npda_ui_flutter/features/login/presentation/providers/login_providers.dart';
-// 🚀 추가: SessionManagerNotifier import
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
+import 'package:npda_ui_flutter/features/status/presentation/status_page.dart';
 
 import '../core/state/scanner_viewmodel.dart';
 
@@ -19,6 +18,7 @@ class MainShell extends ConsumerStatefulWidget {
 }
 
 class _MainShellState extends ConsumerState<MainShell> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   late FocusNode _focusNode;
 
   @override
@@ -35,10 +35,10 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    // 🚀 수정: ref.listen 대신 ref.watch를 통해 상태를 직접 확인
+    // ref.listen 대신 ref.watch를 통해 상태를 직접 확인
     final sessionState = ref.watch(sessionManagerProvider);
 
-    // 🚀 추가: 빌드가 끝난 직후에 상태를 확인하고 팝업을 띄우는 로직
+    // 빌드가 끝난 직후에 상태를 확인하고 팝업을 띄우는 로직
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 세션이 만료되었고, 아직 팝업이 표시되지 않았다면 팝업을 띄웁니다.
       if (sessionState.status == SessionStatus.expired &&
@@ -69,12 +69,9 @@ class _MainShellState extends ConsumerState<MainShell> {
     });
     final isScannerModeActive = ref.watch(scannerViewModelProvider);
 
-    // ✨ 활동 감지 시 호출될 함수
+    // 활동 감지 시 호출될 함수
     void resetSessionTimer() {
-      ref
-          .read(sessionManagerProvider.notifier)
-          .resetSessionTimer(); // 🚀 수정: .notifier 추가
-      // logger('Session timer has been reset.'); // 디버깅용
+      ref.read(sessionManagerProvider.notifier).resetSessionTimer();
     }
 
     return DefaultTabController(
@@ -82,28 +79,30 @@ class _MainShellState extends ConsumerState<MainShell> {
       child: Stack(
         children: [
           Scaffold(
+            key: _scaffoldKey,
+            drawer: const StatusPage(),
             appBar: AppBar(
               backgroundColor: AppColors.grey200,
-              toolbarHeight: 18,
+              toolbarHeight: 15,
+              leading: IconButton(
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                icon: const Icon(
+                  Icons.menu,
+                  color: AppColors.celltrionBlack,
+                  size: 20,
+                ),
+                onPressed: () {
+                  _scaffoldKey.currentState?.openDrawer();
+                },
+              ),
               title: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () {
-                      Scaffold.of(context).openDrawer();
-                    },
-                    icon: Icon(
-                      Icons.menu,
-                      color: AppColors.celltrionBlack,
-                      size: 20,
-                    ),
-                  ),
                   Row(
                     children: [
                       Text(
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.grey900,
                           fontWeight: FontWeight.bold,
                           fontSize: 14,
@@ -114,7 +113,7 @@ class _MainShellState extends ConsumerState<MainShell> {
                         onPressed: () {
                           ref.read(sessionManagerProvider.notifier).logout();
                         },
-                        icon: Icon(Icons.logout),
+                        icon: const Icon(Icons.logout),
                         color: AppColors.grey900,
                         iconSize: 20,
                       ),
@@ -130,11 +129,11 @@ class _MainShellState extends ConsumerState<MainShell> {
                       child: TabBar(
                         labelColor: AppColors.celltrionGreen,
                         unselectedLabelColor: AppColors.lightGrey,
-                        labelStyle: TextStyle(
+                        labelStyle: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
                         ),
-                        unselectedLabelStyle: TextStyle(
+                        unselectedLabelStyle: const TextStyle(
                           fontWeight: FontWeight.normal,
                           fontSize: 12,
                         ),
@@ -144,14 +143,14 @@ class _MainShellState extends ConsumerState<MainShell> {
                           color: AppColors.celltrionGreen.withAlpha(20),
                         ),
 
-                        tabs: [
+                        tabs: const [
                           Tab(text: '입고'),
                           Tab(text: '출고'),
                           Tab(text: '1층출고'),
                         ],
                         //탭이 선택될 때 GoRouter의 브랜치 변경
                         onTap: (index) {
-                          resetSessionTimer(); // ✨ 추가: 탭 클릭 시 타이머 리셋
+                          resetSessionTimer(); // 탭 클릭 시 타이머 리셋
                           _onTap(context, index);
                         },
                       ),
@@ -169,7 +168,7 @@ class _MainShellState extends ConsumerState<MainShell> {
                           border: Border.all(color: Colors.white54),
                         ),
                         child: IconButton(
-                          icon: Icon(Icons.barcode_reader),
+                          icon: const Icon(Icons.barcode_reader),
                           color: isScannerModeActive
                               ? Colors.deepPurple
                               : Colors.grey,
@@ -187,7 +186,6 @@ class _MainShellState extends ConsumerState<MainShell> {
             ),
             // 탭에 따라 다른 화면을 보여주는 Shell
             body: GestureDetector(
-              // ✨ 추가: 화면 전체 감싸기
               onTap: resetSessionTimer,
               onPanDown: (_) => resetSessionTimer(),
               behavior: HitTestBehavior.translucent,
@@ -201,7 +199,7 @@ class _MainShellState extends ConsumerState<MainShell> {
 
   void _onTap(BuildContext context, int index) {
     //Provider에 현재 탭 인덱스 저장
-    ref.read(mainShellTabIndexProvider.notifier).state = index; // modified
+    ref.read(mainShellTabIndexProvider.notifier).state = index;
 
     widget.navigationShell.goBranch(
       index,

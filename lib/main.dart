@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:npda_ui_flutter/core/routes/router.dart';
 import 'package:npda_ui_flutter/core/themes/app_theme.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
-
-import 'core/routes/router.dart';
-import 'features/outbound/presentation/providers/outbound_dependency_provider.dart';
 
 // TODO: SplashScreen import 추가
 // TODO: AppTheme import 추가 (core/themes/app_theme.dart)
@@ -25,20 +22,11 @@ class MyApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.watch(inboundMissionUseCaseProvider);
-    ref.watch(outboundMissionUseCaseProvider);
     return MaterialApp.router(
+      routerConfig: ref.watch(routerProvider),
       debugShowCheckedModeBanner: false,
       title: 'Celltrion NPDA',
       theme: AppTheme.lightTheme,
-      routerConfig: ref.watch(routerProvider),
-
-      // TODO: 라우팅 설정 추가
-      // - /splash (초기 화면)
-      // - /login (로그인 화면)
-      // - /main (메인 화면)
-      // routes: AppRouter.routes,
-      // initialRoute: '/splash',
     );
   }
 }

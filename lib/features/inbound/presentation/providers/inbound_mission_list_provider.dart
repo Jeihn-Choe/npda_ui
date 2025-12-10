@@ -4,17 +4,18 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_mission_entity.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/usecases/inbound_mission_usecase.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_providers.dart';
 
-// 1. State 클래스
+import '../../domain/entities/inbound_sm_entity.dart';
+import '../../domain/repositories/inbound_sm_repository.dart';
+
+// 1. State 클래스 (기존과 동일)
 class InboundMissionListState extends Equatable {
-  final List<InboundMissionEntity> missions;
+  final List<InboundSmEntity> missions;
   final bool isLoading;
   final String? errorMessage;
   final Set<int> selectedMissionNos;
-  final InboundMissionEntity? selectedMission;
+  final InboundSmEntity? selectedMission;
   final bool isSelectionModeActive;
   final bool isDeleting;
 
@@ -29,11 +30,11 @@ class InboundMissionListState extends Equatable {
   });
 
   InboundMissionListState copyWith({
-    List<InboundMissionEntity>? missions,
+    List<InboundSmEntity>? missions,
     bool? isLoading,
     String? errorMessage,
     Set<int>? selectedMissionNos,
-    InboundMissionEntity? selectedMission,
+    InboundSmEntity? selectedMission,
     bool? isSelectionModeActive,
     bool? isDeleting,
   }) {
@@ -64,14 +65,18 @@ class InboundMissionListState extends Equatable {
 // 2. Notifier 클래스
 class InboundMissionListNotifier
     extends StateNotifier<InboundMissionListState> {
-  final InboundMissionUseCase _getInboundMissionsUseCase;
+  // ✨ 변경: UseCase 대신 Repository 사용 (읽기 전용)
+  final InboundSmRepository _inboundMissionRepository;
+
+  // ✨ 유지: Core Repository 사용 (삭제 전용)
   final MissionRepository _missionRepository;
   StreamSubscription? _missionSubscription;
 
   InboundMissionListNotifier({
-    required InboundMissionUseCase getInboundMissionsUseCase,
+    // ✨ 변경: 파라미터 타입 변경
+    required InboundSmRepository inboundMissionRepository,
     required MissionRepository missionRepository,
-  }) : _getInboundMissionsUseCase = getInboundMissionsUseCase,
+  }) : _inboundMissionRepository = inboundMissionRepository,
        _missionRepository = missionRepository,
        super(const InboundMissionListState()) {
     _listenToInboundMissions();
@@ -80,9 +85,10 @@ class InboundMissionListNotifier
   void _listenToInboundMissions() {
     state = state.copyWith(isLoading: true);
 
-    _getInboundMissionsUseCase.startListening();
+    // ✨ 제거: UseCase의 startListening 호출 제거
 
-    _missionSubscription = _getInboundMissionsUseCase.inboundMissionStream
+    // ✨ 변경: Repository 스트림 구독
+    _missionSubscription = _inboundMissionRepository.inboundMissionStream
         .listen(
           (missions) {
             state = state.copyWith(
@@ -101,7 +107,7 @@ class InboundMissionListNotifier
         );
   }
 
-  void selectMission(InboundMissionEntity mission) {
+  void selectMission(InboundSmEntity mission) {
     state = state.copyWith(
       selectedMission: mission,
       isSelectionModeActive: false,
@@ -171,12 +177,14 @@ final inboundMissionListProvider =
     StateNotifierProvider<InboundMissionListNotifier, InboundMissionListState>((
       ref,
     ) {
-      final getInboundMissionsUseCase = ref.watch(
-        inboundMissionUseCaseProvider,
+      // ✨ 변경: inboundMissionRepositoryProvider watch
+      final inboundMissionRepository = ref.watch(
+        inboundMissionRepositoryProvider,
       );
       final missionRepository = ref.watch(missionRepositoryProvider);
       return InboundMissionListNotifier(
-        getInboundMissionsUseCase: getInboundMissionsUseCase,
+        // ✨ 변경: 파라미터 이름 변경
+        inboundMissionRepository: inboundMissionRepository,
         missionRepository: missionRepository,
       );
     });

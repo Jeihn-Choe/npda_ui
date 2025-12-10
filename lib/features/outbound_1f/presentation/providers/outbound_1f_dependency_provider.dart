@@ -1,22 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/providers/repository_providers.dart';
-import '../../../../core/providers/usecase_providers.dart';
-import '../../domain/usecases/outbound_1f_mission_usecase.dart';
+// ✨ 제거: 불필요한 import 제거
+// import '../../../../core/providers/repository_providers.dart';
 
-/// OutboundMissionUseCase - 구현체 연결 Provider
-final outbound1FMissionUseCaseProvider = Provider<Outbound1FMissionUseCase>((
-  ref,
-) {
-  final mqttMessageRouterUseCase = ref.watch(mqttMessageRouterUseCaseProvider);
-  final missionRepository = ref.watch(missionRepositoryProvider);
-  final useCase = Outbound1FMissionUseCase(
-    mqttMessageRouterUseCase,
-    missionRepository,
-  );
-  useCase.startListening();
-  ref.onDispose(() {
-    useCase.dispose();
-  });
-  return useCase;
+// ✨ 추가: Repository 관련 임포트
+import 'package:npda_ui_flutter/features/outbound_1f/domain/repositories/outbound_1f_mission_repository.dart';
+import 'package:npda_ui_flutter/features/outbound_1f/data/repositories/outbound_1f_mission_repository_impl.dart';
+import 'package:npda_ui_flutter/core/data/repositories/mqtt/mqtt_stream_repository.dart';
+
+
+// ✨ 추가: Outbound1FMissionRepository 제공자
+final outbound1fMissionRepositoryProvider = Provider<Outbound1FMissionRepository>((ref) {
+  final mqttStreamRepository = ref.watch(mqttStreamRepositoryProvider);
+  return Outbound1FMissionRepositoryImpl(mqttStreamRepository);
 });
