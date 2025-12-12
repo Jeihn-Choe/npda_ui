@@ -5,13 +5,14 @@ import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_re
 import 'package:npda_ui_flutter/features/status/domain/entities/robot_status_entity.dart';
 import 'package:npda_ui_flutter/features/status/presentation/providers/robot_status_provider.dart';
 
+import '../../status/presentation/providers/status_dependency_provider.dart';
+
 /// State ---> UI 상태만
 class InboundPageState extends Equatable {
   final String? firstScannedData;
   final String? secondScannedData;
   final bool showInboundPopup;
 
-  // ✨ 로봇 상태 필드 추가
   final RobotStatusEntity? ssrStatus;
   final RobotStatusEntity? spt1fStatus;
   final RobotStatusEntity? spt3fStatus;
@@ -61,7 +62,7 @@ class InboundPageVm extends StateNotifier<InboundPageState> {
   InboundPageVm(this._ref)
     : super(
         InboundPageState(
-          // ✨ 초기 로봇 상태 설정
+          // 초기 로봇 상태 설정
           ssrStatus: _ref.read(robotStatusProvider).ssrStatus,
           spt1fStatus: _ref.read(robotStatusProvider).spt1fStatus,
           spt3fStatus: _ref.read(robotStatusProvider).spt3fStatus,
@@ -81,6 +82,7 @@ class InboundPageVm extends StateNotifier<InboundPageState> {
     });
   }
 
+  // [입고 페이지 메서드]
   /// 스캔 없이 수동으로 팝업 열기
   void openPopupManually() {
     state = state.copyWith(
@@ -124,6 +126,11 @@ class InboundPageVm extends StateNotifier<InboundPageState> {
 
   void setInboundPopupState(bool isShowing) {
     state = state.copyWith(showInboundPopup: isShowing);
+  }
+
+  // [로봇 관련 메서드]
+  Future<void> pauseResumeRobot(RobotStatusEntity robot) async {
+    await _ref.read(robotControlUseCaseProvider).call(robot);
   }
 }
 

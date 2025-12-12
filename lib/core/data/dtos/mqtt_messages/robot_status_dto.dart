@@ -47,7 +47,7 @@ class RobotStatusDto {
 /// 로봇 실행 상태
 enum RobotRunState {
   idle(0, '대기'),
-  run(1, '실행 중'),
+  run(1, '작업중'),
   pause(2, '일시정지'),
   error(3, '에러'),
   unknown(-1, '알 수 없음'); // 예외 처리를 위한 unknown 추가 추천

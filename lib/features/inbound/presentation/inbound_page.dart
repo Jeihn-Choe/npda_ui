@@ -569,11 +569,9 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                                 ],
                               ),
                             ),
-                            // 오른쪽: 필터 버튼들
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               crossAxisAlignment: CrossAxisAlignment.end,
-                              // ✨ 아래쪽 정렬 (배지 높이 차이 대비)
                               children: [
                                 // ✨ Forklift RobotButton
                                 Column(
@@ -581,13 +579,18 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                                   children: [
                                     _buildRobotStatusBadge(pageState.ssrStatus),
                                     const SizedBox(height: 4),
-                                    // ✨ 뱃지와 버튼 사이 간격 복원
                                     RobotButton(
                                       text: 'Forklift',
                                       backgroundColor: Colors.orange,
 
                                       onPressed: () {
-                                        // TODO: Forklift pause/resume 로직
+                                        ref
+                                            .read(
+                                              inboundPageVMProvider.notifier,
+                                            )
+                                            .pauseResumeRobot(
+                                              pageState.ssrStatus!,
+                                            );
                                       },
                                     ),
                                   ],
@@ -602,12 +605,17 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                                       pageState.spt1fStatus,
                                     ),
                                     const SizedBox(height: 4),
-                                    // ✨ 뱃지와 버튼 사이 간격 복원
                                     RobotButton(
                                       text: 'PLT_1F',
                                       backgroundColor: Colors.lightGreen,
                                       onPressed: () {
-                                        // TODO: PLT_1F pause/resume 로직
+                                        ref
+                                            .read(
+                                              inboundPageVMProvider.notifier,
+                                            )
+                                            .pauseResumeRobot(
+                                              pageState.spt1fStatus!,
+                                            );
                                       },
                                     ),
                                   ],
@@ -621,12 +629,17 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                                       pageState.spt3fStatus,
                                     ),
                                     const SizedBox(height: 4),
-                                    // ✨ 뱃지와 버튼 사이 간격 복원
                                     RobotButton(
                                       text: 'PLT_3F',
                                       backgroundColor: Colors.lightBlue,
                                       onPressed: () {
-                                        // TODO: PLT_3F pause/resume 로직
+                                        ref
+                                            .read(
+                                              inboundPageVMProvider.notifier,
+                                            )
+                                            .pauseResumeRobot(
+                                              pageState.spt3fStatus!,
+                                            );
                                       },
                                     ),
                                   ],
@@ -714,7 +727,7 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                         return DataRow(
                           color: switch ((
                             mission.subMissionStatus,
-                            mission?.robotName,
+                            mission.robotName,
                           )) {
                             (1, "Forklift") => WidgetStateProperty.all(
                               Colors.orange.shade200,
@@ -776,7 +789,7 @@ class _InboundPageState extends ConsumerState<InboundPage> {
         color = AppColors.error;
         break;
       default: // Idle (0)
-        color = Colors.grey;
+        color = Colors.black54;
     }
     return (text, color);
   }

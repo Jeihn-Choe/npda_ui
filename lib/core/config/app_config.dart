@@ -15,7 +15,8 @@ class ApiConfig {
   static const String validateOrderEndpoint = "/order/validate";
 
   // Robot Management
-  // pause & resume 필요
+  static const String pauseRobotEndpoint = "/robot/pause";
+  static const String resumeRobotEndpoint = "/robot/resume";
 }
 
 class MqttConfig {

@@ -11,6 +11,7 @@ import '../../../presentation/main_shell.dart';
 import '../../../presentation/widgets/form_card_layout.dart';
 import '../../../presentation/widgets/info_field_widget.dart';
 import '../../../presentation/widgets/robot_button.dart';
+import '../../status/domain/entities/robot_status_entity.dart';
 import 'outbound_1f_vm.dart';
 
 class Outbound1FPage extends ConsumerStatefulWidget {
@@ -133,7 +134,7 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
                 child: _buildMissionDetails(vmState),
               ),
               const SizedBox(height: 4),
-              _buildMissionHeader(missionListState),
+              _buildMissionHeader(missionListState, vmState, ref), // ✨ ref 전달
               const SizedBox(height: 4),
               if (missionListState.isMissionListLoading)
                 const Center(
@@ -603,67 +604,167 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
       ),
     );
   }
+}
 
-  // ✨ 6. Mission Header 빌더 (제목 + 로봇 버튼들)
-  Widget _buildMissionHeader(Outbound1FMissionListState missionListState) {
-    final missionCount = missionListState.missions.length;
+// ✨ 6. Mission Header 빌더 (제목 + 로봇 버튼들)
+Widget _buildMissionHeader(
+  Outbound1FMissionListState missionListState,
+  Outbound1fState vmState,
+  WidgetRef ref, // ✨ ref 파라미터 추가
+) {
+  final missionCount = missionListState.missions.length;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // 왼쪽: 제목
-          RichText(
-            text: TextSpan(
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-              children: <TextSpan>[
-                const TextSpan(text: '1층 출고 List '),
-                TextSpan(
-                  text: '(총 $missionCount건)',
-                  style: const TextStyle(
-                    color: AppColors.celltrionGreen,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // 왼쪽: 제목
+        RichText(
+          text: TextSpan(
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
             ),
-          ),
-          // 오른쪽: 로봇 버튼들
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RobotButton(
-                text: 'Forklift',
-                backgroundColor: Colors.orange,
-                onPressed: () {
-                  // TODO: Forklift pause/resume 로직
-                },
-              ),
-              const SizedBox(width: 4),
-              RobotButton(
-                text: 'PLT_1F',
-                backgroundColor: Colors.lightGreen,
-                onPressed: () {
-                  // TODO: PLT_1F pause/resume 로직
-                },
-              ),
-              const SizedBox(width: 4),
-              RobotButton(
-                text: 'PLT_3F',
-                backgroundColor: Colors.lightBlue,
-                onPressed: () {
-                  // TODO: PLT_3F pause/resume 로직
-                },
+            children: <TextSpan>[
+              const TextSpan(text: '1층 출고 List '),
+              TextSpan(
+                text: '(총 $missionCount건)',
+                style: const TextStyle(
+                  color: AppColors.celltrionGreen,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
-        ],
-      ),
-    );
+        ),
+        // 오른쪽: 로봇 버튼들
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // ✨ Forklift RobotButton
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildRobotStatusBadge(vmState.ssrStatus),
+                const SizedBox(height: 4),
+                RobotButton(
+                  text: 'Forklift',
+                  backgroundColor: Colors.orange,
+                  onPressed: () {
+                    ref.read(outbound1FVMProvider.notifier).pauseResumeRobot(vmState.ssrStatus);
+                  },
+                ),
+              ],
+            ),
+
+            const SizedBox(width: 4),
+            // ✨ PLT_1F RobotButton
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildRobotStatusBadge(vmState.spt1fStatus),
+                const SizedBox(height: 4),
+                RobotButton(
+                  text: 'PLT_1F',
+                  backgroundColor: Colors.lightGreen,
+                  onPressed: () {
+                    ref.read(outbound1FVMProvider.notifier).pauseResumeRobot(vmState.spt1fStatus);
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(width: 4),
+            // ✨ PLT_3F RobotButton
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildRobotStatusBadge(vmState.spt3fStatus), // ✨ 오타 수정 (ssrStatus -> spt3fStatus)
+                const SizedBox(height: 4),
+                RobotButton(
+                  text: 'PLT_3F',
+                  backgroundColor: Colors.lightBlue,
+                  onPressed: () {
+                    ref.read(outbound1FVMProvider.notifier).pauseResumeRobot(vmState.spt3fStatus);
+                  },
+                ),
+              ],
+            ),
+          ],
+        ),
+      ],
+    ),
+  );
+}
+
+// RobotStatusEntity에서 텍스트와 색상 추출 헬퍼
+(String, Color) _getRobotStatusDisplay(RobotStatusEntity? robotStatus) {
+  if (robotStatus == null) return ('알 수 없음', Colors.grey); // 기본값
+
+  final text = robotStatus.runState.description;
+  Color color;
+  switch (robotStatus.runState.value) {
+    case 1: // Run
+      color = AppColors.celltrionGreen;
+      break;
+    case 2: // Pause
+      color = AppColors.orange;
+      break;
+    case 3: // Error
+      color = AppColors.error;
+      break;
+    default: // Idle (0)
+      color = Colors.black54;
   }
+  return (text, color);
+}
+
+// ✨ 로봇 상태 배지 위젯
+Widget _buildRobotStatusBadge(RobotStatusEntity? robotStatus) {
+  if (robotStatus == null) return const SizedBox(height: 18); // 자리 차지 (높이 최소화)
+
+  final (text, color) = _getRobotStatusDisplay(robotStatus);
+
+  return Container(
+    width: 60.0,
+    // ✨ 버튼 너비와 동일하게 고정
+    padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+    // 패딩 줄임 (공간 확보)
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(10),
+      border: Border.all(color: color.withOpacity(0.5), width: 1),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.05),
+          blurRadius: 2,
+          offset: const Offset(0, 1),
+        ),
+      ],
+    ),
+    alignment: Alignment.center,
+    // ✨ 내용 가운데 정렬
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center, // ✨ Row 내부도 가운데 정렬
+      children: [
+        Icon(Icons.circle, size: 6, color: color),
+        const SizedBox(width: 3),
+        Flexible(
+          // ✨ 텍스트가 길어질 경우 대비
+          child: Text(
+            text,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              height: 1.0,
+            ),
+            overflow: TextOverflow.ellipsis, // ✨ 말줄임표 처리
+          ),
+        ),
+      ],
+    ),
+  );
 }
