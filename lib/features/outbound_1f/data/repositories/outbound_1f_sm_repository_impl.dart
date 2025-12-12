@@ -1,26 +1,24 @@
-// lib/features/outbound/data/repositories/outbound_sm_repository_impl.dart
-
 import 'package:npda_ui_flutter/core/data/repositories/mqtt/mqtt_stream_repository.dart';
-import 'package:npda_ui_flutter/features/outbound/domain/repositories/outbound_sm_repository.dart';
 
 import '../../../../core/data/dtos/mqtt_messages/sm_dto.dart';
-import '../../domain/entities/outbound_sm_entity.dart';
+import '../../domain/entities/outbound_1f_sm_entity.dart';
+import '../../domain/repositories/outbound_1f_sm_repository.dart';
 
-class OutboundSmRepositoryImpl implements OutboundSmRepository {
+class Outbound1fSmRepositoryImpl extends Outbound1fSmRepository {
   final MqttStreamRepository _mqttStreamRepository;
 
-  OutboundSmRepositoryImpl(this._mqttStreamRepository);
+  Outbound1fSmRepositoryImpl(this._mqttStreamRepository);
 
   @override
-  Stream<List<OutboundSmEntity>> get outboundSmStream =>
+  Stream<List<Outbound1fSmEntity>> get outbound1fSmStream =>
       _mqttStreamRepository.smStream.map((smDtoList) {
         return smDtoList
-            .where((dto) => dto.missionType == 1) // missionType이 1인 항목 필터링 (출고)
+            .where((dto) => dto.missionType == 2) // missionType이 2인 항목 필터링 (출고)
             .map((dto) => _mapToEntity(dto))
             .toList();
       });
 
-  OutboundSmEntity _mapToEntity(SmDto dto) {
+  Outbound1fSmEntity _mapToEntity(SmDto dto) {
     String convertedRobotName;
     switch (dto.robotName) {
       case "P2-AMR-8100":
@@ -36,12 +34,11 @@ class OutboundSmRepositoryImpl implements OutboundSmRepository {
         convertedRobotName = 'Unknown';
     }
 
-    return OutboundSmEntity(
+    return Outbound1fSmEntity(
       missionNo: dto.missionNo,
       subMissionNo: dto.subMissionNo,
       missionType: dto.missionType,
       pltNo: dto.huId,
-      doNo: dto.doNo ?? '',
       startTime: dto.startTime,
       sourceBin: dto.sourceBin,
       destinationBin: dto.destinationBin,

@@ -15,7 +15,7 @@ class OutboundPoRepositoryImpl implements OutboundPoRepository {
   Stream<List<OutboundPoEntity>> get outboundPoStream =>
       _mqttStreamRepository.poStream.map((poDtoList) {
         return poDtoList
-            .where((dto) => dto.missionType == 0)
+            .where((dto) => dto.missionType == 1)
             .map((dto) => _mapToEntity(dto))
             .toList();
       });
@@ -30,6 +30,7 @@ class OutboundPoRepositoryImpl implements OutboundPoRepository {
       isWrapped: dto.isWrapped,
       destinationArea: dto.destinationArea,
       doNo: dto.doNo ?? '',
+      uid: dto.uid,
     );
   }
 }

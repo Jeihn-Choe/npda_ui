@@ -13,6 +13,7 @@ import 'package:npda_ui_flutter/presentation/widgets/robot_button.dart';
 
 import '../../../core/state/session_manager.dart';
 import '../../../presentation/main_shell.dart';
+import '../../status/domain/entities/robot_status_entity.dart';
 
 class InboundPage extends ConsumerStatefulWidget {
   const InboundPage({super.key});
@@ -571,29 +572,64 @@ class _InboundPageState extends ConsumerState<InboundPage> {
                             // 오른쪽: 필터 버튼들
                             Row(
                               mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              // ✨ 아래쪽 정렬 (배지 높이 차이 대비)
                               children: [
-                                RobotButton(
-                                  text: 'Forklift',
-                                  backgroundColor: Colors.orange,
-                                  onPressed: () {
-                                    // TODO: Forklift pause/resume 로직
-                                  },
+                                // ✨ Forklift RobotButton
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildRobotStatusBadge(pageState.ssrStatus),
+                                    const SizedBox(height: 4),
+                                    // ✨ 뱃지와 버튼 사이 간격 복원
+                                    RobotButton(
+                                      text: 'Forklift',
+                                      backgroundColor: Colors.orange,
+
+                                      onPressed: () {
+                                        // TODO: Forklift pause/resume 로직
+                                      },
+                                    ),
+                                  ],
+                                ),
+
+                                const SizedBox(width: 4),
+                                // ✨ PLT_1F RobotButton
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildRobotStatusBadge(
+                                      pageState.spt1fStatus,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    // ✨ 뱃지와 버튼 사이 간격 복원
+                                    RobotButton(
+                                      text: 'PLT_1F',
+                                      backgroundColor: Colors.lightGreen,
+                                      onPressed: () {
+                                        // TODO: PLT_1F pause/resume 로직
+                                      },
+                                    ),
+                                  ],
                                 ),
                                 const SizedBox(width: 4),
-                                RobotButton(
-                                  text: 'PLT_1F',
-                                  backgroundColor: Colors.lightGreen,
-                                  onPressed: () {
-                                    // TODO: PLT_1F pause/resume 로직
-                                  },
-                                ),
-                                const SizedBox(width: 4),
-                                RobotButton(
-                                  text: 'PLT_3F',
-                                  backgroundColor: Colors.lightBlue,
-                                  onPressed: () {
-                                    // TODO: PLT_3F pause/resume 로직
-                                  },
+                                // ✨ PLT_3F RobotButton
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    _buildRobotStatusBadge(
+                                      pageState.spt3fStatus,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    // ✨ 뱃지와 버튼 사이 간격 복원
+                                    RobotButton(
+                                      text: 'PLT_3F',
+                                      backgroundColor: Colors.lightBlue,
+                                      onPressed: () {
+                                        // TODO: PLT_3F pause/resume 로직
+                                      },
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -719,6 +755,78 @@ class _InboundPageState extends ConsumerState<InboundPage> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  // RobotStatusEntity에서 텍스트와 색상 추출 헬퍼
+  (String, Color) _getRobotStatusDisplay(RobotStatusEntity? robotStatus) {
+    if (robotStatus == null) return ('알 수 없음', Colors.grey); // 기본값
+
+    final text = robotStatus.runState.description;
+    Color color;
+    switch (robotStatus.runState.value) {
+      case 1: // Run
+        color = AppColors.celltrionGreen;
+        break;
+      case 2: // Pause
+        color = AppColors.orange;
+        break;
+      case 3: // Error
+        color = AppColors.error;
+        break;
+      default: // Idle (0)
+        color = Colors.grey;
+    }
+    return (text, color);
+  }
+
+  // ✨ 로봇 상태 배지 위젯
+  Widget _buildRobotStatusBadge(RobotStatusEntity? robotStatus) {
+    if (robotStatus == null)
+      return const SizedBox(height: 18); // 자리 차지 (높이 최소화)
+
+    final (text, color) = _getRobotStatusDisplay(robotStatus);
+
+    return Container(
+      width: 60.0,
+      // ✨ 버튼 너비와 동일하게 고정
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+      // 패딩 줄임 (공간 확보)
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withOpacity(0.5), width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      // ✨ 내용 가운데 정렬
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center, // ✨ Row 내부도 가운데 정렬
+        children: [
+          Icon(Icons.circle, size: 6, color: color),
+          const SizedBox(width: 3),
+          Flexible(
+            // ✨ 텍스트가 길어질 경우 대비
+            child: Text(
+              text,
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                height: 1.0,
+              ),
+              overflow: TextOverflow.ellipsis, // ✨ 말줄임표 처리
+            ),
+          ),
+        ],
       ),
     );
   }

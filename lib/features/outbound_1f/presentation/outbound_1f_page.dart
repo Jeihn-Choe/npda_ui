@@ -62,7 +62,7 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
     final missionListState = ref.watch(outbound1FMissionListProvider);
 
     // 팝업 로직은 VM을 계속 사용
-    ref.listen<Outbound1FState>(outbound1FVMProvider, (previous, next) {
+    ref.listen<Outbound1fState>(outbound1FVMProvider, (previous, next) {
       if (next.showOutboundPopup && previous?.showOutboundPopup == false) {
         _scannerFocusNode.unfocus();
         showDialog(
@@ -465,7 +465,7 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
   }
 
   // 상세 정보 표시는 VM의 상태를 그대로 사용
-  Widget _buildMissionDetails(Outbound1FState vmState) {
+  Widget _buildMissionDetails(Outbound1fState vmState) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -569,7 +569,7 @@ class _Outbound1FPageState extends ConsumerState<Outbound1FPage> {
           }
 
           return DataRow(
-            color: switch ((mission.subMissionStatus, mission?.robotName)) {
+            color: switch ((mission.subMissionStatus, mission.robotName)) {
               (1, "Forklift") => WidgetStateProperty.all(
                 Colors.orange.shade200,
               ),

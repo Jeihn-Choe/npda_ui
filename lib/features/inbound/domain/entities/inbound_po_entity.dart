@@ -23,6 +23,9 @@ class InboundPoEntity {
   /// DO 번호 (String)
   final String doNo;
 
+  /// 고유 식별자 (String)
+  final String uid;
+
   InboundPoEntity({
     required this.missionType,
     this.huId,
@@ -32,5 +35,30 @@ class InboundPoEntity {
     required this.isWrapped,
     required this.destinationArea,
     required this.doNo,
+    required this.uid,
   });
+
+  InboundPoEntity copyWith({
+    int? missionType,
+    String? huId,
+    int? targetRackLevel,
+    String? sourceBin,
+    String? destinationBin,
+    bool? isWrapped,
+    int? destinationArea,
+    String? doNo,
+    String? uid,
+  }) {
+    return InboundPoEntity(
+      missionType: missionType ?? this.missionType,
+      huId: huId ?? this.huId,
+      targetRackLevel: targetRackLevel ?? this.targetRackLevel,
+      sourceBin: sourceBin ?? this.sourceBin,
+      destinationBin: destinationBin ?? this.destinationBin,
+      isWrapped: isWrapped ?? this.isWrapped,
+      destinationArea: destinationArea ?? this.destinationArea,
+      doNo: doNo ?? this.doNo,
+      uid: uid ?? this.uid,
+    );
+  }
 }

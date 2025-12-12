@@ -24,8 +24,8 @@ class MqttStreamRepository {
 
   // mid.sol
   final _ssrController = StreamController<RobotStatusDto>.broadcast();
-  final _spt1FController = StreamController<RobotStatusDto>.broadcast();
-  final _spt3FController = StreamController<RobotStatusDto>.broadcast();
+  final _spt1fController = StreamController<RobotStatusDto>.broadcast();
+  final _spt3fController = StreamController<RobotStatusDto>.broadcast();
 
   /// 외부로 노출할 스트림 getter 정의
   Stream<List<SmDto>> get smStream => _smController.stream;
@@ -36,9 +36,9 @@ class MqttStreamRepository {
 
   Stream<RobotStatusDto> get ssrStream => _ssrController.stream;
 
-  Stream<RobotStatusDto> get spt1FStream => _spt1FController.stream;
+  Stream<RobotStatusDto> get spt1fStream => _spt1fController.stream;
 
-  Stream<RobotStatusDto> get spt3FStream => _spt3FController.stream;
+  Stream<RobotStatusDto> get spt3fStream => _spt3fController.stream;
 
   /// 초기화 및 연결
   MqttStreamRepository(this._mqttService) {
@@ -139,14 +139,14 @@ class MqttStreamRepository {
       final robotStatus = RobotStatusDto.fromJson(decoded);
 
       switch (robotStatus.robotId) {
-        case 'SSR':
+        case 'P2-AMR-8100':
           _ssrController.add(robotStatus);
           break;
-        case 'SPT_1F':
-          _spt1FController.add(robotStatus);
+        case 'P2-AMR-8101':
+          _spt1fController.add(robotStatus);
           break;
-        case 'SPT_3F':
-          _spt3FController.add(robotStatus);
+        case 'P2-AMR-8102':
+          _spt3fController.add(robotStatus);
           break;
         default:
           // 알 수 없는 robotId 무시

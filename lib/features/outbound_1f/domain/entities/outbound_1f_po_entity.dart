@@ -1,4 +1,4 @@
-class OutboundPoEntity {
+class Outbound1fPoEntity {
   /// 미션 종류 (0: 입고, 1: 출고, 2: 1층 출고)
   final int missionType;
 
@@ -26,7 +26,7 @@ class OutboundPoEntity {
   /// 고유 식별자 (String)
   final String uid;
 
-  OutboundPoEntity({
+  Outbound1fPoEntity({
     required this.missionType,
     this.huId,
     required this.targetRackLevel,
@@ -38,7 +38,7 @@ class OutboundPoEntity {
     required this.uid,
   });
 
-  OutboundPoEntity copyWith({
+  Outbound1fPoEntity copyWith({
     int? missionType,
     String? huId,
     int? targetRackLevel,
@@ -49,7 +49,7 @@ class OutboundPoEntity {
     String? doNo,
     String? uid,
   }) {
-    return OutboundPoEntity(
+    return Outbound1fPoEntity(
       missionType: missionType ?? this.missionType,
       huId: huId ?? this.huId,
       targetRackLevel: targetRackLevel ?? this.targetRackLevel,

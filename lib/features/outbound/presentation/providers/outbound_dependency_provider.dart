@@ -7,6 +7,7 @@ import 'package:npda_ui_flutter/features/outbound/domain/repositories/outbound_p
 import 'package:npda_ui_flutter/features/outbound/domain/repositories/outbound_sm_repository.dart';
 
 import '../../../../core/data/repositories/mqtt/mqtt_stream_repository.dart';
+import '../../domain/usecases/outbound_merge_po_sm_use_case.dart';
 import '../../domain/usecases/outbound_order_usecase.dart';
 
 /// [Repository] - Mock/Real 교체 지점
@@ -31,6 +32,17 @@ final outboundPoRepositoryProvider = Provider<OutboundPoRepository>((ref) {
   // return MockOutboundPoRepository();
 });
 
+/// [UseCase] - Mock/Real 교체 지점
+
 final outboundOrderUseCaseProvider = Provider<OutboundOrderUseCase>((ref) {
   return OutboundOrderUseCase(ref);
+});
+
+final outboundMergePoSmUseCaseProvider = Provider<OutboundMergePoSmUseCase>((
+  ref,
+) {
+  final smRepo = ref.watch(outboundSmRepositoryProvider);
+  final poRepo = ref.watch(outboundPoRepositoryProvider);
+
+  return OutboundMergePoSmUseCase(smRepo, poRepo);
 });

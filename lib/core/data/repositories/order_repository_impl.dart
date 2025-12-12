@@ -54,7 +54,7 @@ class OrderRepositoryImpl extends OrderRepository {
         stackTrace: stackTrace,
       );
       return ResponseOrderEntity.failure(
-        msg: '네트워크 오류 또는 알 수 없는 문제로 요청에      실패했습니다.',
+        msg: '네트워크 오류 또는 알 수 없는 문제로 요청에 실패했습니다.',
       );
     }
   }

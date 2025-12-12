@@ -1,21 +1,10 @@
 /// 로봇 상태 정보 DTO
 class RobotStatusDto {
-  /// 로봇 이름
   final String robotId;
-
-  /// 로봇 상태 (0: Idle, 1: Run, 2: Pause, 3: Error)
   final RobotRunState runState;
-
-  /// 로봇 모터 상태 (0: Stop, 1: Run)
   final RobotDriveState driveState;
-
-  /// 에러 코드 (에러 발생 시)
   final int? errorCode;
-
-  /// 에러 메시지
   final String? errorMsg;
-
-  /// 타임스탬프 (yyyy-MM-dd HH:mm:ss.fff)
   final DateTime timestamp;
 
   RobotStatusDto({
@@ -27,23 +16,24 @@ class RobotStatusDto {
     required this.timestamp,
   });
 
-  /// JSON to DTO
   factory RobotStatusDto.fromJson(Map<String, dynamic> json) {
     return RobotStatusDto(
       robotId: json['robotId'] as String,
+      // JSON에서 1.0(float)이 와도 num으로 받고, Enum 내부에서 toInt() 처리
       runState: RobotRunState.fromValue(json['runState'] as num),
       driveState: RobotDriveState.fromValue(json['driveState'] as num),
       errorCode: json['errorCode'] as int?,
       errorMsg: json['errorMsg'] as String?,
+      // DateTime.parse는 'yyyy-MM-dd HH:mm:ss' 포맷(공백 포함)도 대부분 처리하지만,
+      // 혹시 모를 파싱 에러 방지를 위해 tryParse 혹은 공백 치환을 고려할 수 있습니다.
       timestamp: DateTime.parse(json['timestamp'] as String),
     );
   }
 
-  /// DTO to JSON
   Map<String, dynamic> toJson() {
     return {
       'robotId': robotId,
-      'runState': runState.value,
+      'runState': runState.value, // int 값 나감 (예: 1)
       'driveState': driveState.value,
       'errorCode': errorCode,
       'errorMsg': errorMsg,
@@ -51,70 +41,50 @@ class RobotStatusDto {
     };
   }
 
-  /// copyWith
-  RobotStatusDto copyWith({
-    String? robotId,
-    RobotRunState? runState,
-    RobotDriveState? driveState,
-    int? errorCode,
-    String? errorMsg,
-    DateTime? timestamp,
-  }) {
-    return RobotStatusDto(
-      robotId: robotId ?? this.robotId,
-      runState: runState ?? this.runState,
-      driveState: driveState ?? this.driveState,
-      errorCode: errorCode ?? this.errorCode,
-      errorMsg: errorMsg ?? this.errorMsg,
-      timestamp: timestamp ?? this.timestamp,
-    );
-  }
+  // copyWith 생략 (기존과 동일)
 }
 
 /// 로봇 실행 상태
 enum RobotRunState {
-  /// 대기
   idle(0, '대기'),
-
-  /// 실행 중
   run(1, '실행 중'),
-
-  /// 일시정지
   pause(2, '일시정지'),
+  error(3, '에러'),
+  unknown(-1, '알 수 없음'); // 예외 처리를 위한 unknown 추가 추천
 
-  /// 에러
-  error(3, '에러');
-
-  final num value;
+  final int value; // num -> int로 변경 (상태값은 정수 성격이 강함)
   final String description;
 
   const RobotRunState(this.value, this.description);
 
   static RobotRunState fromValue(num value) {
+    // 들어오는 값이 1.0 이어도 1로 변환하여 비교 (가장 안전함)
+    final int intValue = value.toInt();
+
     return RobotRunState.values.firstWhere(
-      (state) => state.value == value,
-      orElse: () => RobotRunState.idle,
+      (state) => state.value == intValue,
+      orElse: () => RobotRunState.unknown, // 없는 값이 오면 unknown 처리
     );
   }
 }
 
 /// 로봇 모터 상태
 enum RobotDriveState {
-  /// 정지
   stop(0, '정지'),
+  run(1, '실행 중'),
+  unknown(-1, '알 수 없음');
 
-  /// 실행 중
-  run(1, '실행 중');
-
-  final num value;
+  final int value; // num -> int로 변경
   final String description;
 
   const RobotDriveState(this.value, this.description);
 
   static RobotDriveState fromValue(num value) {
+    final int intValue = value.toInt();
+
     return RobotDriveState.values.firstWhere(
-      (state) => state.value == value,
-      orElse: () => RobotDriveState.stop,
+      (state) => state.value == intValue,
+      orElse: () => RobotDriveState.unknown,
     );
   }
 }

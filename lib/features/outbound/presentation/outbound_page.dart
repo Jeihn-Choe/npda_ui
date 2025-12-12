@@ -731,7 +731,7 @@ class _OutboundPageState extends ConsumerState<OutboundPage> {
                         return DataRow(
                           color: switch ((
                             mission.subMissionStatus,
-                            mission?.robotName,
+                            mission.robotName,
                           )) {
                             (1, "Forklift") => WidgetStateProperty.all(
                               Colors.orange.shade200,
