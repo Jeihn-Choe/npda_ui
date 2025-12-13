@@ -1,29 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/popups/inbound_popup_vm.dart';
 
 import '../../../../presentation/widgets/form_field_widget.dart';
-import 'inbound_registration_popup_viewmodel.dart';
 
-class InboundRegistrationPopup extends ConsumerStatefulWidget {
+class InboundPopup extends ConsumerStatefulWidget {
   final String? scannedData;
 
-  const InboundRegistrationPopup({super.key, this.scannedData});
+  const InboundPopup({super.key, this.scannedData});
 
   @override
-  ConsumerState<InboundRegistrationPopup> createState() =>
-      _InboundRegistrationPopupState();
+  ConsumerState<InboundPopup> createState() => _InboundPopupState();
 }
 
-class _InboundRegistrationPopupState
-    extends ConsumerState<InboundRegistrationPopup> {
+class _InboundPopupState extends ConsumerState<InboundPopup> {
   @override
   void initState() {
     super.initState();
 
     // ViewModel 초기화 및 scannedData 설정
     Future.microtask(() {
-      final viewModel = ref.read(inboundRegistrationPopupViewModelProvider);
+      final viewModel = ref.read(inboundPopupVmProvider);
       viewModel.initialize(); // ViewModel 초기화 호출
 
       // scannedData가 있을 때만 적용 (수동 팝업 열기의 경우 null)
@@ -40,7 +38,7 @@ class _InboundRegistrationPopupState
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = ref.watch(inboundRegistrationPopupViewModelProvider);
+    final viewModel = ref.watch(inboundPopupVmProvider);
 
     return AlertDialog(
       title: const Text(

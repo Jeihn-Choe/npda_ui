@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart'; // import 경로 수정
+import 'package:npda_ui_flutter/features/inbound/presentation/popups/inbound_popup_vm.dart';
 import 'package:npda_ui_flutter/features/status/domain/entities/robot_status_entity.dart';
 import 'package:npda_ui_flutter/features/status/presentation/providers/robot_status_provider.dart';
 
@@ -107,7 +107,7 @@ class InboundPageVm extends StateNotifier<InboundPageState> {
     }
 
     // 팝업이 이미 열려있으면 ViewModel에 데이터 전달
-    final popupViewModel = _ref.read(inboundRegistrationPopupViewModelProvider);
+    final popupViewModel = _ref.read(inboundPopupVmProvider);
     popupViewModel.applyScannedData(scannedData);
 
     // 두 필드가 모두 채워지면 포커스 해제 신호
