@@ -8,7 +8,7 @@ import '../providers/inbound_order_list_provider.dart';
 
 enum InputField { huId, sourceBin }
 
-class InboundRegistrationPopupViewModel extends ChangeNotifier {
+class InboundPopupVm extends ChangeNotifier {
   /// 텍스트 컨트롤러
   final TextEditingController pltCodeController = TextEditingController();
   final TextEditingController sourceBinController = TextEditingController();
@@ -52,7 +52,7 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
 
   final Ref _ref;
 
-  InboundRegistrationPopupViewModel(this._ref);
+  InboundPopupVm(this._ref);
 
   /// 초기화
   void initialize() {
@@ -257,12 +257,9 @@ class InboundRegistrationPopupViewModel extends ChangeNotifier {
   }
 }
 
-// ✨ [추가] ViewModel Provider 위치 이동
-final inboundRegistrationPopupViewModelProvider =
-    ChangeNotifierProvider.autoDispose<InboundRegistrationPopupViewModel>((
-      ref,
-    ) {
-      final popupViewModel = InboundRegistrationPopupViewModel(ref);
+final inboundPopupVmProvider =
+    ChangeNotifierProvider.autoDispose<InboundPopupVm>((ref) {
+      final popupViewModel = InboundPopupVm(ref);
       popupViewModel.initialize();
       return popupViewModel;
     });

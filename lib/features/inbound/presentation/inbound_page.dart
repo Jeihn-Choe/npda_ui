@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_page_vm.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/popups/inbound_popup.dart';
+import 'package:npda_ui_flutter/features/inbound/presentation/popups/inbound_popup_vm.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_mission_list_provider.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_order_list_provider.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup.dart';
-import 'package:npda_ui_flutter/features/inbound/presentation/widgets/inbound_registration_popup_viewmodel.dart'; // Specific import for popup VM
 import 'package:npda_ui_flutter/presentation/widgets/form_card_layout.dart';
 import 'package:npda_ui_flutter/presentation/widgets/info_field_widget.dart';
 import 'package:npda_ui_flutter/presentation/widgets/robot_button.dart';
@@ -60,9 +60,7 @@ class _InboundPageState extends ConsumerState<InboundPage> {
 
     // 팝업이 열려있으면 두 필드가 모두 채워졌는지 확인
     if (pageState.showInboundPopup) {
-      final popupViewModel = ref.read(
-        inboundRegistrationPopupViewModelProvider,
-      );
+      final popupViewModel = ref.read(inboundPopupVmProvider);
 
       // 두 필드가 모두 채워지면 포커스를 주지 않음 (사용자가 팝업 수정 가능)
       if (popupViewModel.areBothFieldsFilled()) {
@@ -114,16 +112,12 @@ class _InboundPageState extends ConsumerState<InboundPage> {
               data: MediaQuery.of(
                 dialogContext,
               ).copyWith(viewInsets: EdgeInsets.zero),
-              child: InboundRegistrationPopup(
-                scannedData: next.firstScannedData,
-              ),
+              child: InboundPopup(scannedData: next.firstScannedData),
             );
           },
         ).then((_) {
           if (mounted) {
             ref.read(inboundPageVMProvider.notifier).clearInboundPopup();
-            ref.read(inboundRegistrationPopupViewModelProvider).resetForm();
-            ref.invalidate(inboundRegistrationPopupViewModelProvider);
             FocusScope.of(context).requestFocus(_scannerFocusNode);
           }
         });
