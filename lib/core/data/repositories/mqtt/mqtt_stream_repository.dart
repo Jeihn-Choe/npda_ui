@@ -73,8 +73,6 @@ class MqttStreamRepository {
   }
 
   void _onConnected() {
-    appLogger.d("✅ MQTT 연결, 토픽 구독 시작");
-
     /// 토픽 구독
     _mqttService.subscribe(MqttConfig.mwTopic); // "MW.NPDA"
 

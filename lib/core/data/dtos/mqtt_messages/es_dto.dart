@@ -1,3 +1,5 @@
+import '../../../../features/status/domain/entities/ev_status_entity.dart';
+
 class EsDto {
   final bool isMainError;
   final bool isSubError;
@@ -16,5 +18,13 @@ class EsDto {
       'isMainError': isMainError,
       'isSubError': isSubError,
     };
+  }
+
+  // ✨ Feature Entity로 변환
+  EvStatusEntity toEntity() {
+    return EvStatusEntity(
+      isMainError: isMainError,
+      isSubError: isSubError,
+    );
   }
 }

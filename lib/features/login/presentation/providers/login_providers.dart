@@ -3,7 +3,6 @@ import 'package:npda_ui_flutter/core/state/session_manager.dart';
 import 'package:npda_ui_flutter/features/login/domain/usecase/login_usecase.dart';
 import 'package:npda_ui_flutter/features/login/presentation/login_viewmodel.dart';
 
-import '../../../../core/network/http/api_provider.dart';
 import '../../data/repositories/login_repository_mock.dart';
 import '../../domain/repositories/login_repository.dart';
 import '../state/login_state.dart';
@@ -17,7 +16,7 @@ import '../state/login_state.dart';
 // 1. repository Provier
 /// 로그인 repository IMPL/MOCK 변경
 final loginRepositoryProvider = Provider<LoginRepository>((ref) {
-  final apiService = ref.watch(apiServiceProvider);
+  // final apiService = ref.watch(apiServiceProvider);
   // return LoginRepositoryImpl(apiService);
 
   return LoginRepositoryMock();

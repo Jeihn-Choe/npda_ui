@@ -31,8 +31,8 @@ class StatusPage extends ConsumerWidget {
 
                   // --- [섹션 1] Device Status ---
 
-                  // 카드형 장비 상태 위젯 (크기 유지)
-                  _buildDeviceStatusRow(context),
+                  // 카드형 장비 상태 위젯 (ViewModel 상태 반영)
+                  _buildDeviceStatusRow(context, statusState),
 
                   // --- [섹션 2] Order Status ---
                   const SizedBox(height: 20),
@@ -138,10 +138,10 @@ class StatusPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildDeviceStatusRow(BuildContext context) {
+  Widget _buildDeviceStatusRow(BuildContext context, StatusState state) {
     final devices = [
-      {'name': '메인 E/V', 'status': true},
-      {'name': '보조 E/V', 'status': false},
+      {'name': '메인 E/V', 'status': state.isMainLiftAvailable},
+      {'name': '보조 E/V', 'status': state.isSubLiftAvailable},
     ];
 
     return Row(
@@ -286,7 +286,10 @@ class StatusPage extends ConsumerWidget {
                     : AppColors.error, // ✨ AppColors 사용
               ),
               onPressed: () {
-                // TODO: API Call or Provider Update
+                // 🚀 [수정] ViewModel의 상태 변경 메서드 호출
+                ref
+                    .read(statusPageVMProvider.notifier)
+                    .changeEvStatus(deviceName, toStatus);
                 Navigator.of(ctx).pop();
               },
               child: const Text("확인", style: TextStyle(color: Colors.white)),

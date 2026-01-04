@@ -13,6 +13,9 @@ class RobotControlUseCase {
       case RobotRunState.run:
         await _repository.pauseRobot(robot.robotId);
         break;
+      case RobotRunState.idle:
+        await _repository.pauseRobot(robot.robotId);
+        break;
       case RobotRunState.pause:
         await _repository.resumeRobot(robot.robotId);
         break;

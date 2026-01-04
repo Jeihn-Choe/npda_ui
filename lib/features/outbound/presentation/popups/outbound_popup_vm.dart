@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 
 import '../providers/outbound_dependency_provider.dart';
 import '../providers/outbound_order_list_provider.dart';
@@ -103,13 +102,9 @@ class OutboundPopupVM extends StateNotifier<OutboundPopupState> {
     try {
       final existingOrders = _ref.read(outboundOrderListProvider).orders;
 
-      appLogger.d("Existing outbound orders count: ${existingOrders.length}");
       if (state.doNo.isNotEmpty) {
         final duplicateOrder = existingOrders.firstWhere(
           (order) => order.doNo == state.doNo,
-        );
-        appLogger.d(
-          "Checking for duplicate DO No.: ${state.doNo}, Found: $duplicateOrder",
         );
         if (duplicateOrder != null) {
           throw Exception('DO No. 또는 저장빈 중 하나만 입력해주세요');

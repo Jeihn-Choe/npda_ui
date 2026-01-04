@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
-import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_po_entity.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_merge_po_sm_use_case.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_dependency_provider.dart';
@@ -77,8 +76,6 @@ class OutboundPoListNotifier extends StateNotifier<OutboundPoListState> {
   }
 
   void _listenToOutboundPos() {
-    appLogger.e("Listening to outbound PO/SM data...");
-
     state = state.copyWith(isLoading: true);
 
     _poSubscription = _outboundMergePoSmUseCase.call().listen(

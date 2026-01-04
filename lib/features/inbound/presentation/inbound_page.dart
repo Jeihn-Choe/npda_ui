@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:npda_ui_flutter/core/constants/colors.dart';
+import 'package:npda_ui_flutter/core/state/scanner_viewmodel.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/inbound_page_vm.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/popups/inbound_popup.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/popups/inbound_popup_vm.dart';
@@ -50,6 +51,10 @@ class _InboundPageState extends ConsumerState<InboundPage> {
   /// - 입고 : HU Id 스캔 && 출발지 저장빈 스캔 --> 둘 다 만족하는 경우
   /// 해제하려면
   void _onFocusChange() {
+    // 스캐너 모드 상태 확인
+    final isScannerModeActive = ref.read(scannerViewModelProvider);
+    if (!isScannerModeActive) return;
+
     final sessionStatus = ref.read(sessionManagerProvider).status;
     if (sessionStatus != SessionStatus.loggedIn) return;
 
@@ -129,6 +134,15 @@ class _InboundPageState extends ConsumerState<InboundPage> {
         _scannerFocusNode.unfocus();
       }
     });
+
+    ref.listen<bool>(scannerViewModelProvider, (provider, next) {
+      if (next == false) {
+        _scannerFocusNode.unfocus();
+      } else if (next == true) {
+        _scannerFocusNode.requestFocus();
+      }
+    });
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.grey.shade100,

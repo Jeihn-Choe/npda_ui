@@ -124,19 +124,16 @@ class MqttServiceImpl implements MqttService {
   }
 
   void _onConnected() {
-    appLogger.i('MQTT::연결됨');
     _connectionStateController.add(MqttState.connected);
   }
 
   void _onDisconnected() {
-    appLogger.i('MQTT::연결 해제됨');
     if (!_connectionStateController.isClosed) {
       _connectionStateController.add(MqttState.disconnected);
     }
   }
 
   void _onSubscribed(String topic) {
-    appLogger.i('MQTT::구독됨 - topic: $topic');
   }
 
   void _onMessageReceived(List<MqttReceivedMessage<MqttMessage?>>? c) {
@@ -150,8 +147,6 @@ class MqttServiceImpl implements MqttService {
     );
 
     _messageController.add((recMess.topic, payload));
-
-    appLogger.i('MQTT::메시지 수신 - topic: ${recMess.topic} , payload: $payload');
   }
 
   void dispose() {

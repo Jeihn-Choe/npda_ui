@@ -11,7 +11,7 @@ class LoginRepositoryMock implements LoginRepository {
     await Future.delayed(const Duration(seconds: 1));
 
     // 이 아이디만 가능하도록
-    if (userId == 'test' && password == '1234') {
+    if (userId == 'admin01' && password == 'myrobot10!') {
       return LoginResult.success(
         userId: 'CM0124456',
         userName: '테스트', // 성공 시 사용자 이름

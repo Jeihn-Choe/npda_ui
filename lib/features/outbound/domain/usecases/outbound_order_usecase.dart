@@ -3,7 +3,6 @@ import 'package:npda_ui_flutter/core/data/dtos/request_order_dto.dart';
 import 'package:npda_ui_flutter/core/domain/entities/response_order_entity.dart';
 
 import '../../../../core/providers/repository_providers.dart';
-import '../../../../core/utils/logger.dart';
 import '../entities/outbound_order_entity.dart';
 
 class UseCaseResult {
@@ -54,15 +53,11 @@ class OutboundOrderUseCase {
   Future<UseCaseResult> requestOutboundOrder({
     required List<OutboundOrderEntity> outboundOrderEntities,
   }) async {
-    appLogger.d('requestOutboundOrder started - Order count: ${outboundOrderEntities.length}');
-
     final orderRepository = ref.read(orderRepositoryProvider);
 
     final workItems = outboundOrderEntities
         .map(
           (entity) {
-            appLogger.d('Converting entity - doNo: ${entity.doNo}, savedBinNo: ${entity.savedBinNo}');
-
             return WorkItem(
               missionType: 1,
               doNo: (entity.doNo != null && entity.doNo!.isNotEmpty) ? entity.doNo : null,
@@ -76,14 +71,9 @@ class OutboundOrderUseCase {
 
     final requestDto = RequestOrderDto(cmdId: 'RO', missionList: workItems);
 
-    appLogger.d('RequestDto created - cmdId: ${requestDto.cmdId}, workItems count: ${workItems.length}');
-    appLogger.d('RequestDto JSON: ${requestDto.toJson()}');
-
     final ResponseOrderEntity response = await orderRepository.requestOrder(
       requestDto,
     );
-
-    appLogger.d('Response received - isSuccess: ${response.isSuccess}, msg: ${response.msg}');
 
     if (response.isSuccess) {
       return UseCaseResult(

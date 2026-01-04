@@ -4,8 +4,10 @@ import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_po_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/domain/entities/outbound_1f_po_entity.dart';
 import 'package:npda_ui_flutter/features/status/presentation/providers/robot_status_provider.dart';
+import 'package:npda_ui_flutter/features/status/presentation/providers/status_dependency_provider.dart';
 
 import '../../outbound/domain/entities/outbound_po_entity.dart';
+import '../domain/entities/ev_status_entity.dart';
 import '../domain/entities/robot_status_entity.dart';
 
 class StatusState {
@@ -108,11 +110,49 @@ class StatusPageVM extends StateNotifier<StatusState> {
       );
     });
 
-    // 초기 로드 (이미 데이터가 있을 경우를 대비)
-    // final currentPoState = _ref.read(inboundPoListProvider);
-    // if (currentPoState.poList.isNotEmpty) {
-    //   state = state.copyWith(inboundPoList: currentPoState.poList);
-    // }
+    // ✨ [추가] EV 상태 스트림 구독 및 동기화
+    _ref.listen<AsyncValue<EvStatusEntity>>(evStatusStreamProvider, (
+      previous,
+      next,
+    ) {
+      next.whenData((evStatus) {
+        state = state.copyWith(
+          isMainLiftAvailable: !evStatus.isMainError,
+          isSubLiftAvailable: !evStatus.isSubError,
+        );
+      });
+    });
+  }
+
+  // 🚀 EV 상태 변경 요청 (UI에서 호출)
+  Future<void> changeEvStatus(String evName, bool toStatus) async {
+    // toStatus: true(정상으로 변경), false(고장으로 변경)
+    // API Spec: true(고장), false(정상) -> 반대임에 주의
+
+    final isMain = evName == '메인 E/V';
+
+    // 현재 상태 가져오기 (state.isAvailable이 true면 error는 false)
+    final currentMainError = !state.isMainLiftAvailable;
+    final currentSubError = !state.isSubLiftAvailable;
+
+    // 변경할 에러 상태 계산 (toStatus가 정상이면 에러는 false)
+    final newErrorState = !toStatus;
+
+    // 최종 전송할 상태값 결정
+    final targetMainError = isMain ? newErrorState : currentMainError;
+    final targetSubError = !isMain ? newErrorState : currentSubError;
+
+    try {
+      final useCase = _ref.read(evControlUseCaseProvider);
+      await useCase.execute(
+        isMainError: targetMainError,
+        isSubError: targetSubError,
+      );
+      // MQTT 응답을 기다리므로 로컬 상태 업데이트는 생략
+    } catch (e) {
+      // TODO: 에러 처리 (SnackBar 등)
+      print('EV 상태 변경 실패: $e');
+    }
   }
 }
 

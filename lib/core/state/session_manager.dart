@@ -66,7 +66,7 @@ class SessionManagerNotifier extends StateNotifier<SessionState> {
   final LoginUseCase _loginUseCase;
   final LoginRepository _loginRepository;
   Timer? _sessionTimer;
-  final Duration _sessionTimeout = const Duration(minutes: 1);
+  final Duration _sessionTimeout = const Duration(minutes: 15);
 
   SessionManagerNotifier(this._loginUseCase, this._loginRepository)
     : super(SessionState());
