@@ -38,70 +38,67 @@ class StatusPage extends ConsumerWidget {
                   const SizedBox(height: 20),
 
                   // 1) 입고 테이블
-                  _buildSubHeader('입고 (Inbound)', AppColors.celltrionGreen),
-                  // ✨ 새 서브 헤더 위젯 사용
-                  const SizedBox(height: 8),
-                  _buildStyledTable(
-                    // ✨ 스타일링된 테이블 위젯 사용
-                    columns: ['HuId', '출발지', '', ''],
-                    columnWidths: {
-                      0: const FlexColumnWidth(1.4), // HuId 넓게
-                      1: const FlexColumnWidth(1.8), // 출발지 넓게
-                      2: const FlexColumnWidth(0.8), // 목적구역 (헤더 없음)
-                      3: const FlexColumnWidth(0.6), // 단 (헤더 없음)
-                    },
-                    rows: inboundPoList.map((po) {
-                      return [
-                        po.huId ?? '-',
-                        po.sourceBin,
-                        po.destinationArea == 0 ? '지정구역' : '랙',
-                        '${po.targetRackLevel}단',
-                      ];
-                    }).toList(),
+                  _buildExpandableSection(
+                    context,
+                    title: '입고 (Inbound)',
+                    color: AppColors.celltrionGreen,
+                    content: _buildStyledTable(
+                      columns: ['HuId', '출발지', '', ''],
+                      columnWidths: {
+                        0: const FlexColumnWidth(1.4), // HuId 넓게
+                        1: const FlexColumnWidth(1.8), // 출발지 넓게
+                        2: const FlexColumnWidth(0.8), // 목적구역 (헤더 없음)
+                        3: const FlexColumnWidth(0.6), // 단 (헤더 없음)
+                      },
+                      rows: inboundPoList.map((po) {
+                        return [
+                          po.huId ?? '-',
+                          po.sourceBin,
+                          po.destinationArea == 0 ? '지정구역' : '랙',
+                          '${po.targetRackLevel}단',
+                        ];
+                      }).toList(),
+                    ),
                   ),
-                  const SizedBox(height: 12),
 
                   // 2) 출고 테이블
-                  _buildSubHeader('출고 (Outbound)', AppColors.orange),
-                  // ✨ 새 서브 헤더 위젯 사용
-                  const SizedBox(height: 8),
-                  _buildStyledTable(
-                    columns: ['DO No', '저장빈 No'],
-                    // columnWidths: {
-                    //   0: const FlexColumnWidth(1.4), // HuId 넓게
-                    //   1: const FlexColumnWidth(1.8), // 출발지 넓게
-                    // },
-                    rows: outboundPoList.map((po) {
-                      return [
-                        po.doNo.isNotEmpty ? po.doNo : '',
-                        po.sourceBin.isNotEmpty ? po.sourceBin : '',
-                      ];
-                    }).toList(),
+                  _buildExpandableSection(
+                    context,
+                    title: '출고 (Outbound)',
+                    color: AppColors.orange,
+                    content: _buildStyledTable(
+                      columns: ['DO No', '저장빈 No'],
+                      rows: outboundPoList.map((po) {
+                        return [
+                          po.doNo.isNotEmpty ? po.doNo : '',
+                          po.sourceBin.isNotEmpty ? po.sourceBin : '',
+                        ];
+                      }).toList(),
+                    ),
                   ),
-                  const SizedBox(height: 24),
 
                   // 3) 1층 출고 테이블
-                  _buildSubHeader('1층 출고 (1F Outbound)', AppColors.purple),
-                  // ✨ 새 서브 헤더 위젯 사용, 색상 변경
-                  const SizedBox(height: 8),
-                  _buildStyledTable(
-                    // ✨ 스타일링된 테이블 위젯 사용
-                    columns: ['출발구역', '목적구역', '수량', '예약시간'],
-                    columnWidths: {
-                      0: const FlexColumnWidth(1.2),
-                      1: const FlexColumnWidth(1.2),
-                      2: const FlexColumnWidth(0.6),
-                      3: const FlexColumnWidth(1.5),
-                    },
-                    // 🚀 [수정] 실제 데이터 연동 (출발/목적구역, 수량, 예약시간)
-                    rows: outbound1FPoList.map((po) {
-                      return [
-                        po.sourceBin,
-                        po.destinationBin,
-                        po.pltQty?.toString() ?? '-', // ✨ 변경
-                        po.reservationTime ?? '-',
-                      ];
-                    }).toList(),
+                  _buildExpandableSection(
+                    context,
+                    title: '1층 출고 (1F Outbound)',
+                    color: AppColors.purple,
+                    content: _buildStyledTable(
+                      columns: ['출발구역', '목적구역', '수량', '예약시간'],
+                      columnWidths: {
+                        0: const FlexColumnWidth(1.2),
+                        1: const FlexColumnWidth(1.2),
+                        2: const FlexColumnWidth(0.6),
+                        3: const FlexColumnWidth(1.5),
+                      },
+                      rows: outbound1FPoList.map((po) {
+                        return [
+                          po.sourceBin,
+                          po.destinationBin,
+                          po.pltQty?.toString() ?? '-', // ✨ 변경
+                          po.reservationTime ?? '-',
+                        ];
+                      }).toList(),
+                    ),
                   ),
 
                   const SizedBox(height: 40),
@@ -109,6 +106,30 @@ class StatusPage extends ConsumerWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  // ✨ [추가] 접고 펼칠 수 있는 섹션 위젯
+  Widget _buildExpandableSection(
+    BuildContext context, {
+    required String title,
+    required Color color,
+    required Widget content,
+  }) {
+    return Theme(
+      data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+      child: ExpansionTile(
+        initiallyExpanded: true,
+        // 기본적으로 펼침
+        tilePadding: EdgeInsets.zero,
+        childrenPadding: EdgeInsets.zero,
+        title: _buildSubHeader(title, color),
+        children: [
+          const SizedBox(height: 8),
+          content,
+          const SizedBox(height: 12), // 섹션 간 간격 확보
         ],
       ),
     );
@@ -141,7 +162,11 @@ class StatusPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildDeviceStatusRow(BuildContext context, WidgetRef ref, StatusState state) {
+  Widget _buildDeviceStatusRow(
+    BuildContext context,
+    WidgetRef ref,
+    StatusState state,
+  ) {
     final devices = [
       {'name': '메인 E/V', 'status': state.isMainLiftAvailable},
       {'name': '보조 E/V', 'status': state.isSubLiftAvailable},
@@ -163,7 +188,12 @@ class StatusPage extends ConsumerWidget {
   }
 
   // ✨ [UI 개선] 카드형 장비 상태 위젯 (원본 크기 유지)
-  Widget _buildDeviceCard(BuildContext context, WidgetRef ref, String name, bool isNormal) {
+  Widget _buildDeviceCard(
+    BuildContext context,
+    WidgetRef ref,
+    String name,
+    bool isNormal,
+  ) {
     final statusColor = isNormal
         ? AppColors.success
         : AppColors.error; // ✨ AppColors 사용
