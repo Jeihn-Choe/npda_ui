@@ -99,12 +99,8 @@ class MqttStreamRepository {
 
   void _handleMwMessage(String jsonString) {
     try {
-      final decoded =
-          json.decode(jsonString)
-              as Map<String, dynamic>; // JSON 문자열을 Map으로 디코딩
-      final envelope = MwUnwrapCmdIdDto.fromJson(
-        decoded,
-      ); // MwUnwrapCmdIdDto 변환 cmdId, payload 추출 MAP 형태
+      final decoded = json.decode(jsonString) as Map<String, dynamic>;
+      final envelope = MwUnwrapCmdIdDto.fromJson(decoded);
 
       switch (envelope.cmdId) {
         case 'SM':
@@ -118,16 +114,22 @@ class MqttStreamRepository {
           _poController.add(poData);
           break;
         case 'ES':
-          final payloadList = decoded['payload'] as List;
-          final esData = payloadList.map((e) => EsDto.fromJson(e)).toList();
-          _esController.add(esData);
+          final rawPayload = decoded['payload'];
+
+          if (rawPayload is List) {
+            final esData = rawPayload.map((e) => EsDto.fromJson(e)).toList();
+            _esController.add(esData);
+          } else if (rawPayload is Map<String, dynamic>) {
+            // Map으로 올 경우 리스트로 감싸서 처리
+            final esData = [EsDto.fromJson(rawPayload)];
+            _esController.add(esData);
+          }
           break;
         default:
-          // 알 수 없는 cmdId 무시
           break;
       }
     } catch (e) {
-      // JSON 파싱 실패 시 무시
+      appLogger.e("❌ [MQTT MW Error] Parsing failed: $e");
     }
   }
 

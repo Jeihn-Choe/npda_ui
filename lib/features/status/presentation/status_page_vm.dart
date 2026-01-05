@@ -3,6 +3,7 @@ import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_po_enti
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_po_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_po_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/domain/entities/outbound_1f_po_entity.dart';
+import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_po_list_provider.dart';
 import 'package:npda_ui_flutter/features/status/presentation/providers/robot_status_provider.dart';
 import 'package:npda_ui_flutter/features/status/presentation/providers/status_dependency_provider.dart';
 
@@ -70,7 +71,7 @@ class StatusPageVM extends StateNotifier<StatusState> {
 
           inboundPoList: _ref.read(inboundPoListProvider).poList,
           outboundPoList: _ref.read(outboundPoListProvider).poList,
-          outbound1FPoList: [],
+          outbound1FPoList: _ref.read(outbound1fPoListProvider).poList,
 
           // _ref.read(outbound1FPoListProvider).poList,
           ssrStatus: _ref.read(robotStatusProvider).ssrStatus,
@@ -91,15 +92,13 @@ class StatusPageVM extends StateNotifier<StatusState> {
       state = state.copyWith(outboundPoList: next.poList);
     });
 
-    // outbound1FPoListProvider 구독/상태 동기화
-    // _ref.listen<OutboundPoListState>(outbound1FPoListProvider, (
-    //   previous,
-    //   next,
-    // ) {
-    //   if (previous?.poList != next.poList) {
-    //     state = state.copyWith(outbound1FPoList: next.poList);
-    //   }
-    // });
+    // 🚀 [추가] 1층 출고 PO 리스트 구독/상태 동기화
+    _ref.listen<Outbound1fPoListState>(outbound1fPoListProvider, (
+      previous,
+      next,
+    ) {
+      state = state.copyWith(outbound1FPoList: next.poList);
+    });
 
     // robotStatusProvider 구독/상태 동기화
     _ref.listen<RobotStatusState>(robotStatusProvider, (previous, next) {

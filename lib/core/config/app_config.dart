@@ -1,6 +1,6 @@
 class ApiConfig {
   // static const String baseUrl = "http://10.2.10.180:5000/api";
-  static const String baseUrl = "http://10.11.101.217/api";
+  static const String baseUrl = "http://10.30.248.197/api";
 
   // test
   static const String test = "/users";
@@ -25,7 +25,7 @@ class ApiConfig {
 
 class MqttConfig {
   // static const String broker = "10.2.10.180";
-  static const String broker = "10.11.101.217";
+  static const String broker = "10.30.248.197";
   static const int port = 1883;
   static const String clientId = "npda_client";
 

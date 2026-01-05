@@ -6,6 +6,8 @@ import 'package:npda_ui_flutter/features/outbound_1f/data/repositories/outbound_
 
 // ✨ 추가: Repository 관련 임포트
 import 'package:npda_ui_flutter/features/outbound_1f/domain/repositories/outbound_1f_mission_repository.dart';
+import '../../data/repositories/outbound_1f_po_repository_impl.dart';
+import '../../domain/repositories/outbound_1f_po_repository.dart';
 
 // ✨ 추가: Outbound1FMissionRepository 제공자
 final outbound1fMissionRepositoryProvider =
@@ -13,3 +15,9 @@ final outbound1fMissionRepositoryProvider =
       final mqttStreamRepository = ref.watch(mqttStreamRepositoryProvider);
       return Outbound1FMissionRepositoryImpl(mqttStreamRepository);
     });
+
+// ✨ 추가: Outbound1FPoRepository 제공자
+final outbound1fPoRepositoryProvider = Provider<Outbound1fPoRepository>((ref) {
+  final mqttStreamRepository = ref.watch(mqttStreamRepositoryProvider);
+  return Outbound1fPoRepositoryImpl(mqttStreamRepository);
+});

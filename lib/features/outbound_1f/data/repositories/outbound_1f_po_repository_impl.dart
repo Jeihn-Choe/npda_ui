@@ -28,6 +28,8 @@ class Outbound1fPoRepositoryImpl implements Outbound1fPoRepository {
       destinationArea: dto.destinationArea,
       doNo: dto.doNo ?? '',
       uid: dto.uid,
+      pltQty: dto.pltQty, // ✨ 변경
+      reservationTime: dto.reservationTime,
     );
   }
 }

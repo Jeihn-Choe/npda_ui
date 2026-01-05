@@ -11,7 +11,7 @@ class StatusPage extends ConsumerWidget {
     final statusState = ref.watch(statusPageVMProvider);
     final inboundPoList = statusState.inboundPoList;
     final outboundPoList = statusState.outboundPoList;
-    // final outbound1FPoList = statusState.outbound1FPoList; // 사용 시 주석 해제
+    final outbound1FPoList = statusState.outbound1FPoList; // 🚀 주석 해제
 
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.90,
@@ -32,7 +32,7 @@ class StatusPage extends ConsumerWidget {
                   // --- [섹션 1] Device Status ---
 
                   // 카드형 장비 상태 위젯 (ViewModel 상태 반영)
-                  _buildDeviceStatusRow(context, statusState),
+                  _buildDeviceStatusRow(context, ref, statusState),
 
                   // --- [섹션 2] Order Status ---
                   const SizedBox(height: 20),
@@ -93,12 +93,15 @@ class StatusPage extends ConsumerWidget {
                       2: const FlexColumnWidth(0.6),
                       3: const FlexColumnWidth(1.5),
                     },
-                    // TODO: ViewModel 데이터 연동 시 교체
-                    rows: [
-                      ['2A20-AMR-01', '2A10-AMR-02', '20', '12-03 18:00'],
-                      ['2A20-12', '2A10-AMR-02', '5', '12-03 19:00'],
-                      ['2A20-11', '2A10-AMR-01', '8', '12-03 20:00'],
-                    ],
+                    // 🚀 [수정] 실제 데이터 연동 (출발/목적구역, 수량, 예약시간)
+                    rows: outbound1FPoList.map((po) {
+                      return [
+                        po.sourceBin,
+                        po.destinationBin,
+                        po.pltQty?.toString() ?? '-', // ✨ 변경
+                        po.reservationTime ?? '-',
+                      ];
+                    }).toList(),
                   ),
 
                   const SizedBox(height: 40),
@@ -138,7 +141,7 @@ class StatusPage extends ConsumerWidget {
     );
   }
 
-  Widget _buildDeviceStatusRow(BuildContext context, StatusState state) {
+  Widget _buildDeviceStatusRow(BuildContext context, WidgetRef ref, StatusState state) {
     final devices = [
       {'name': '메인 E/V', 'status': state.isMainLiftAvailable},
       {'name': '보조 E/V', 'status': state.isSubLiftAvailable},
@@ -152,7 +155,7 @@ class StatusPage extends ConsumerWidget {
         return Expanded(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
-            child: _buildDeviceCard(context, name, isNormal),
+            child: _buildDeviceCard(context, ref, name, isNormal),
           ),
         );
       }).toList(),
@@ -160,7 +163,7 @@ class StatusPage extends ConsumerWidget {
   }
 
   // ✨ [UI 개선] 카드형 장비 상태 위젯 (원본 크기 유지)
-  Widget _buildDeviceCard(BuildContext context, String name, bool isNormal) {
+  Widget _buildDeviceCard(BuildContext context, WidgetRef ref, String name, bool isNormal) {
     final statusColor = isNormal
         ? AppColors.success
         : AppColors.error; // ✨ AppColors 사용
@@ -240,7 +243,7 @@ class StatusPage extends ConsumerWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: () =>
-                  _showChangeStatusDialog(context, name, !isNormal),
+                  _showChangeStatusDialog(context, ref, name, !isNormal),
               child: Text(
                 buttonText,
                 style: const TextStyle(
@@ -257,6 +260,7 @@ class StatusPage extends ConsumerWidget {
 
   void _showChangeStatusDialog(
     BuildContext context,
+    WidgetRef ref,
     String deviceName,
     bool toStatus,
   ) {

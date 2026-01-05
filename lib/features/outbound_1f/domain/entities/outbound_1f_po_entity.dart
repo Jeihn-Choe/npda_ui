@@ -26,6 +26,12 @@ class Outbound1fPoEntity {
   /// 고유 식별자 (String)
   final String uid;
 
+  /// 팔레트 수량 (1층 출고)
+  final int? pltQty;
+
+  /// 예약 시간 (1층 출고)
+  final String? reservationTime;
+
   Outbound1fPoEntity({
     required this.missionType,
     this.huId,
@@ -36,6 +42,8 @@ class Outbound1fPoEntity {
     required this.destinationArea,
     required this.doNo,
     required this.uid,
+    this.pltQty,
+    this.reservationTime,
   });
 
   Outbound1fPoEntity copyWith({
@@ -48,6 +56,8 @@ class Outbound1fPoEntity {
     int? destinationArea,
     String? doNo,
     String? uid,
+    int? pltQty,
+    String? reservationTime,
   }) {
     return Outbound1fPoEntity(
       missionType: missionType ?? this.missionType,
@@ -59,6 +69,8 @@ class Outbound1fPoEntity {
       destinationArea: destinationArea ?? this.destinationArea,
       doNo: doNo ?? this.doNo,
       uid: uid ?? this.uid,
+      pltQty: pltQty ?? this.pltQty,
+      reservationTime: reservationTime ?? this.reservationTime,
     );
   }
 }

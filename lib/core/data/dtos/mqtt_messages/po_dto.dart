@@ -27,6 +27,12 @@ class PoDto {
   /// 고유 식별자
   final String uid;
 
+  /// 팔레트 수량 (1층 출고)
+  final int? pltQty;
+
+  /// 예약 시간 (1층 출고)
+  final String? reservationTime;
+
   PoDto({
     required this.missionType,
     this.huId,
@@ -37,6 +43,8 @@ class PoDto {
     required this.destinationArea,
     this.doNo,
     required this.uid,
+    this.pltQty,
+    this.reservationTime,
   });
 
   /// JSON to DTO
@@ -51,6 +59,8 @@ class PoDto {
       destinationArea: json['destinationArea'] as int? ?? 0,
       doNo: json['doNo'] as String?,
       uid: json['uid'] as String? ?? '',
+      pltQty: json['pltQty'] as int?,
+      reservationTime: json['reservationTime'] as String?,
     );
   }
 
@@ -66,6 +76,8 @@ class PoDto {
       'destinationArea': destinationArea,
       'doNo': doNo,
       'uid': uid,
+      'pltQty': pltQty,
+      'reservationTime': reservationTime,
     };
   }
 
@@ -80,6 +92,8 @@ class PoDto {
     int? destinationArea,
     String? doNo,
     String? uid,
+    int? pltQty,
+    String? reservationTime,
   }) {
     return PoDto(
       missionType: missionType ?? this.missionType,
@@ -91,6 +105,8 @@ class PoDto {
       destinationArea: destinationArea ?? this.destinationArea,
       doNo: doNo ?? this.doNo,
       uid: uid ?? this.uid,
+      pltQty: pltQty ?? this.pltQty,
+      reservationTime: reservationTime ?? this.reservationTime,
     );
   }
 }
