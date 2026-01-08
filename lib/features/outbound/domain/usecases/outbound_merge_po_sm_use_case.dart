@@ -63,6 +63,8 @@ class OutboundMergePoSmUseCase {
         targetRackLevel: 0,
         destinationArea: 0,
         uid: '',
+        subMissionNo: sm.subMissionNo,
+        subMissionStatus: sm.subMissionStatus,
       );
 
       mergedList.add(convertedSm);

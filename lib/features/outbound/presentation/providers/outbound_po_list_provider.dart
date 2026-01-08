@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
+import 'package:npda_ui_flutter/core/domain/repositories/order_repository.dart';
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/entities/outbound_po_entity.dart';
 import 'package:npda_ui_flutter/features/outbound/domain/usecases/outbound_merge_po_sm_use_case.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_dependency_provider.dart';
@@ -64,12 +65,12 @@ class OutboundPoListNotifier extends StateNotifier<OutboundPoListState> {
   StreamSubscription? _poSubscription;
 
   final OutboundMergePoSmUseCase _outboundMergePoSmUseCase;
-  final MissionRepository _missionRepository;
+  final OrderRepository _orderRepository;
 
   OutboundPoListNotifier({
     required OutboundMergePoSmUseCase mergeUseCase,
-    required MissionRepository missionRepository,
-  }) : _missionRepository = missionRepository,
+    required OrderRepository orderRepository,
+  }) : _orderRepository = orderRepository,
        _outboundMergePoSmUseCase = mergeUseCase,
        super(const OutboundPoListState()) {
     _listenToOutboundPos();
@@ -112,24 +113,57 @@ class OutboundPoListNotifier extends StateNotifier<OutboundPoListState> {
     state = state.copyWith(isSelectionModeActive: false, selectedPoKeys: {});
   }
 
-  void togglePoForDeletion(String key) {
+  void togglePoForDeletion(OutboundPoEntity po) {
+    final String key = po.uid.isNotEmpty ? po.uid : "SUB:${po.subMissionNo}";
+
     final Set<String> currentSelection = Set.from(state.selectedPoKeys);
+
     if (currentSelection.contains(key)) {
       currentSelection.remove(key);
     } else {
       currentSelection.add(key);
     }
-    state = state.copyWith(selectedPoKeys: currentSelection);
+
+    // 🚀 선택된 키가 없으면 선택 모드 해제
+    state = state.copyWith(
+      selectedPoKeys: currentSelection,
+      isSelectionModeActive: currentSelection.isNotEmpty,
+    );
   }
 
   Future<bool> deleteSelectedPos() async {
+    // 선택된 키가 없으면 종료
     if (state.selectedPoKeys.isEmpty) {
       return false;
     }
+
     state = state.copyWith(isDeleting: true);
+
     try {
-      final List<String> keysToDelete = state.selectedPoKeys.toList();
-      await _missionRepository.deleteMissions(keysToDelete);
+      final List<String> uidsToDelete = [];
+      final List<int> subMissionNosToDelete = [];
+
+      // 현재 po List를 순회하면서 key랑 매치되는 값을 찾아서 분류
+      for (final po in state.poList) {
+        final key = po.uid.isNotEmpty ? po.uid : "SUB:${po.subMissionNo}";
+
+        if (state.selectedPoKeys.contains(key)) {
+          if (po.uid.isNotEmpty) {
+            uidsToDelete.add(po.uid);
+          } else if (po.subMissionNo != null) {
+            subMissionNosToDelete.add(po.subMissionNo!);
+          }
+        }
+      }
+
+      appLogger.i(
+        "🗑️ [Outbound Delete Request] UIDs: $uidsToDelete, SubMissionNos: $subMissionNosToDelete",
+      );
+
+      await _orderRepository.deleteOrder(
+        uids: uidsToDelete,
+        subMissionNos: subMissionNosToDelete,
+      );
       state = state.copyWith(
         isDeleting: false,
         isSelectionModeActive: false,
@@ -155,12 +189,12 @@ class OutboundPoListNotifier extends StateNotifier<OutboundPoListState> {
 
 final outboundPoListProvider =
     StateNotifierProvider<OutboundPoListNotifier, OutboundPoListState>((ref) {
-      final missionRepository = ref.watch(missionRepositoryProvider);
+      final orderRepository = ref.watch(orderRepositoryProvider);
       final outboundMergePoSmUseCase = ref.watch(
         outboundMergePoSmUseCaseProvider,
       );
       return OutboundPoListNotifier(
-        missionRepository: missionRepository,
+        orderRepository: orderRepository,
         mergeUseCase: outboundMergePoSmUseCase,
       );
     });

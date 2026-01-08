@@ -31,6 +31,8 @@ class OutboundPoRepositoryImpl implements OutboundPoRepository {
       destinationArea: dto.destinationArea,
       doNo: dto.doNo ?? '',
       uid: dto.uid,
+      subMissionNo: null,
+      subMissionStatus: null,
     );
   }
 }

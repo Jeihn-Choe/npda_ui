@@ -1,4 +1,4 @@
-import 'package:npda_ui_flutter/core/data/dtos/order_validation_req_dto.dart';
+import 'package:npda_ui_flutter/core/data/dtos/order/order_validation_req_dto.dart';
 import 'package:npda_ui_flutter/core/data/dtos/request_order_dto.dart';
 import 'package:npda_ui_flutter/core/domain/entities/response_order_entity.dart';
 import 'package:npda_ui_flutter/core/domain/repositories/order_repository.dart';
@@ -24,5 +24,14 @@ class OrderRepositoryMock implements OrderRepository {
     }
 
     return ResponseOrderEntity.success(msg: "");
+  }
+
+  @override
+  Future<ResponseOrderEntity> deleteOrder({
+    List<String> uids = const [],
+    List<int> subMissionNos = const [],
+  }) async {
+    // TODO: implement deleteOrder
+    return ResponseOrderEntity.success(msg: "삭제 요청에 성공하였습니다.");
   }
 }

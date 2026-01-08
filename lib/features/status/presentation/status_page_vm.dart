@@ -1,22 +1,19 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_po_entity.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_po_list_provider.dart';
 import 'package:npda_ui_flutter/features/outbound/presentation/providers/outbound_po_list_provider.dart';
-import 'package:npda_ui_flutter/features/outbound_1f/domain/entities/outbound_1f_po_entity.dart';
 import 'package:npda_ui_flutter/features/outbound_1f/presentation/providers/outbound_1f_po_list_provider.dart';
 import 'package:npda_ui_flutter/features/status/presentation/providers/robot_status_provider.dart';
 import 'package:npda_ui_flutter/features/status/presentation/providers/status_dependency_provider.dart';
 
-import '../../outbound/domain/entities/outbound_po_entity.dart';
 import '../domain/entities/ev_status_entity.dart';
 import '../domain/entities/robot_status_entity.dart';
 
 class StatusState {
   final bool isMainLiftAvailable;
   final bool isSubLiftAvailable;
-  final List<InboundPoEntity> inboundPoList;
-  final List<OutboundPoEntity> outboundPoList;
-  final List<Outbound1fPoEntity> outbound1FPoList;
+  final InboundPoListState inboundPoListState;
+  final OutboundPoListState outboundPoListState;
+  final Outbound1fPoListState outbound1FPoListState;
 
   final RobotStatusEntity ssrStatus;
   final RobotStatusEntity spt1fStatus;
@@ -25,9 +22,9 @@ class StatusState {
   StatusState({
     required this.isMainLiftAvailable,
     required this.isSubLiftAvailable,
-    this.inboundPoList = const [],
-    this.outboundPoList = const [],
-    this.outbound1FPoList = const [],
+    required this.inboundPoListState,
+    required this.outboundPoListState,
+    required this.outbound1FPoListState,
 
     required this.ssrStatus,
     required this.spt1fStatus,
@@ -37,9 +34,9 @@ class StatusState {
   StatusState copyWith({
     bool? isMainLiftAvailable,
     bool? isSubLiftAvailable,
-    List<InboundPoEntity>? inboundPoList,
-    List<OutboundPoEntity>? outboundPoList,
-    List<Outbound1fPoEntity>? outbound1FPoList,
+    InboundPoListState? inboundPoList,
+    OutboundPoListState? outboundPoList,
+    Outbound1fPoListState? outbound1FPoList,
 
     RobotStatusEntity? ssrStatus,
     RobotStatusEntity? spt1fStatus,
@@ -49,9 +46,9 @@ class StatusState {
       isMainLiftAvailable: isMainLiftAvailable ?? this.isMainLiftAvailable,
       isSubLiftAvailable: isSubLiftAvailable ?? this.isSubLiftAvailable,
 
-      inboundPoList: inboundPoList ?? this.inboundPoList,
-      outboundPoList: outboundPoList ?? this.outboundPoList,
-      outbound1FPoList: outbound1FPoList ?? this.outbound1FPoList,
+      inboundPoListState: inboundPoList ?? this.inboundPoListState,
+      outboundPoListState: outboundPoList ?? this.outboundPoListState,
+      outbound1FPoListState: outbound1FPoList ?? this.outbound1FPoListState,
 
       ssrStatus: ssrStatus ?? this.ssrStatus,
       spt1fStatus: spt1fStatus ?? this.spt1fStatus,
@@ -69,9 +66,9 @@ class StatusPageVM extends StateNotifier<StatusState> {
           isMainLiftAvailable: true,
           isSubLiftAvailable: true,
 
-          inboundPoList: _ref.read(inboundPoListProvider).poList,
-          outboundPoList: _ref.read(outboundPoListProvider).poList,
-          outbound1FPoList: _ref.read(outbound1fPoListProvider).poList,
+          inboundPoListState: _ref.read(inboundPoListProvider),
+          outboundPoListState: _ref.read(outboundPoListProvider),
+          outbound1FPoListState: _ref.read(outbound1fPoListProvider),
 
           // _ref.read(outbound1FPoListProvider).poList,
           ssrStatus: _ref.read(robotStatusProvider).ssrStatus,
@@ -85,11 +82,11 @@ class StatusPageVM extends StateNotifier<StatusState> {
   void _init() {
     // inboundPoListProvider 구독/상태 동기화
     _ref.listen<InboundPoListState>(inboundPoListProvider, (previous, next) {
-      state = state.copyWith(inboundPoList: next.poList);
+      state = state.copyWith(inboundPoList: next);
     });
     // outboundPoListProvider 구독/상태 동기화
     _ref.listen<OutboundPoListState>(outboundPoListProvider, (previous, next) {
-      state = state.copyWith(outboundPoList: next.poList);
+      state = state.copyWith(outboundPoList: next);
     });
 
     // 🚀 [추가] 1층 출고 PO 리스트 구독/상태 동기화
@@ -97,7 +94,7 @@ class StatusPageVM extends StateNotifier<StatusState> {
       previous,
       next,
     ) {
-      state = state.copyWith(outbound1FPoList: next.poList);
+      state = state.copyWith(outbound1FPoList: next);
     });
 
     // robotStatusProvider 구독/상태 동기화
@@ -155,7 +152,7 @@ class StatusPageVM extends StateNotifier<StatusState> {
   }
 }
 
-final statusPageVMProvider = StateNotifierProvider<StatusPageVM, StatusState>((
+final statusPageVmProvider = StateNotifierProvider<StatusPageVM, StatusState>((
   ref,
 ) {
   return StatusPageVM(ref);

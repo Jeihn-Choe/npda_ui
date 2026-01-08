@@ -1,4 +1,5 @@
-import 'package:npda_ui_flutter/core/data/dtos/order_validation_req_dto.dart';
+import 'package:npda_ui_flutter/core/data/dtos/order/delete_order_dto.dart';
+import 'package:npda_ui_flutter/core/data/dtos/order/order_validation_req_dto.dart';
 import 'package:npda_ui_flutter/core/data/dtos/request_order_dto.dart';
 
 import '../../../config/app_config.dart';
@@ -90,4 +91,36 @@ class OrderRepositoryImpl extends OrderRepository {
   //     );
   //   }
   // }
+
+  @override
+  Future<ResponseOrderEntity> deleteOrder({
+    List<String> uids = const [],
+    List<int> subMissionNos = const [],
+  }) async {
+    final requestDto = DeleteOrdersDto(
+      payload: DeleteOrdersPayloadDto(uids: uids, subMissionNos: subMissionNos),
+    );
+
+    try {
+      final response = await _apiService.post(
+        ApiConfig.deleteOrderEndpoint,
+        data: requestDto.toJson(),
+      );
+
+      final responseData = response.data;
+      final String? result = responseData['result'] as String?;
+      final String? msg = responseData['msg'] as String?;
+
+      final bool isSuccess = result?.toUpperCase() == 'S';
+
+      if (isSuccess) {
+        return ResponseOrderEntity.success(msg: msg ?? "삭제가 성공적으로 처리되었습니다.");
+      } else {
+        return ResponseOrderEntity.failure(msg: msg ?? "삭제 요청에 실패했습니다.");
+      }
+    } catch (e, stackTrace) {
+      appLogger.e("주문삭제 오류발생", error: e, stackTrace: stackTrace);
+      return ResponseOrderEntity.failure(msg: '삭제 요청 중 네트워크 오류 발생');
+    }
+  }
 }

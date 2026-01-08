@@ -26,6 +26,10 @@ class OutboundPoEntity {
   /// 고유 식별자 (String)
   final String uid;
 
+  /// Outbound는 SM 도 취급 subMissionNo랑 현재 작업중인지 여부 파악해야함.
+  final int? subMissionNo;
+  final int? subMissionStatus;
+
   OutboundPoEntity({
     required this.missionType,
     this.huId,
@@ -36,6 +40,8 @@ class OutboundPoEntity {
     required this.destinationArea,
     required this.doNo,
     required this.uid,
+    this.subMissionNo,
+    this.subMissionStatus,
   });
 
   OutboundPoEntity copyWith({
@@ -48,6 +54,8 @@ class OutboundPoEntity {
     int? destinationArea,
     String? doNo,
     String? uid,
+    int? subMissionNo,
+    int? subMissionStatus,
   }) {
     return OutboundPoEntity(
       missionType: missionType ?? this.missionType,
@@ -59,6 +67,8 @@ class OutboundPoEntity {
       destinationArea: destinationArea ?? this.destinationArea,
       doNo: doNo ?? this.doNo,
       uid: uid ?? this.uid,
+      subMissionNo: subMissionNo ?? this.subMissionNo,
+      subMissionStatus: subMissionStatus ?? this.subMissionStatus,
     );
   }
 }

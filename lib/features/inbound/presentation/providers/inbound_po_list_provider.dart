@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/core/domain/repositories/mission_repository.dart';
+import 'package:npda_ui_flutter/core/domain/repositories/order_repository.dart';
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
+import 'package:npda_ui_flutter/core/utils/logger.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/entities/inbound_po_entity.dart';
 import 'package:npda_ui_flutter/features/inbound/domain/repositories/inbound_po_repository.dart';
 import 'package:npda_ui_flutter/features/inbound/presentation/providers/inbound_dependency_provider.dart';
@@ -62,14 +63,14 @@ class InboundPoListState extends Equatable {
 
 class InboundPoListNotifier extends StateNotifier<InboundPoListState> {
   final InboundPoRepository _inboundPoRepository;
-  final MissionRepository _missionRepository;
+  final OrderRepository _orderRepository;
   StreamSubscription? _poSubscription;
 
   InboundPoListNotifier({
     required InboundPoRepository inboundPoRepository,
-    required MissionRepository missionRepository,
+    required OrderRepository orderRepository,
   }) : _inboundPoRepository = inboundPoRepository,
-       _missionRepository = missionRepository,
+       _orderRepository = orderRepository,
        super(const InboundPoListState()) {
     _listenToInboundPos();
   }
@@ -111,14 +112,23 @@ class InboundPoListNotifier extends StateNotifier<InboundPoListState> {
     state = state.copyWith(isSelectionModeActive: false, selectedPoKeys: {});
   }
 
-  void togglePoForDeletion(String key) {
+  void togglePoForDeletion(InboundPoEntity po) {
+    // 입고는 항상 uid 값으로 판단.
+    final key = po.uid;
+
     final Set<String> currentSelection = Set.from(state.selectedPoKeys);
+
     if (currentSelection.contains(key)) {
       currentSelection.remove(key);
     } else {
       currentSelection.add(key);
     }
-    state = state.copyWith(selectedPoKeys: currentSelection);
+
+    // 🚀 선택된 키가 없으면 선택 모드 해제
+    state = state.copyWith(
+      selectedPoKeys: currentSelection,
+      isSelectionModeActive: currentSelection.isNotEmpty,
+    );
   }
 
   Future<bool> deleteSelectedPos() async {
@@ -128,7 +138,12 @@ class InboundPoListNotifier extends StateNotifier<InboundPoListState> {
     state = state.copyWith(isDeleting: true);
     try {
       final List<String> keysToDelete = state.selectedPoKeys.toList();
-      await _missionRepository.deleteMissions(keysToDelete);
+
+      appLogger.i(
+        "🗑️ [Inbound Delete Request] Count: ${keysToDelete.length}, UIDs: $keysToDelete",
+      );
+
+      await _orderRepository.deleteOrder(uids: keysToDelete);
       state = state.copyWith(
         isDeleting: false,
         isSelectionModeActive: false,
@@ -155,9 +170,9 @@ class InboundPoListNotifier extends StateNotifier<InboundPoListState> {
 final inboundPoListProvider =
     StateNotifierProvider<InboundPoListNotifier, InboundPoListState>((ref) {
       final inboundPoRepository = ref.watch(inboundPoRepositoryProvider);
-      final missionRepository = ref.watch(missionRepositoryProvider);
+      final orderRepository = ref.watch(orderRepositoryProvider);
       return InboundPoListNotifier(
         inboundPoRepository: inboundPoRepository,
-        missionRepository: missionRepository,
+        orderRepository: orderRepository,
       );
     });

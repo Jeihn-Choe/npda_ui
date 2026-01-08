@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:npda_ui_flutter/core/data/dtos/order_validation_req_dto.dart';
+import 'package:npda_ui_flutter/core/data/dtos/order/order_validation_req_dto.dart';
 import 'package:npda_ui_flutter/core/providers/repository_providers.dart';
 import 'package:npda_ui_flutter/core/state/session_manager.dart';
 
